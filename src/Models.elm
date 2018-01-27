@@ -1,6 +1,7 @@
 module Models exposing (..)
 
 import Dict
+import List.Nonempty as NE exposing (Nonempty, (:::))
 
 
 -- input and checkbox
@@ -26,39 +27,71 @@ booleanValue =
 -- Validation
 
 
-type Validator
-    = NoValidation
-    | Validator (List Validation)
-
-
-type Validation err a
+type Validation err
     = ValidationFailure err
-    | ValidationSuccess a
+    | ValidationSuccess
 
 
+type alias Validate a =
+    a -> Bool
 
--- type alias TestValue a =
---     a -> Bool
 
-
-validate : err -> (a -> Bool) -> a -> Validation err a
-validate err test a =
+validate : a -> err -> Validate a -> Validation err
+validate a err test =
     if test a then
-        ValidationSuccess a
+        ValidationSuccess
     else
         ValidationFailure err
 
 
+foldValid : List err -> List (Validation err) -> List err
+foldValid errors validations =
+    case validations of
+        [] ->
+            errors
 
--- sequenceV : List (Validation err a) -> Validation err a
--- sequenceV
--- sequence :: [Maybe a] -> Maybe [a]
--- sequence []           = Just []
--- sequence (Nothing:xs) = Nothing
--- sequence (Just x:xs)  = case sequence xs of
---   Just xs' -> Just (x:xs')
---   _        -> Nothing
---
+        h :: t ->
+            case h of
+                ValidationSuccess ->
+                    foldValid errors t
+
+                ValidationFailure err ->
+                    foldValid (err :: errors) t
+
+
+
+-- Maybe public ?
+-- hasError : List (Validation err) -> Maybe (List err)
+-- hasError validations =
+--     case foldValid [] validations of
+--         [] ->
+--             Nothing
+--         errors ->
+--             Just errors
+
+
+type Validator
+    = NoValidation
+    | Validator (Nonempty (Validate Value))
+
+
+validator : Value -> Validator -> Nonempty err -> Validation (List err)
+validator value v errors =
+    case v of
+        NoValidation ->
+            ValidationSuccess
+
+        Validator vs ->
+            let
+                es =
+                    NE.map (uncurry (validate value)) (NE.zip errors vs)
+            in
+                case foldValid [] (NE.toList es) of
+                    [] ->
+                        ValidationSuccess
+
+                    ess ->
+                        ValidationFailure ess
 
 
 type FieldType
