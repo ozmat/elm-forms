@@ -77,3 +77,46 @@ updateGroup_ comparable newValue field =
 updateGroup : comparable -> Value -> Maybe (Field comparable) -> Maybe (Field comparable)
 updateGroup comparable newValue field =
     Maybe.map (updateGroup_ comparable newValue) field
+
+
+
+-- Walk through Group
+
+
+walkGroup : comparable -> Group comparable -> Maybe (Field comparable)
+walkGroup comparable group =
+    let
+        walk k v acc =
+            case acc of
+                Just _ ->
+                    acc
+
+                Nothing ->
+                    case v of
+                        FieldGroup g ->
+                            walkGroup comparable g
+
+                        _ ->
+                            Nothing
+    in
+        case D.get comparable group of
+            Just field ->
+                Just field
+
+            Nothing ->
+                D.foldl walk Nothing group
+
+
+getValue : comparable -> Group comparable -> Maybe Value
+getValue comparable group =
+    case walkGroup comparable group of
+        Nothing ->
+            Nothing
+
+        Just field ->
+            case field of
+                FieldValue value ->
+                    Just value
+
+                _ ->
+                    Nothing

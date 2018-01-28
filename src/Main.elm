@@ -4,6 +4,7 @@ import Html exposing (Html, Attribute, beginnerProgram, text, div, input)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Debug exposing (log)
+import Dict as D
 
 
 -- Can't reexport ...
@@ -13,8 +14,8 @@ import Forms.Form exposing (..)
 import Forms.Update exposing (..)
 import Forms.Validation exposing (..)
 import Forms.Value exposing (..)
-import Ki.Value exposing (..)
-import Ki.Field exposing (..)
+import Ki.Value as V exposing (..)
+import Ki.Field as F exposing (..)
 
 
 -- MAIN
@@ -70,8 +71,10 @@ update msg model =
                 newModel =
                     { model | form = updateForm formMsg model.form }
 
-                x =
-                    log "" newModel.form
+                -- x =
+                --     log "" newModel.form
+                y =
+                    log "" test
             in
                 newModel
 
@@ -108,3 +111,37 @@ inputText place fieldName =
         , myStyle
         ]
         []
+
+
+test : Maybe V.Value
+test =
+    getValue "test" test2
+
+
+test2 : F.Group String
+test2 =
+    (D.fromList
+        [ ( "z", F.string "gre" )
+        , ( "w", F.string "gre" )
+        , ( "r", F.string "gre" )
+        , ( "tes", F.string "gre" )
+        , ( "group1"
+          , (FieldGroup
+                (D.fromList
+                    [ ( "z", F.string "gre" )
+                    , ( "tesdt", F.string "e" )
+                    , ( "group2"
+                      , (FieldGroup
+                            (D.fromList
+                                [ ( "z", F.string "gre" )
+                                , ( "test", F.string "bleu" )
+                                ]
+                            )
+                        )
+                      )
+                    ]
+                )
+            )
+          )
+        ]
+    )

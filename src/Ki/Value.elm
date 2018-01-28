@@ -37,11 +37,11 @@ defaultBoolean =
 -- Helpers
 
 
-isEmpty : Value -> Bool
+isEmpty : Value -> Maybe Bool
 isEmpty v =
     case v of
         String x ->
-            String.isEmpty x
+            Just (String.isEmpty x)
 
         _ ->
-            False
+            Nothing
