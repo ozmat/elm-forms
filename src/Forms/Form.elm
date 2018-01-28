@@ -7,8 +7,9 @@ module Forms.Form
         )
 
 import Dict
-import Forms.Field exposing (Field, Value, fieldValidate, updateValue)
+import Forms.Field exposing (Field, fieldValidate, updateValue)
 import Forms.Validation exposing (Validation(..), accValidationDict)
+import Forms.Value exposing (Value)
 
 
 type alias Form comparable err =

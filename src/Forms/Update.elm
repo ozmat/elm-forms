@@ -1,7 +1,7 @@
 module Forms.Update exposing (..)
 
 import Forms.Form exposing (Form, updateFields)
-import Forms.Field exposing (Value(..))
+import Forms.Value exposing (Value(..))
 
 
 -- With setter : replace

@@ -12,6 +12,7 @@ import Forms.Field exposing (..)
 import Forms.Form exposing (..)
 import Forms.Update exposing (..)
 import Forms.Validation exposing (..)
+import Forms.Value exposing (..)
 
 
 -- MAIN

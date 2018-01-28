@@ -3,9 +3,6 @@ module Forms.Field
         ( Field
         , mkField
         , updateValue
-        , Value(..)
-        , stringValue
-        , booleanValue
         , FieldType(..)
         , FieldValidation(..)
         , fieldValidate
@@ -13,6 +10,7 @@ module Forms.Field
 
 import List.Nonempty as NE exposing (Nonempty)
 import Forms.Validation exposing (Validation(..), Validate, validate, accValidation)
+import Forms.Value exposing (Value)
 
 
 -- Field
@@ -38,27 +36,6 @@ updateValue newValue field =
 
         Just f ->
             Just { f | value = newValue }
-
-
-
--- Value
--- input and checkbox
--- TODO select
-
-
-type Value
-    = Str String
-    | Boolean Bool
-
-
-stringValue : Value
-stringValue =
-    Str ""
-
-
-booleanValue : Value
-booleanValue =
-    Boolean False
 
 
 
