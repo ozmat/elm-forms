@@ -56,6 +56,40 @@ mapGroup f field =
 
 
 
+-- Maybe
+
+
+maybeValue : Field comparable -> (Value -> a) -> Maybe a
+maybeValue field f =
+    case field of
+        FieldValue value ->
+            Just (f value)
+
+        _ ->
+            Nothing
+
+
+maybeGroup : Field comparable -> (Group comparable -> a) -> Maybe a
+maybeGroup field f =
+    case field of
+        FieldGroup g ->
+            Just (f g)
+
+        _ ->
+            Nothing
+
+
+liftMaybe : Maybe (Maybe a) -> Maybe a
+liftMaybe maybe =
+    case maybe of
+        Just m ->
+            m
+
+        Nothing ->
+            Nothing
+
+
+
 -- Update
 
 
@@ -92,6 +126,7 @@ walkGroup comparable group =
                     acc
 
                 Nothing ->
+                    -- liftMaybe (maybeGroup v (walkGroup comparable))
                     case v of
                         FieldGroup g ->
                             walkGroup comparable g
@@ -114,9 +149,4 @@ getValue comparable group =
             Nothing
 
         Just field ->
-            case field of
-                FieldValue value ->
-                    Just value
-
-                _ ->
-                    Nothing
+            maybeValue field identity
