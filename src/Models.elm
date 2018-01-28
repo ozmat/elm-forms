@@ -59,6 +59,21 @@ accValid errors validations =
                     accValid (err :: errors) t
 
 
+accValidDict : List ( comparable, List err ) -> List ( comparable, Validation (List err) ) -> List ( comparable, List err )
+accValidDict errors validations =
+    case validations of
+        [] ->
+            errors
+
+        ( comparable, valid ) :: t ->
+            case valid of
+                ValidationSuccess ->
+                    accValidDict errors t
+
+                ValidationFailure err ->
+                    accValidDict (( comparable, err ) :: errors) t
+
+
 
 -- Maybe public ?
 -- hasError : List (Validation err) -> Maybe (List err)
@@ -68,6 +83,13 @@ accValid errors validations =
 --             Nothing
 --         errors ->
 --             Just errors
+-- isValid : List (Validation err) -> Bool
+-- isValid validations =
+--     case accValid [] validations of
+--         [] ->
+--             True
+--         _ ->
+--             False
 
 
 type Validator err
@@ -110,6 +132,11 @@ type alias Field err =
     }
 
 
+fieldValidation : Field err -> Validation (List err)
+fieldValidation field =
+    validator field.value field.validator
+
+
 mkField : comparable -> Value -> FieldType -> Validator err -> ( comparable, Field err )
 mkField comparable value fieldType valid =
     ( comparable, Field value fieldType valid )
@@ -128,6 +155,21 @@ updateField newValue field =
 type alias Form comparable err =
     { fields : Dict.Dict comparable (Field err)
     }
+
+
+formValidation : Form comparable err -> Validation (Dict.Dict comparable (List err))
+formValidation form =
+    let
+        -- fieldValids : List (comparable, Validation (List err))
+        fieldValids =
+            List.map (Tuple.mapSecond fieldValidation) (Dict.toList form.fields)
+    in
+        case accValidDict [] fieldValids of
+            [] ->
+                ValidationSuccess
+
+            errs ->
+                ValidationFailure (Dict.fromList errs)
 
 
 updateFields : comparable -> Value -> Form comparable err -> Form comparable err
