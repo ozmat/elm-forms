@@ -24,11 +24,11 @@ main =
 
 
 type alias Model =
-    { form : Form
+    { form : Form String
     }
 
 
-someForm : Form
+someForm : Form String
 someForm =
     mkForm
         [ mkField "username" stringValue Required NoValidation

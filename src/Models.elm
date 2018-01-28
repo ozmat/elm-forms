@@ -44,8 +44,8 @@ validate a err test =
         ValidationFailure err
 
 
-foldValid : List err -> List (Validation err) -> List err
-foldValid errors validations =
+accValid : List err -> List (Validation err) -> List err
+accValid errors validations =
     case validations of
         [] ->
             errors
@@ -53,30 +53,30 @@ foldValid errors validations =
         h :: t ->
             case h of
                 ValidationSuccess ->
-                    foldValid errors t
+                    accValid errors t
 
                 ValidationFailure err ->
-                    foldValid (err :: errors) t
+                    accValid (err :: errors) t
 
 
 
 -- Maybe public ?
 -- hasError : List (Validation err) -> Maybe (List err)
 -- hasError validations =
---     case foldValid [] validations of
+--     case accValid [] validations of
 --         [] ->
 --             Nothing
 --         errors ->
 --             Just errors
 
 
-type Validator
+type Validator err
     = NoValidation
-    | Validator (Nonempty (Validate Value))
+    | Validator (Nonempty ( err, Validate Value ))
 
 
-validator : Value -> Validator -> Nonempty err -> Validation (List err)
-validator value v errors =
+validator : Value -> Validator err -> Validation (List err)
+validator value v =
     case v of
         NoValidation ->
             ValidationSuccess
@@ -84,14 +84,18 @@ validator value v errors =
         Validator vs ->
             let
                 es =
-                    NE.map (uncurry (validate value)) (NE.zip errors vs)
+                    NE.map (uncurry (validate value)) vs
             in
-                case foldValid [] (NE.toList es) of
+                case accValid [] (NE.toList es) of
                     [] ->
                         ValidationSuccess
 
                     ess ->
                         ValidationFailure ess
+
+
+
+-- Field types
 
 
 type FieldType
@@ -103,20 +107,20 @@ type alias FieldName =
     String
 
 
-type alias Field =
+type alias Field err =
     { name : FieldName
     , value : Value
     , fieldType : FieldType
-    , validator : Validator
+    , validator : Validator err
     }
 
 
-mkField : FieldName -> Value -> FieldType -> Validator -> Field
+mkField : FieldName -> Value -> FieldType -> Validator err -> Field err
 mkField =
     Field
 
 
-updateField : Value -> Maybe Field -> Maybe Field
+updateField : Value -> Maybe (Field err) -> Maybe (Field err)
 updateField newValue field =
     case field of
         Nothing ->
@@ -126,17 +130,17 @@ updateField newValue field =
             Just { f | value = newValue }
 
 
-type alias Form =
-    { fields : Dict.Dict FieldName Field
+type alias Form err =
+    { fields : Dict.Dict FieldName (Field err)
     }
 
 
-updateFields : FieldName -> Value -> Form -> Form
+updateFields : FieldName -> Value -> Form err -> Form err
 updateFields name value form =
     { form | fields = Dict.update name (updateField value) form.fields }
 
 
-mkForm : List Field -> Form
+mkForm : List (Field err) -> Form err
 mkForm fields =
     List.foldl (\field dict -> Dict.insert field.name field dict) Dict.empty fields
         |> Form
@@ -147,7 +151,7 @@ mkForm fields =
 -- { model | form = updateForm formMsg model.form }
 
 
-withSetter : a -> Form -> (Form -> a -> a) -> FormMsg -> a
+withSetter : a -> Form err -> (Form err -> a -> a) -> FormMsg -> a
 withSetter model form setter msg =
     setter (updateForm msg form) model
 
@@ -171,7 +175,7 @@ formMsg parentMsg partialMsg a =
 -- UPDATE
 
 
-updateForm : FormMsg -> Form -> Form
+updateForm : FormMsg -> Form err -> Form err
 updateForm msg form =
     case msg of
         UpdateStrField name s ->
