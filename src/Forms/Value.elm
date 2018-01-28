@@ -18,6 +18,8 @@ import Forms.Validation exposing (Validate)
 import List.Nonempty as NE exposing (Nonempty)
 
 
+-- W3C - /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+-- http://emailregex.com/ - /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 -- Value
 -- text input and checkbox
 -- TODO select
