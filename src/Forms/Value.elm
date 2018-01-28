@@ -4,9 +4,17 @@ module Forms.Value
         , stringValue
         , booleanValue
         , isEmpty
+          -- Validates
+        , strValidate
+        , strValidates
+        , strGT
+        , strGTE
+        , strLT
+        , strLTE
+        , booleanChecked
         )
 
-import Forms.Validation exposing (Validate, bindValidate, bindValidates)
+import Forms.Validation exposing (Validate)
 import List.Nonempty as NE exposing (Nonempty)
 
 
@@ -35,6 +43,20 @@ booleanValue =
 
 
 
+-- Helpers
+
+
+isEmpty : Value -> Bool
+isEmpty v =
+    case v of
+        Str x ->
+            String.isEmpty x
+
+        _ ->
+            False
+
+
+
 -- Enforce Validate
 
 
@@ -49,9 +71,9 @@ strValidate sv =
                 False
 
 
-strValidates : Nonempty (Validate String) -> Validate Value
-strValidates vss =
-    bindValidates (NE.map strValidate vss)
+strValidates : Nonempty ( err, Validate String ) -> Nonempty ( err, Validate Value )
+strValidates svs =
+    NE.map (Tuple.mapSecond strValidate) svs
 
 
 booleanValidate : Validate Bool -> Validate Value
@@ -66,14 +88,29 @@ booleanValidate bv =
 
 
 
--- Helpers
+-- Basic validate
 
 
-isEmpty : Value -> Bool
-isEmpty v =
-    case v of
-        Str x ->
-            String.isEmpty x
+strGT : Int -> Validate Value
+strGT n =
+    strValidate (\s -> String.length s > n)
 
-        Boolean _ ->
-            False
+
+strGTE : Int -> Validate Value
+strGTE n =
+    strValidate (\s -> String.length s >= n)
+
+
+strLT : Int -> Validate Value
+strLT n =
+    strValidate (\s -> String.length s < n)
+
+
+strLTE : Int -> Validate Value
+strLTE n =
+    strValidate (\s -> String.length s <= n)
+
+
+booleanChecked : Validate Value
+booleanChecked =
+    booleanValidate identity
