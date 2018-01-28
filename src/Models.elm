@@ -103,21 +103,16 @@ type FieldType
     | Required
 
 
-type alias FieldName =
-    String
-
-
 type alias Field err =
-    { name : FieldName
-    , value : Value
+    { value : Value
     , fieldType : FieldType
     , validator : Validator err
     }
 
 
-mkField : FieldName -> Value -> FieldType -> Validator err -> Field err
-mkField =
-    Field
+mkField : comparable -> Value -> FieldType -> Validator err -> ( comparable, Field err )
+mkField comparable value fieldType valid =
+    ( comparable, Field value fieldType valid )
 
 
 updateField : Value -> Maybe (Field err) -> Maybe (Field err)
@@ -130,19 +125,19 @@ updateField newValue field =
             Just { f | value = newValue }
 
 
-type alias Form err =
-    { fields : Dict.Dict FieldName (Field err)
+type alias Form comparable err =
+    { fields : Dict.Dict comparable (Field err)
     }
 
 
-updateFields : FieldName -> Value -> Form err -> Form err
-updateFields name value form =
-    { form | fields = Dict.update name (updateField value) form.fields }
+updateFields : comparable -> Value -> Form comparable err -> Form comparable err
+updateFields comparable value form =
+    { form | fields = Dict.update comparable (updateField value) form.fields }
 
 
-mkForm : List (Field err) -> Form err
+mkForm : List ( comparable, Field err ) -> Form comparable err
 mkForm fields =
-    List.foldl (\field dict -> Dict.insert field.name field dict) Dict.empty fields
+    List.foldl (\( comparable, field ) dict -> Dict.insert comparable field dict) Dict.empty fields
         |> Form
 
 
@@ -151,7 +146,7 @@ mkForm fields =
 -- { model | form = updateForm formMsg model.form }
 
 
-withSetter : a -> Form err -> (Form err -> a -> a) -> FormMsg -> a
+withSetter : a -> Form comparable err -> (Form comparable err -> a -> a) -> FormMsg comparable -> a
 withSetter model form setter msg =
     setter (updateForm msg form) model
 
@@ -160,12 +155,12 @@ withSetter model form setter msg =
 -- MSG
 
 
-type FormMsg
-    = UpdateStrField FieldName String
-    | UpdateBooleanField FieldName Bool
+type FormMsg comparable
+    = UpdateStrField comparable String
+    | UpdateBooleanField comparable Bool
 
 
-formMsg : (FormMsg -> msg) -> (a -> FormMsg) -> a -> msg
+formMsg : (FormMsg comparable -> msg) -> (a -> FormMsg comparable) -> a -> msg
 formMsg parentMsg partialMsg a =
     parentMsg (partialMsg a)
 
@@ -175,7 +170,7 @@ formMsg parentMsg partialMsg a =
 -- UPDATE
 
 
-updateForm : FormMsg -> Form err -> Form err
+updateForm : FormMsg comparable -> Form comparable err -> Form comparable err
 updateForm msg form =
     case msg of
         UpdateStrField name s ->
