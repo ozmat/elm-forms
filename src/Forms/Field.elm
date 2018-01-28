@@ -10,7 +10,7 @@ module Forms.Field
 
 import List.Nonempty as NE exposing (Nonempty)
 import Forms.Validation exposing (Validation(..), Validate, validate, accValidation)
-import Forms.Value exposing (Value)
+import Forms.Value exposing (Value, isEmpty)
 
 
 -- Field
@@ -63,13 +63,26 @@ fieldValidate field =
             ValidationSuccess
 
         FieldValidation validates ->
-            let
-                validations =
-                    NE.map (uncurry (validate field.value)) validates
-            in
-                case accValidation [] (NE.toList validations) of
-                    [] ->
+            case field.fType of
+                Optional ->
+                    if isEmpty field.value then
                         ValidationSuccess
+                    else
+                        fieldValidate_ field.value validates
 
-                    ess ->
-                        ValidationFailure ess
+                Required ->
+                    fieldValidate_ field.value validates
+
+
+fieldValidate_ : Value -> Nonempty ( err, Validate Value ) -> Validation (List err)
+fieldValidate_ value validates =
+    let
+        validations =
+            NE.map (uncurry (validate value)) validates
+    in
+        case accValidation [] (NE.toList validations) of
+            [] ->
+                ValidationSuccess
+
+            ess ->
+                ValidationFailure ess

@@ -3,6 +3,7 @@ module Forms.Value
         ( Value(..)
         , stringValue
         , booleanValue
+        , isEmpty
         )
 
 -- Value
@@ -23,3 +24,13 @@ stringValue =
 booleanValue : Value
 booleanValue =
     Boolean False
+
+
+isEmpty : Value -> Bool
+isEmpty v =
+    case v of
+        Str x ->
+            String.isEmpty x
+
+        Boolean _ ->
+            False
