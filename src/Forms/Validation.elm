@@ -1,20 +1,23 @@
 module Forms.Validation
     exposing
         ( Validation(..)
-        , Validate
         , validate
         , accValidation
         , accValidationDict
+        , Validate
+        , bindValidate
+        , bindValidates
         )
+
+import List.Nonempty as NE exposing (Nonempty)
+
+
+-- Validation
 
 
 type Validation err
     = ValidationFailure err
     | ValidationSuccess
-
-
-type alias Validate a =
-    a -> Bool
 
 
 validate : a -> err -> Validate a -> Validation err
@@ -56,7 +59,36 @@ accValidationDict errors validations =
 
 
 
--- Helpers public ?
+-- Validate
+
+
+type alias Validate a =
+    a -> Bool
+
+
+bindValidate : Validate a -> Validate a -> Validate a
+bindValidate test1 test2 =
+    \a -> test1 a && test2 a
+
+
+bindValidates : Nonempty (Validate a) -> Validate a
+bindValidates tests =
+    bindValidates_ (NE.head tests) (NE.tail tests)
+
+
+bindValidates_ : Validate a -> List (Validate a) -> Validate a
+bindValidates_ test tests =
+    case tests of
+        [] ->
+            test
+
+        h :: t ->
+            bindValidates_ (bindValidate test h) t
+
+
+
+-- Helpers
+-- Turn them public ?
 
 
 hasError : List (Validation err) -> Maybe (List err)
