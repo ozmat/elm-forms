@@ -44,8 +44,8 @@ validate a err test =
         ValidationFailure err
 
 
-foldValid : List err -> List (Validation err) -> List err
-foldValid errors validations =
+accValid : List err -> List (Validation err) -> List err
+accValid errors validations =
     case validations of
         [] ->
             errors
@@ -53,30 +53,52 @@ foldValid errors validations =
         h :: t ->
             case h of
                 ValidationSuccess ->
-                    foldValid errors t
+                    accValid errors t
 
                 ValidationFailure err ->
-                    foldValid (err :: errors) t
+                    accValid (err :: errors) t
+
+
+accValidDict : List ( comparable, List err ) -> List ( comparable, Validation (List err) ) -> List ( comparable, List err )
+accValidDict errors validations =
+    case validations of
+        [] ->
+            errors
+
+        ( comparable, valid ) :: t ->
+            case valid of
+                ValidationSuccess ->
+                    accValidDict errors t
+
+                ValidationFailure err ->
+                    accValidDict (( comparable, err ) :: errors) t
 
 
 
 -- Maybe public ?
 -- hasError : List (Validation err) -> Maybe (List err)
 -- hasError validations =
---     case foldValid [] validations of
+--     case accValid [] validations of
 --         [] ->
 --             Nothing
 --         errors ->
 --             Just errors
+-- isValid : List (Validation err) -> Bool
+-- isValid validations =
+--     case accValid [] validations of
+--         [] ->
+--             True
+--         _ ->
+--             False
 
 
-type Validator
+type Validator err
     = NoValidation
-    | Validator (Nonempty (Validate Value))
+    | Validator (Nonempty ( err, Validate Value ))
 
 
-validator : Value -> Validator -> Nonempty err -> Validation (List err)
-validator value v errors =
+validator : Value -> Validator err -> Validation (List err)
+validator value v =
     case v of
         NoValidation ->
             ValidationSuccess
@@ -84,9 +106,9 @@ validator value v errors =
         Validator vs ->
             let
                 es =
-                    NE.map (uncurry (validate value)) (NE.zip errors vs)
+                    NE.map (uncurry (validate value)) vs
             in
-                case foldValid [] (NE.toList es) of
+                case accValid [] (NE.toList es) of
                     [] ->
                         ValidationSuccess
 
@@ -94,29 +116,33 @@ validator value v errors =
                         ValidationFailure ess
 
 
+
+-- Field types
+
+
 type FieldType
     = Optional
     | Required
 
 
-type alias FieldName =
-    String
-
-
-type alias Field =
-    { name : FieldName
-    , value : Value
+type alias Field err =
+    { value : Value
     , fieldType : FieldType
-    , validator : Validator
+    , validator : Validator err
     }
 
 
-mkField : FieldName -> Value -> FieldType -> Validator -> Field
-mkField =
-    Field
+fieldValidation : Field err -> Validation (List err)
+fieldValidation field =
+    validator field.value field.validator
 
 
-updateField : Value -> Maybe Field -> Maybe Field
+mkField : comparable -> Value -> FieldType -> Validator err -> ( comparable, Field err )
+mkField comparable value fieldType valid =
+    ( comparable, Field value fieldType valid )
+
+
+updateField : Value -> Maybe (Field err) -> Maybe (Field err)
 updateField newValue field =
     case field of
         Nothing ->
@@ -126,19 +152,34 @@ updateField newValue field =
             Just { f | value = newValue }
 
 
-type alias Form =
-    { fields : Dict.Dict FieldName Field
+type alias Form comparable err =
+    { fields : Dict.Dict comparable (Field err)
     }
 
 
-updateFields : FieldName -> Value -> Form -> Form
-updateFields name value form =
-    { form | fields = Dict.update name (updateField value) form.fields }
+formValidation : Form comparable err -> Validation (Dict.Dict comparable (List err))
+formValidation form =
+    let
+        -- fieldValids : List (comparable, Validation (List err))
+        fieldValids =
+            List.map (Tuple.mapSecond fieldValidation) (Dict.toList form.fields)
+    in
+        case accValidDict [] fieldValids of
+            [] ->
+                ValidationSuccess
+
+            errs ->
+                ValidationFailure (Dict.fromList errs)
 
 
-mkForm : List Field -> Form
+updateFields : comparable -> Value -> Form comparable err -> Form comparable err
+updateFields comparable value form =
+    { form | fields = Dict.update comparable (updateField value) form.fields }
+
+
+mkForm : List ( comparable, Field err ) -> Form comparable err
 mkForm fields =
-    List.foldl (\field dict -> Dict.insert field.name field dict) Dict.empty fields
+    List.foldl (\( comparable, field ) dict -> Dict.insert comparable field dict) Dict.empty fields
         |> Form
 
 
@@ -147,7 +188,7 @@ mkForm fields =
 -- { model | form = updateForm formMsg model.form }
 
 
-withSetter : a -> Form -> (Form -> a -> a) -> FormMsg -> a
+withSetter : a -> Form comparable err -> (Form comparable err -> a -> a) -> FormMsg comparable -> a
 withSetter model form setter msg =
     setter (updateForm msg form) model
 
@@ -156,12 +197,12 @@ withSetter model form setter msg =
 -- MSG
 
 
-type FormMsg
-    = UpdateStrField FieldName String
-    | UpdateBooleanField FieldName Bool
+type FormMsg comparable
+    = UpdateStrField comparable String
+    | UpdateBooleanField comparable Bool
 
 
-formMsg : (FormMsg -> msg) -> (a -> FormMsg) -> a -> msg
+formMsg : (FormMsg comparable -> msg) -> (a -> FormMsg comparable) -> a -> msg
 formMsg parentMsg partialMsg a =
     parentMsg (partialMsg a)
 
@@ -171,7 +212,7 @@ formMsg parentMsg partialMsg a =
 -- UPDATE
 
 
-updateForm : FormMsg -> Form -> Form
+updateForm : FormMsg comparable -> Form comparable err -> Form comparable err
 updateForm msg form =
     case msg of
         UpdateStrField name s ->

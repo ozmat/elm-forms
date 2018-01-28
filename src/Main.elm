@@ -3,7 +3,6 @@ module Main exposing (..)
 import Html exposing (Html, Attribute, beginnerProgram, text, div, input)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
-import String
 import Models exposing (..)
 import Debug exposing (log)
 
@@ -24,11 +23,11 @@ main =
 
 
 type alias Model =
-    { form : Form
+    { form : Form String String
     }
 
 
-someForm : Form
+someForm : Form String String
 someForm =
     mkForm
         [ mkField "username" stringValue Required NoValidation
@@ -46,7 +45,7 @@ initModel =
 
 
 type Msg
-    = Form FormMsg
+    = Form (FormMsg String)
 
 
 
