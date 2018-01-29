@@ -20,6 +20,6 @@ validate form =
     form.validate form.fields
 
 
-setFields : comparable -> Group comparable -> Form comparable err a -> Form comparable err a
-setFields comparable group form =
+setFields : Group comparable -> Form comparable err a -> Form comparable err a
+setFields group form =
     { form | fields = group }
