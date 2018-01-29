@@ -4,15 +4,16 @@ import Html exposing (Html, Attribute, beginnerProgram, text, div, input)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Debug exposing (log)
+import Dict as D
 
 
 -- Can't reexport ...
 
-import Forms.Field exposing (..)
-import Forms.Form exposing (..)
-import Forms.Update exposing (..)
-import Forms.Validation exposing (..)
-import Forms.Value exposing (..)
+import Ki.Value as V exposing (..)
+import Ki.Field as F exposing (..)
+import Ki.Validation as VA exposing (..)
+import Ki.Form as FO
+import Ki.Update as U
 
 
 -- MAIN
@@ -31,21 +32,13 @@ main =
 
 
 type alias Model =
-    { form : Form String String
+    { form : FO.Form String String Jean
     }
-
-
-someForm : Form String String
-someForm =
-    mkForm
-        [ mkField "username" stringValue Required NoValidation
-        , mkField "first_name" stringValue Optional NoValidation
-        ]
 
 
 initModel : Model
 initModel =
-    Model someForm
+    Model (FO.form test2 test3)
 
 
 
@@ -53,7 +46,7 @@ initModel =
 
 
 type Msg
-    = Form (FormMsg String)
+    = Form (U.Msg String)
 
 
 
@@ -66,10 +59,10 @@ update msg model =
         Form formMsg ->
             let
                 newModel =
-                    { model | form = updateForm formMsg model.form }
+                    { model | form = U.updateForm formMsg model.form }
 
-                x =
-                    log "" newModel.form
+                y =
+                    log "" (FO.validate newModel.form)
             in
                 newModel
 
@@ -81,7 +74,9 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ inputText "User braa" "username"
+        [ inputText "User braa" "z"
+        , inputText "User braa" "w"
+        , inputText "User braa" "r"
 
         -- , div [ myStyle ] [ text (String.reverse model.c) ]
         ]
@@ -102,7 +97,60 @@ inputText : String -> String -> Html Msg
 inputText place fieldName =
     input
         [ placeholder place
-        , onInput (formMsg Form (UpdateStrField fieldName))
+        , onInput (Form << U.UpdateStrField fieldName)
         , myStyle
         ]
         []
+
+
+
+-- Form test
+
+
+test : Maybe V.Value
+test =
+    getValue "test" test2
+
+
+test2 : F.Group String
+test2 =
+    (D.fromList
+        [ ( "z", F.string "value for a" )
+        , ( "w", F.string "valure for b" )
+        , ( "r", F.string "" )
+        , ( "tes", F.string "gre" )
+        , ( "group1"
+          , (FieldGroup
+                (D.fromList
+                    [ ( "z", F.string "gre" )
+                    , ( "tesdt", F.string "e" )
+                    , ( "group2"
+                      , (FieldGroup
+                            (D.fromList
+                                [ ( "z", F.string "gre" )
+                                , ( "test", F.string "bleu" )
+                                ]
+                            )
+                        )
+                      )
+                    ]
+                )
+            )
+          )
+        ]
+    )
+
+
+type alias Jean =
+    { a : String
+    , b : String
+    , c : Maybe String
+    }
+
+
+test3 : VA.Validate String String Jean
+test3 fields =
+    VA.valid Jean
+        |> VA.requiredAcc fields "z" (VA.stringField VA.valid)
+        |> VA.requiredAcc fields "w" (VA.stringField VA.valid)
+        |> VA.optionalAcc fields "r" (\s -> VA.valid (Just s)) Nothing
