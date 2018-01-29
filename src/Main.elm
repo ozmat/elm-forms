@@ -153,4 +153,5 @@ test3 fields =
     VA.valid Jean
         |> VA.requiredAcc fields "z" (VA.stringField VA.valid)
         |> VA.requiredAcc fields "w" (VA.stringField VA.valid)
-        |> VA.optionalAcc fields "r" (\s -> VA.valid (Just s)) Nothing
+        -- |> VA.optionalAcc fields "r" (\s -> VA.valid (Just s)) Nothing
+        |> VA.optionalMaybeAcc fields "r" VA.valid

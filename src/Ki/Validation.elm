@@ -114,8 +114,8 @@ formValidation err valid a =
     validation (CustomError err) valid a
 
 
-maybeField : (Value -> FormValidation err a) -> Maybe Value -> FormValidation err a
-maybeField valid mvalue =
+missingField : (Value -> FormValidation err a) -> Maybe Value -> FormValidation err a
+missingField valid mvalue =
     case mvalue of
         Nothing ->
             failure MissingField
@@ -152,7 +152,7 @@ boolField valid value =
 
 
 
--- Validate
+{- Validate a Form -}
 
 
 type alias Validate comparable err a =
@@ -164,14 +164,17 @@ valid =
     success
 
 
+
+{- Validate a Field -}
+
+
 fieldValid : Group comparable -> comparable -> (Value -> FormValidation err a) -> FormValidation err a
 fieldValid fields comparable valid =
-    maybeField valid (F.getValue comparable fields)
+    missingField valid (F.getValue comparable fields)
 
 
 
--- Validate field
--- TODO optional could do Maybe ? Or add helper to do so
+-- Required
 
 
 required : Group comparable -> comparable -> (Value -> FormValidation err a) -> FormValidation err (a -> b) -> FormValidation err b
@@ -182,6 +185,27 @@ required fields comparable valid fvf =
 requiredAcc : Group comparable -> comparable -> (Value -> FormValidation err a) -> FormValidation err (a -> b) -> FormValidation err b
 requiredAcc fields comparable valid fvf =
     andMapAcc (fieldValid fields comparable valid) fvf
+
+
+
+-- Hardcoded, equivalent to :
+-- ```|> required fields comparable (\_ -> valid a)```
+
+
+harcoded : Group comparable -> comparable -> a -> FormValidation err (a -> b) -> FormValidation err b
+harcoded fields comparable a fvf =
+    andMap (fieldValid fields comparable (\_ -> valid a)) fvf
+
+
+harcodedAcc : Group comparable -> comparable -> a -> FormValidation err (a -> b) -> FormValidation err b
+harcodedAcc fields comparable a fvf =
+    andMapAcc (fieldValid fields comparable (\_ -> valid a)) fvf
+
+
+
+-- Optional, equivalent to :
+-- a "string only required" that returns default if empty or validates the string otherwise
+-- TODO implement optional for more than just String
 
 
 optional_ : (String -> FormValidation err a) -> a -> (Value -> FormValidation err a)
@@ -207,11 +231,16 @@ optionalAcc fields comparable valid default fvf =
     andMapAcc (fieldValid fields comparable (optional_ valid default)) fvf
 
 
-harcoded : Group comparable -> comparable -> a -> FormValidation err (a -> b) -> FormValidation err b
-harcoded fields comparable a fvf =
-    andMap (fieldValid fields comparable (\_ -> valid a)) fvf
+
+-- OptionalMaybe, equivalent to :
+-- ```|> optional fields comparable (\s -> ... Just s) Nothing```
 
 
-harcodedAcc : Group comparable -> comparable -> a -> FormValidation err (a -> b) -> FormValidation err b
-harcodedAcc fields comparable a fvf =
-    andMapAcc (fieldValid fields comparable (\_ -> valid a)) fvf
+optionalMaybe : Group comparable -> comparable -> (String -> FormValidation err a) -> FormValidation err (Maybe a -> b) -> FormValidation err b
+optionalMaybe fields comparable valid fvf =
+    optional fields comparable (\s -> map Just (valid s)) Nothing fvf
+
+
+optionalMaybeAcc : Group comparable -> comparable -> (String -> FormValidation err a) -> FormValidation err (Maybe a -> b) -> FormValidation err b
+optionalMaybeAcc fields comparable valid fvf =
+    optionalAcc fields comparable (\s -> map Just (valid s)) Nothing fvf
