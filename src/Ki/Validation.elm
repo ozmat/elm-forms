@@ -94,24 +94,24 @@ andMapAcc va vf =
 -- TODO formError and maybe FormValidation for dictErrors ?
 
 
-type alias FormValidation err a =
-    Validation (FormError err) a
-
-
 type FormError err
     = MissingField
     | WrongType
     | CustomError err
 
 
-formFailure : FormError err -> FormValidation err a
-formFailure fe =
-    failure fe
-
-
 customFailure : err -> FormValidation err a
 customFailure err =
     failure (CustomError err)
+
+
+type alias FormValidation err a =
+    Validation (FormError err) a
+
+
+formValidation : err -> (a -> Bool) -> a -> FormValidation err a
+formValidation err valid a =
+    validation (CustomError err) valid a
 
 
 maybeField : (Value -> FormValidation err a) -> Maybe Value -> FormValidation err a
@@ -122,6 +122,13 @@ maybeField valid mvalue =
 
         Just value ->
             valid value
+
+
+
+-- TODO Use a Type FieldType ?
+-- TODO Add int parsing and float parsing
+-- TODO Add basic validation (string ones)
+-- TODO refactor "valid"
 
 
 stringField : (String -> FormValidation err a) -> Value -> FormValidation err a
@@ -152,16 +159,58 @@ type alias Validate comparable err a =
     Group comparable -> FormValidation err a
 
 
-required : Group comparable -> comparable -> (Value -> FormValidation err a) -> FormValidation err (a -> b) -> FormValidation err b
-required fields comparable valid vf =
-    andMap (maybeField valid (F.getValue comparable fields)) vf
-
-
-requiredAcc : Group comparable -> comparable -> (Value -> FormValidation err a) -> FormValidation err (a -> b) -> FormValidation err b
-requiredAcc fields comparable valid vf =
-    andMapAcc (maybeField valid (F.getValue comparable fields)) vf
-
-
 valid : a -> FormValidation err a
 valid =
     success
+
+
+fieldValid : Group comparable -> comparable -> (Value -> FormValidation err a) -> FormValidation err a
+fieldValid fields comparable valid =
+    maybeField valid (F.getValue comparable fields)
+
+
+
+-- Validate field
+
+
+required : Group comparable -> comparable -> (Value -> FormValidation err a) -> FormValidation err (a -> b) -> FormValidation err b
+required fields comparable valid fvf =
+    andMap (fieldValid fields comparable valid) fvf
+
+
+requiredAcc : Group comparable -> comparable -> (Value -> FormValidation err a) -> FormValidation err (a -> b) -> FormValidation err b
+requiredAcc fields comparable valid fvf =
+    andMapAcc (fieldValid fields comparable valid) fvf
+
+
+optional_ : (String -> FormValidation err a) -> a -> (Value -> FormValidation err a)
+optional_ svalid default =
+    \value ->
+        stringField
+            (\s ->
+                if String.isEmpty s then
+                    valid default
+                else
+                    svalid s
+            )
+            value
+
+
+optional : Group comparable -> comparable -> (String -> FormValidation err a) -> a -> FormValidation err (a -> b) -> FormValidation err b
+optional fields comparable valid default fvf =
+    andMap (fieldValid fields comparable (optional_ valid default)) fvf
+
+
+optionalAcc : Group comparable -> comparable -> (String -> FormValidation err a) -> a -> FormValidation err (a -> b) -> FormValidation err b
+optionalAcc fields comparable valid default fvf =
+    andMapAcc (fieldValid fields comparable (optional_ valid default)) fvf
+
+
+harcoded : Group comparable -> comparable -> a -> FormValidation err (a -> b) -> FormValidation err b
+harcoded fields comparable a fvf =
+    andMap (fieldValid fields comparable (\_ -> valid a)) fvf
+
+
+harcodedAcc : Group comparable -> comparable -> a -> FormValidation err (a -> b) -> FormValidation err b
+harcodedAcc fields comparable a fvf =
+    andMapAcc (fieldValid fields comparable (\_ -> valid a)) fvf

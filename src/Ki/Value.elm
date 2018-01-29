@@ -31,17 +31,3 @@ defaultString =
 defaultBoolean : Value
 defaultBoolean =
     Bool False
-
-
-
--- Helpers
-
-
-isEmpty : Value -> Maybe Bool
-isEmpty value =
-    case value of
-        String x ->
-            Just (String.isEmpty x)
-
-        _ ->
-            Nothing
