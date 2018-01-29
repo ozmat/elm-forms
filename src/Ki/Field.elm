@@ -5,6 +5,7 @@ import Ki.Value as V exposing (Value)
 
 
 -- Field
+-- TODO Implement our RB Tree instead of using the Dict one ?
 
 
 type Field comparable
@@ -56,65 +57,22 @@ mapGroup f field =
 
 
 
--- Maybe
-
-
-maybeValue : Field comparable -> (Value -> a) -> Maybe a
-maybeValue field f =
-    case field of
-        FieldValue value ->
-            Just (f value)
-
-        _ ->
-            Nothing
-
-
-maybeGroup : Field comparable -> (Group comparable -> a) -> Maybe a
-maybeGroup field f =
-    case field of
-        FieldGroup g ->
-            Just (f g)
-
-        _ ->
-            Nothing
-
-
-liftMaybe : Maybe (Maybe a) -> Maybe a
-liftMaybe maybe =
-    case maybe of
-        Just m ->
-            m
-
-        Nothing ->
-            Nothing
-
-
-
 -- Update
 
 
-updateValue_ : Value -> Field comparable -> Field comparable
-updateValue_ newValue field =
-    mapValue (always newValue) field
-
-
 updateValue : Value -> Maybe (Field comparable) -> Maybe (Field comparable)
-updateValue newValue field =
-    Maybe.map (updateValue_ newValue) field
+updateValue value field =
+    Maybe.map (mapValue (always value)) field
 
 
-updateGroup_ : comparable -> Value -> Field comparable -> Field comparable
-updateGroup_ comparable newValue field =
-    mapGroup (D.update comparable (updateValue newValue)) field
-
-
-updateGroup : comparable -> Value -> Maybe (Field comparable) -> Maybe (Field comparable)
-updateGroup comparable newValue field =
-    Maybe.map (updateGroup_ comparable newValue) field
+updateGroup : Group comparable -> Maybe (Field comparable) -> Maybe (Field comparable)
+updateGroup group field =
+    Maybe.map (mapGroup (always group)) field
 
 
 
--- Walk through Group
+-- Walk through Group -> get
+-- TODO optimize get ?
 
 
 walkGroup : comparable -> Group comparable -> Maybe (Field comparable)
@@ -126,7 +84,6 @@ walkGroup comparable group =
                     acc
 
                 Nothing ->
-                    -- liftMaybe (maybeGroup v (walkGroup comparable))
                     case v of
                         FieldGroup g ->
                             walkGroup comparable g
@@ -149,4 +106,31 @@ getValue comparable group =
             Nothing
 
         Just field ->
-            maybeValue field identity
+            case field of
+                FieldValue value ->
+                    Just value
+
+                _ ->
+                    Nothing
+
+
+
+-- Walk through Group -> set
+-- TODO test setValue : it could replace a Str with a Bool ?
+
+
+setValue : comparable -> Value -> Group comparable -> Group comparable
+setValue comparable value group =
+    let
+        walk k v acc =
+            if k == comparable then
+                D.update k (updateValue value) acc
+            else
+                case v of
+                    FieldGroup g ->
+                        D.update k (updateGroup (setValue comparable value g)) acc
+
+                    _ ->
+                        acc
+    in
+        D.foldl walk group group

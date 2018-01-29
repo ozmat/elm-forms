@@ -75,7 +75,7 @@ update msg model =
                 -- x =
                 --     log "" newModel.form
                 y =
-                    log "" (test3 test2)
+                    log "" (setValue "test" (V.string "rouge") test2)
             in
                 newModel
 
