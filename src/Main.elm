@@ -17,6 +17,7 @@ import Forms.Value exposing (..)
 import Ki.Value as V exposing (..)
 import Ki.Field as F exposing (..)
 import Ki.Validation as VA exposing (..)
+import Ki.Form as FO
 
 
 -- MAIN
@@ -75,7 +76,7 @@ update msg model =
                 -- x =
                 --     log "" newModel.form
                 y =
-                    log "" (setValue "test" (V.string "rouge") test2)
+                    log "" (FO.validate test4)
             in
                 newModel
 
@@ -122,8 +123,8 @@ test =
 test2 : F.Group String
 test2 =
     (D.fromList
-        [ ( "z", F.string "gre" )
-        , ( "w", F.string "gre" )
+        [ ( "z", F.string "value for a" )
+        , ( "w", F.string "valure for b" )
         , ( "r", F.string "gre" )
         , ( "tes", F.string "gre" )
         , ( "group1"
@@ -151,11 +152,16 @@ test2 =
 test3 : VA.Validate String String Jean
 test3 fields =
     VA.valid Jean
-        |> VA.requiredAcc fields "z" (\_ -> VA.customFailure "menfou1")
-        |> VA.requiredAcc fields "z" (\_ -> VA.customFailure "menfou2")
+        |> VA.requiredAcc fields "z" (VA.stringField VA.valid)
+        |> VA.requiredAcc fields "w" (VA.stringField VA.valid)
 
 
 type alias Jean =
     { a : String
     , b : String
     }
+
+
+test4 : FO.Form String String Jean
+test4 =
+    FO.form test2 test3
