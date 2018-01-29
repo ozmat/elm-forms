@@ -91,7 +91,7 @@ andMapAcc va vf =
 
 
 {- Concrete usage of validation for Form -}
--- TODO formError and maybe FormValidation for dictErrors ?
+-- TODO change FormValidation for dictErrors ? Or change FormError err to FormError comparable err
 
 
 type FormError err
@@ -171,6 +171,7 @@ fieldValid fields comparable valid =
 
 
 -- Validate field
+-- TODO optional could do Maybe ? Or add helper to do so
 
 
 required : Group comparable -> comparable -> (Value -> FormValidation err a) -> FormValidation err (a -> b) -> FormValidation err b

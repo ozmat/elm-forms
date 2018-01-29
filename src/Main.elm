@@ -125,7 +125,7 @@ test2 =
     (D.fromList
         [ ( "z", F.string "value for a" )
         , ( "w", F.string "valure for b" )
-        , ( "r", F.string "gre" )
+        , ( "r", F.string "" )
         , ( "tes", F.string "gre" )
         , ( "group1"
           , (FieldGroup
@@ -154,11 +154,13 @@ test3 fields =
     VA.valid Jean
         |> VA.requiredAcc fields "z" (VA.stringField VA.valid)
         |> VA.requiredAcc fields "w" (VA.stringField VA.valid)
+        |> VA.optionalAcc fields "r" (\s -> VA.valid (Just s)) Nothing
 
 
 type alias Jean =
     { a : String
     , b : String
+    , c : Maybe String
     }
 
 
