@@ -72,11 +72,10 @@ updateGroup group field =
 
 
 -- Walk through Group -> get
--- TODO optimize get ?
 
 
-walkGroup : comparable -> Group comparable -> Maybe (Field comparable)
-walkGroup comparable group =
+getValue : comparable -> Group comparable -> Maybe Value
+getValue comparable group =
     let
         walk k v acc =
             case acc of
@@ -86,37 +85,27 @@ walkGroup comparable group =
                 Nothing ->
                     case v of
                         FieldGroup g ->
-                            walkGroup comparable g
+                            getValue comparable g
 
                         _ ->
                             Nothing
     in
         case D.get comparable group of
             Just field ->
-                Just field
+                case field of
+                    FieldValue value ->
+                        Just value
+
+                    _ ->
+                        Nothing
 
             Nothing ->
                 D.foldl walk Nothing group
 
 
-getValue : comparable -> Group comparable -> Maybe Value
-getValue comparable group =
-    case walkGroup comparable group of
-        Nothing ->
-            Nothing
-
-        Just field ->
-            case field of
-                FieldValue value ->
-                    Just value
-
-                _ ->
-                    Nothing
-
-
 
 -- Walk through Group -> set
--- TODO test setValue : it could replace a Str with a Bool ?
+-- TODO test setValue : it could replace a Str with a Bool ? use a safe updateValue ?
 
 
 setValue : comparable -> Value -> Group comparable -> Group comparable
