@@ -1,12 +1,11 @@
 module Ki.Validation exposing (..)
 
-import Ki.Field as F exposing (Field, Group)
+import Ki.Field as F exposing (Group)
 import Ki.Value as V exposing (Value)
 
 
 {- Generic implementation of validation -}
 -- Error
--- TODO formError and maybe FormValidation for dictErrors ?
 
 
 type ValidationError err
@@ -92,21 +91,77 @@ andMapAcc va vf =
 
 
 {- Concrete usage of validation for Form -}
--- stringOnly : Value -> (String -> Validation err a) -> Validation (FormError err) String
--- boolOnly : Value -> (Bool -> Validation err a) -> Validation (FormError err) Bool
--- maybe : Maybe Value -> (Value -> Validation err a) -> Validation (FormError err) a
+-- TODO formError and maybe FormValidation for dictErrors ?
+
+
+type alias FormValidation err a =
+    Validation (FormError err) a
+
+
+type FormError err
+    = MissingField
+    | WrongType
+    | CustomError err
+
+
+formFailure : FormError err -> FormValidation err a
+formFailure fe =
+    failure fe
+
+
+customFailure : err -> FormValidation err a
+customFailure err =
+    failure (CustomError err)
+
+
+maybeField : (Value -> FormValidation err a) -> Maybe Value -> FormValidation err a
+maybeField valid mvalue =
+    case mvalue of
+        Nothing ->
+            failure MissingField
+
+        Just value ->
+            valid value
+
+
+stringField : (String -> FormValidation err a) -> Value -> FormValidation err a
+stringField valid value =
+    case value of
+        V.String s ->
+            valid s
+
+        _ ->
+            failure WrongType
+
+
+boolField : (Bool -> FormValidation err a) -> Value -> FormValidation err a
+boolField valid value =
+    case value of
+        V.Bool b ->
+            valid b
+
+        _ ->
+            failure WrongType
+
+
+
 -- Validate
 
 
 type alias Validate comparable err a =
-    Group comparable -> Validation err a
+    Group comparable -> FormValidation err a
 
 
-required : Group comparable -> comparable -> (Maybe Value -> Validation err a) -> Validation err (a -> b) -> Validation err b
+required : Group comparable -> comparable -> (Value -> FormValidation err a) -> FormValidation err (a -> b) -> FormValidation err b
 required fields comparable valid vf =
-    andMapAcc (valid (F.getValue comparable fields)) vf
+    andMap (maybeField valid (F.getValue comparable fields)) vf
 
 
-valid : a -> Validation err a
+requiredAcc : Group comparable -> comparable -> (Value -> FormValidation err a) -> FormValidation err (a -> b) -> FormValidation err b
+requiredAcc fields comparable valid vf =
+    andMapAcc (maybeField valid (F.getValue comparable fields)) vf
+
+
+valid : a -> FormValidation err a
 valid =
     success
