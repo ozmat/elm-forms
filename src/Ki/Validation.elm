@@ -1,6 +1,5 @@
 module Ki.Validation exposing (..)
 
-import Dict as D exposing (Dict)
 import Ki.Field as F exposing (Field, Group)
 import Ki.Value as V exposing (Value)
 
@@ -10,14 +9,14 @@ import Ki.Value as V exposing (Value)
 -- TODO formError and maybe FormValidation for dictErrors ?
 
 
-type Error err
+type ValidationError err
     = Error err
     | ErrorList (List err)
 
 
-append : Error err -> Error err -> Error err
-append e1 e2 =
-    case ( e1, e2 ) of
+append : ValidationError err -> ValidationError err -> ValidationError err
+append ve1 ve2 =
+    case ( ve1, ve2 ) of
         ( Error err1, Error err2 ) ->
             ErrorList [ err1, err2 ]
 
@@ -36,54 +35,59 @@ append e1 e2 =
 
 
 type Validation err a
-    = ValidationFailure (Error err)
-    | ValidationSuccess a
+    = Failure (ValidationError err)
+    | Success a
+
+
+failure : err -> Validation err a
+failure err =
+    Failure (Error err)
+
+
+success : a -> Validation err a
+success a =
+    Success a
 
 
 validation : err -> (a -> Bool) -> a -> Validation err a
 validation err valid a =
     if valid a then
-        ValidationSuccess a
+        Success a
     else
-        ValidationFailure (Error err)
+        Failure (Error err)
 
 
 map : (a -> b) -> Validation err a -> Validation err b
 map f validation =
     case validation of
-        ValidationSuccess a ->
-            ValidationSuccess (f a)
+        Success a ->
+            Success (f a)
 
-        ValidationFailure err ->
-            ValidationFailure err
+        Failure ve ->
+            Failure ve
 
 
 andMap : Validation err a -> Validation err (a -> b) -> Validation err b
 andMap va vf =
     case ( va, vf ) of
-        ( _, ValidationFailure err ) ->
-            ValidationFailure err
+        ( _, Failure ve ) ->
+            Failure ve
 
-        ( _, ValidationSuccess f ) ->
+        ( _, Success f ) ->
             map f va
 
 
 andMapAcc : Validation err a -> Validation err (a -> b) -> Validation err b
 andMapAcc va vf =
     case ( va, vf ) of
-        ( ValidationSuccess _, ValidationFailure err ) ->
-            ValidationFailure err
+        ( Success _, Failure ve ) ->
+            Failure ve
 
-        ( ValidationFailure err1, ValidationFailure err2 ) ->
-            ValidationFailure (append err1 err2)
+        ( Failure ve1, Failure ve2 ) ->
+            Failure (append ve1 ve2)
 
-        ( _, ValidationSuccess f ) ->
+        ( _, Success f ) ->
             map f va
-
-
-succeed : a -> Validation err a
-succeed a =
-    ValidationSuccess a
 
 
 
@@ -105,4 +109,4 @@ required fields comparable valid vf =
 
 valid : a -> Validation err a
 valid =
-    succeed
+    success

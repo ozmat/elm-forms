@@ -151,8 +151,8 @@ test2 =
 test3 : VA.Validate String String Jean
 test3 fields =
     VA.valid Jean
-        |> VA.required fields "z" (\_ -> VA.ValidationFailure (VA.Error "menfou1"))
-        |> VA.required fields "z" (\_ -> VA.ValidationFailure (VA.Error "menfou2"))
+        |> VA.required fields "z" (\_ -> VA.failure "menfou1")
+        |> VA.required fields "z" (\_ -> VA.failure "menfou2")
 
 
 type alias Jean =
