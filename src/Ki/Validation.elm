@@ -5,7 +5,9 @@ import Ki.Field as F exposing (Field, Group)
 import Ki.Value as V exposing (Value)
 
 
+{- Generic implementation of validation -}
 -- Error
+-- TODO formError and maybe FormValidation for dictErrors ?
 
 
 type Error err
@@ -39,8 +41,8 @@ type Validation err a
 
 
 validation : err -> (a -> Bool) -> a -> Validation err a
-validation err test a =
-    if test a then
+validation err valid a =
+    if valid a then
         ValidationSuccess a
     else
         ValidationFailure (Error err)
@@ -57,8 +59,8 @@ map f validation =
 
 
 andMap : Validation err a -> Validation err (a -> b) -> Validation err b
-andMap va vb =
-    case ( va, vb ) of
+andMap va vf =
+    case ( va, vf ) of
         ( _, ValidationFailure err ) ->
             ValidationFailure err
 
@@ -67,8 +69,8 @@ andMap va vb =
 
 
 andMapAcc : Validation err a -> Validation err (a -> b) -> Validation err b
-andMapAcc va vb =
-    case ( va, vb ) of
+andMapAcc va vf =
+    case ( va, vf ) of
         ( ValidationSuccess _, ValidationFailure err ) ->
             ValidationFailure err
 
@@ -77,3 +79,30 @@ andMapAcc va vb =
 
         ( _, ValidationSuccess f ) ->
             map f va
+
+
+succeed : a -> Validation err a
+succeed a =
+    ValidationSuccess a
+
+
+
+{- Concrete usage of validation for Form -}
+-- stringOnly : Value -> (String -> Validation err a) -> Validation (FormError err) String
+-- boolOnly : Value -> (Bool -> Validation err a) -> Validation (FormError err) Bool
+-- maybe : Maybe Value -> (Value -> Validation err a) -> Validation (FormError err) a
+-- Validate
+
+
+type alias Validate comparable err a =
+    Group comparable -> Validation err a
+
+
+required : Group comparable -> comparable -> (Maybe Value -> Validation err a) -> Validation err (a -> b) -> Validation err b
+required fields comparable valid vf =
+    andMapAcc (valid (F.getValue comparable fields)) vf
+
+
+valid : a -> Validation err a
+valid =
+    succeed

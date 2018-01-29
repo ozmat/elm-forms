@@ -16,6 +16,7 @@ import Forms.Validation exposing (..)
 import Forms.Value exposing (..)
 import Ki.Value as V exposing (..)
 import Ki.Field as F exposing (..)
+import Ki.Validation as VA exposing (..)
 
 
 -- MAIN
@@ -74,7 +75,7 @@ update msg model =
                 -- x =
                 --     log "" newModel.form
                 y =
-                    log "" test
+                    log "" (test3 test2)
             in
                 newModel
 
@@ -145,3 +146,16 @@ test2 =
           )
         ]
     )
+
+
+test3 : VA.Validate String String Jean
+test3 fields =
+    VA.valid Jean
+        |> VA.required fields "z" (\_ -> VA.ValidationFailure (VA.Error "menfou1"))
+        |> VA.required fields "z" (\_ -> VA.ValidationFailure (VA.Error "menfou2"))
+
+
+type alias Jean =
+    { a : String
+    , b : String
+    }
