@@ -38,8 +38,8 @@ defaultBoolean =
 
 
 isEmpty : Value -> Maybe Bool
-isEmpty v =
-    case v of
+isEmpty value =
+    case value of
         String x ->
             Just (String.isEmpty x)
 
