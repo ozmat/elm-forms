@@ -151,7 +151,7 @@ type alias Jean =
 test3 : VA.Validate String String Jean
 test3 fields =
     VA.valid Jean
-        |> VA.requiredAcc fields "z" (VA.stringField VA.valid)
-        |> VA.requiredAcc fields "w" (VA.stringField VA.valid)
+        |> VA.requiredAcc fields "z" (VA.stringField VA.validF)
+        |> VA.requiredAcc fields "w" (\_ -> VA.customFailure "not valid here")
         -- |> VA.optionalAcc fields "r" (\s -> VA.valid (Just s)) Nothing
-        |> VA.optionalMaybeAcc fields "r" VA.valid
+        |> VA.optionalMaybeAcc fields "r" VA.validF

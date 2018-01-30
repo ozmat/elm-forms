@@ -15,7 +15,7 @@ form =
     Form
 
 
-validate : Form comparable err a -> FormValidation err a
+validate : Form comparable err a -> FormValidation comparable err a
 validate form =
     form.validate form.fields
 
