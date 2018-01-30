@@ -5,6 +5,7 @@ import Ki.Value as V exposing (Value)
 
 
 {- Generic implementation of validation -}
+-- TODO Move the generic impl into another library ?
 -- Error
 
 
