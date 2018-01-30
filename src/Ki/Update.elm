@@ -1,6 +1,6 @@
 module Ki.Update exposing (..)
 
-import Ki.Form as F exposing (Form, setFields)
+import Ki.Form as F exposing (Form(..))
 import Ki.Field as FI exposing (setValue)
 import Ki.Value as V exposing (string, bool)
 
@@ -19,13 +19,13 @@ type Msg comparable
 
 
 updateForm : Msg comparable -> Form comparable err a -> Form comparable err a
-updateForm msg form =
+updateForm msg (Form fields validate) =
     case msg of
         UpdateStrField comparable s ->
-            setFields (setValue comparable (string s) form.fields) form
+            Form (setValue comparable (string s) fields) validate
 
         UpdateBooleanField comparable b ->
-            setFields (setValue comparable (bool b) form.fields) form
+            Form (setValue comparable (bool b) fields) validate
 
 
 
