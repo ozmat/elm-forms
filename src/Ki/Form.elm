@@ -1,7 +1,10 @@
 module Ki.Form exposing (..)
 
 import Ki.Field as F exposing (Group)
-import Ki.Validation as V exposing (Validate, FormValidation)
+import Ki.Validation as V exposing (Validate, FormError, FormValidation)
+
+
+-- TODO Refactor using union type ?
 
 
 type alias Form comparable err a =
@@ -15,9 +18,14 @@ form =
     Form
 
 
-validate : Form comparable err a -> FormValidation comparable err a
+validate : Form comparable err a -> Result (List (FormError comparable err)) a
 validate form =
-    form.validate form.fields
+    case form.validate form.fields of
+        V.Success a ->
+            Ok a
+
+        V.Failure ve ->
+            Err (V.toList ve)
 
 
 setFields : Group comparable -> Form comparable err a -> Form comparable err a

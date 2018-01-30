@@ -40,6 +40,16 @@ mapError f ve =
             ErrorList (List.map f l)
 
 
+toList : ValidationError err -> List err
+toList ve =
+    case ve of
+        Error e ->
+            [ e ]
+
+        ErrorList l ->
+            l
+
+
 
 -- Validation
 
