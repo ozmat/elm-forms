@@ -74,13 +74,14 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ inputText "User braa" "z"
-        , inputText "User braa" "w"
-        , inputText "User braa" "r"
-        , inputText "User braa" "zz"
-        , inputText "User braa" "test"
-        , inputText "User braa" "password"
-        , inputText "User braa" "passwordA"
+        [ inputText ">2" "z"
+        , inputText "== dd" "r"
+        , inputText "just str" "zz"
+        , inputText "just str" "test"
+        , inputText "should match" "password"
+        , inputText "should match" "passwordA"
+        , inputText "is int" "int"
+        , inputText "is float" "float"
 
         -- , div [ myStyle ] [ text (String.reverse model.c) ]
         ]
@@ -120,7 +121,6 @@ test2 : F.Group String
 test2 =
     F.fields
         [ ( "z", F.string )
-        , ( "w", F.string )
         , ( "r", F.string )
         , ( "group1"
           , F.group
@@ -130,15 +130,18 @@ test2 =
           )
         , ( "password", F.string )
         , ( "passwordA", F.string )
+        , ( "int", F.string )
+        , ( "float", F.string )
         ]
 
 
 type alias Jean =
     { a : String
-    , b : String
     , c : Maybe String
     , d : Jule
     , password : String
+    , i : Int
+    , f : Float
     }
 
 
@@ -161,8 +164,6 @@ test3 fields =
                         VA.customFailure "not long enough"
                 )
             )
-        |> VA.requiredAcc fields "w" (VA.stringField VA.validF)
-        -- |> VA.optionalAcc fields "r" (\s -> VA.valid (Just s)) Nothing
         |> VA.optionalMaybeAcc fields
             "r"
             (\s ->
@@ -173,6 +174,8 @@ test3 fields =
             )
         |> VA.fieldGroupAcc fields "group1" juleValidate
         |> VA.twoFieldsAcc fields "password" "passwordA" VA.passwordFields
+        |> VA.requiredAcc fields "int" (VA.intField VA.validF)
+        |> VA.requiredAcc fields "float" (VA.floatField VA.validF)
 
 
 juleValidate : VA.Validate String String Jule

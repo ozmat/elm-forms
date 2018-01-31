@@ -122,6 +122,8 @@ type FieldError err
     | WrongType
     | CustomError err
     | NotEqual
+    | NotInt
+    | NotFloat
 
 
 type alias FieldValidation err a =
@@ -178,8 +180,39 @@ boolField valid value =
 
 
 
--- TODO Add int parsing and float parsing
--- TODO Add basic validation (email, password, length)
+-- TODO will not work with optional, fix it
+
+
+intField : (Int -> FieldValidation err a) -> Value -> FieldValidation err a
+intField valid value =
+    stringField
+        (\s ->
+            case String.toInt s of
+                Ok i ->
+                    valid i
+
+                Err _ ->
+                    failure NotInt
+        )
+        value
+
+
+floatField : (Float -> FieldValidation err a) -> Value -> FieldValidation err a
+floatField valid value =
+    stringField
+        (\s ->
+            case String.toFloat s of
+                Ok f ->
+                    valid f
+
+                Err _ ->
+                    failure NotFloat
+        )
+        value
+
+
+
+-- TODO Add basic validation (email, length)
 
 
 passwordFields : Value -> Value -> FieldValidation err String
