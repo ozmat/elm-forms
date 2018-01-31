@@ -62,7 +62,7 @@ update msg model =
                     { model | form = U.updateForm formMsg model.form }
 
                 y =
-                    log "" (FO.validate newModel.form)
+                    log "" (FO.validateD newModel.form)
             in
                 newModel
 

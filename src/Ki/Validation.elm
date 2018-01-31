@@ -190,6 +190,11 @@ type alias FormValidation comparable err a =
     Validation (FormError comparable err) a
 
 
+toTuple : FormError comparable err -> ( comparable, FieldError err )
+toTuple (FormError comparable fe) =
+    ( comparable, fe )
+
+
 mapFormError : comparable -> FieldValidation err a -> FormValidation comparable err a
 mapFormError comparable fv =
     case fv of
