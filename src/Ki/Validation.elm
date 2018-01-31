@@ -114,13 +114,14 @@ andMapAcc va vf =
 {- Concrete usage of validation for Form -}
 -- Field validation
 -- TODO refactor "valid"
--- TODO side-effect select validation ??
+-- TODO side-effect select validation ? Use the update messages to implement custom code ?
 
 
 type FieldError err
     = MissingField
     | WrongType
     | CustomError err
+    | NotEqual
 
 
 type alias FieldValidation err a =
@@ -154,8 +155,6 @@ missingField valid mvalue =
 
 
 -- TODO Use a Type FieldType ? To replace stringField, boolField and detail WrongType
--- TODO Add int parsing and float parsing
--- TODO Add basic validation (email, password, length)
 
 
 stringField : (String -> FieldValidation err a) -> Value -> FieldValidation err a
@@ -173,6 +172,24 @@ boolField valid value =
     case value of
         V.Bool b ->
             valid b
+
+        _ ->
+            failure WrongType
+
+
+
+-- TODO Add int parsing and float parsing
+-- TODO Add basic validation (email, password, length)
+
+
+passwordFields : Value -> Value -> FieldValidation err String
+passwordFields password passwordA =
+    case ( password, passwordA ) of
+        ( V.String s1, V.String s2 ) ->
+            if s1 == s2 then
+                success s1
+            else
+                failure NotEqual
 
         _ ->
             failure WrongType
@@ -220,7 +237,6 @@ valid =
 
 
 {- Validate a Field -}
--- TODO implement the fieldGroup validation
 
 
 fieldValid : Group comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err a
@@ -260,7 +276,6 @@ harcodedAcc fields comparable a fvf =
 
 -- Optional, equivalent to :
 -- a "string only required" that returns default if empty or validates the string otherwise
--- TODO implement optional for more than just String
 
 
 optional_ : (String -> FieldValidation err a) -> a -> (Value -> FieldValidation err a)
@@ -299,6 +314,44 @@ optionalMaybe fields comparable valid fvf =
 optionalMaybeAcc : Group comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
 optionalMaybeAcc fields comparable valid fvf =
     optionalAcc fields comparable (\s -> map Just (valid s)) Nothing fvf
+
+
+
+{- Validate two fields -}
+-- TODO implement a generic version (x fields) if this feature is used
+
+
+fieldsValid : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err a
+fieldsValid fields comparable1 comparable2 valid =
+    let
+        missing1 =
+            FormError comparable1 MissingField
+
+        missing2 =
+            FormError comparable2 MissingField
+    in
+        case ( F.getValue comparable1 fields, F.getValue comparable2 fields ) of
+            ( Nothing, Just _ ) ->
+                failure missing1
+
+            ( Just _, Nothing ) ->
+                failure missing2
+
+            ( Nothing, Nothing ) ->
+                Failure (ErrorList [ missing1, missing2 ])
+
+            ( Just value1, Just value2 ) ->
+                mapFormError comparable1 (valid value1 value2)
+
+
+twoFields : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+twoFields fields comparable1 comparable2 valid fvf =
+    andMap (fieldsValid fields comparable1 comparable2 valid) fvf
+
+
+twoFieldsAcc : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+twoFieldsAcc fields comparable1 comparable2 valid fvf =
+    andMapAcc (fieldsValid fields comparable1 comparable2 valid) fvf
 
 
 

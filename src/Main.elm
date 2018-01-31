@@ -77,6 +77,10 @@ view model =
         [ inputText "User braa" "z"
         , inputText "User braa" "w"
         , inputText "User braa" "r"
+        , inputText "User braa" "zz"
+        , inputText "User braa" "test"
+        , inputText "User braa" "password"
+        , inputText "User braa" "passwordA"
 
         -- , div [ myStyle ] [ text (String.reverse model.c) ]
         ]
@@ -122,14 +126,10 @@ test2 =
           , F.group
                 [ ( "zz", F.string )
                 , ( "test", F.string )
-                , ( "group2"
-                  , F.group
-                        [ ( "z", F.string )
-                        , ( "test", F.string )
-                        ]
-                  )
                 ]
           )
+        , ( "password", F.string )
+        , ( "passwordA", F.string )
         ]
 
 
@@ -138,6 +138,7 @@ type alias Jean =
     , b : String
     , c : Maybe String
     , d : Jule
+    , password : String
     }
 
 
@@ -171,6 +172,7 @@ test3 fields =
                     VA.customFailure "not good"
             )
         |> VA.fieldGroupAcc fields "group1" juleValidate
+        |> VA.twoFieldsAcc fields "password" "passwordA" VA.passwordFields
 
 
 juleValidate : VA.Validate String String Jule
