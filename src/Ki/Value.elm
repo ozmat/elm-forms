@@ -9,6 +9,10 @@ type Value
     | Bool Bool
 
 
+
+-- Wrapper
+
+
 string : String -> Value
 string =
     String
@@ -28,6 +32,23 @@ defaultString =
     String ""
 
 
-defaultBoolean : Value
-defaultBoolean =
+defaultBool : Value
+defaultBool =
     Bool False
+
+
+
+-- Safe update
+
+
+safeUpdate : Value -> Value -> Value
+safeUpdate value original =
+    case ( value, original ) of
+        ( String s, String _ ) ->
+            String s
+
+        ( Bool b, Bool _ ) ->
+            Bool b
+
+        _ ->
+            original

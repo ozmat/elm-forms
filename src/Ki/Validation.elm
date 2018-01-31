@@ -114,6 +114,7 @@ andMapAcc va vf =
 {- Concrete usage of validation for Form -}
 -- Field validation
 -- TODO refactor "valid"
+-- TODO side-effect select validation ??
 
 
 type FieldError err
@@ -154,7 +155,7 @@ missingField valid mvalue =
 
 -- TODO Use a Type FieldType ? To replace stringField, boolField and detail WrongType
 -- TODO Add int parsing and float parsing
--- TODO Add basic validation (string ones)
+-- TODO Add basic validation (email, password, length)
 
 
 stringField : (String -> FieldValidation err a) -> Value -> FieldValidation err a
@@ -214,6 +215,7 @@ valid =
 
 
 {- Validate a Field -}
+-- TODO implement the fieldGroup validation
 
 
 fieldValid : Group comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err a

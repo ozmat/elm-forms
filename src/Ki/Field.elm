@@ -17,19 +17,38 @@ type alias Group comparable =
     Dict comparable (Field comparable)
 
 
-string : String -> Field comparable
-string s =
-    FieldValue (V.string s)
+string : Field comparable
+string =
+    FieldValue V.defaultString
 
 
-bool : Bool -> Field comparable
-bool b =
-    FieldValue (V.bool b)
+bool : Field comparable
+bool =
+    FieldValue V.defaultBool
 
 
 group : List ( comparable, Field comparable ) -> Field comparable
 group g =
     FieldGroup (D.fromList g)
+
+
+fields : List ( comparable, Field comparable ) -> Group comparable
+fields =
+    D.fromList
+
+
+
+-- With custom value
+
+
+stringWithValue : String -> Field comparable
+stringWithValue s =
+    FieldValue (V.string s)
+
+
+boolWithValue : Bool -> Field comparable
+boolWithValue b =
+    FieldValue (V.bool b)
 
 
 
@@ -62,7 +81,7 @@ mapGroup f field =
 
 updateValue : Value -> Maybe (Field comparable) -> Maybe (Field comparable)
 updateValue value field =
-    Maybe.map (mapValue (always value)) field
+    Maybe.map (mapValue (V.safeUpdate value)) field
 
 
 updateGroup : Group comparable -> Maybe (Field comparable) -> Maybe (Field comparable)
@@ -72,6 +91,7 @@ updateGroup group field =
 
 
 -- Walk through Group -> get
+-- TODO put back get field for FieldGroup validation ?
 
 
 getValue : comparable -> Group comparable -> Maybe Value
@@ -105,7 +125,6 @@ getValue comparable group =
 
 
 -- Walk through Group -> set
--- TODO test setValue : it could replace a Str with a Bool ? use a safe updateValue ?
 
 
 setValue : comparable -> Value -> Group comparable -> Group comparable
