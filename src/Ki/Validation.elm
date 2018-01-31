@@ -294,3 +294,32 @@ optionalMaybe fields comparable valid fvf =
 optionalMaybeAcc : Group comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
 optionalMaybeAcc fields comparable valid fvf =
     optionalAcc fields comparable (\s -> map Just (valid s)) Nothing fvf
+
+
+
+{- Validate a Group -}
+
+
+missingGroup : (Group comparable -> FormValidation comparable err a) -> comparable -> Maybe (Group comparable) -> FormValidation comparable err a
+missingGroup valid comparable mgroup =
+    case mgroup of
+        Nothing ->
+            mapFormError comparable (failure MissingField)
+
+        Just value ->
+            valid value
+
+
+groupValid : Group comparable -> comparable -> (Group comparable -> FormValidation comparable err a) -> FormValidation comparable err a
+groupValid fields comparable valid =
+    missingGroup valid comparable (F.getGroup comparable fields)
+
+
+fieldGroup : Group comparable -> comparable -> (Group comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+fieldGroup fields comparable valid fvf =
+    andMap (groupValid fields comparable valid) fvf
+
+
+fieldGroupAcc : Group comparable -> comparable -> (Group comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+fieldGroupAcc fields comparable valid fvf =
+    andMapAcc (groupValid fields comparable valid) fvf

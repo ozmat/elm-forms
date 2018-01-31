@@ -91,11 +91,10 @@ updateGroup group field =
 
 
 -- Walk through Group -> get
--- TODO put back get field for FieldGroup validation ?
 
 
-getValue : comparable -> Group comparable -> Maybe Value
-getValue comparable group =
+getField : comparable -> Group comparable -> Maybe (Field comparable)
+getField comparable group =
     let
         walk k v acc =
             case acc of
@@ -105,22 +104,47 @@ getValue comparable group =
                 Nothing ->
                     case v of
                         FieldGroup g ->
-                            getValue comparable g
+                            getField comparable g
 
                         _ ->
                             Nothing
     in
         case D.get comparable group of
             Just field ->
-                case field of
-                    FieldValue value ->
-                        Just value
-
-                    _ ->
-                        Nothing
+                Just field
 
             Nothing ->
                 D.foldl walk Nothing group
+
+
+getValue : comparable -> Group comparable -> Maybe Value
+getValue comparable group =
+    case getField comparable group of
+        Just field ->
+            case field of
+                FieldValue value ->
+                    Just value
+
+                _ ->
+                    Nothing
+
+        Nothing ->
+            Nothing
+
+
+getGroup : comparable -> Group comparable -> Maybe (Group comparable)
+getGroup comparable group =
+    case getField comparable group of
+        Just field ->
+            case field of
+                FieldGroup g ->
+                    Just g
+
+                _ ->
+                    Nothing
+
+        Nothing ->
+            Nothing
 
 
 

@@ -118,11 +118,10 @@ test2 =
         [ ( "z", F.string )
         , ( "w", F.string )
         , ( "r", F.string )
-        , ( "tes", F.string )
         , ( "group1"
           , F.group
-                [ ( "z", F.string )
-                , ( "tesdt", F.string )
+                [ ( "zz", F.string )
+                , ( "test", F.string )
                 , ( "group2"
                   , F.group
                         [ ( "z", F.string )
@@ -138,6 +137,13 @@ type alias Jean =
     { a : String
     , b : String
     , c : Maybe String
+    , d : Jule
+    }
+
+
+type alias Jule =
+    { a : String
+    , b : String
     }
 
 
@@ -164,3 +170,11 @@ test3 fields =
                 else
                     VA.customFailure "not good"
             )
+        |> VA.fieldGroupAcc fields "group1" juleValidate
+
+
+juleValidate : VA.Validate String String Jule
+juleValidate fields =
+    VA.valid Jule
+        |> VA.requiredAcc fields "zz" (VA.stringField VA.validF)
+        |> VA.requiredAcc fields "test" (VA.stringField VA.validF)
