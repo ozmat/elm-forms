@@ -10,8 +10,8 @@ import Ki.Value as V exposing (string, bool)
 
 
 type Msg comparable
-    = UpdateStrField comparable String
-    | UpdateBooleanField comparable Bool
+    = UpdateStringField comparable String
+    | UpdateBoolField comparable Bool
 
 
 
@@ -21,10 +21,10 @@ type Msg comparable
 updateForm : Msg comparable -> Form comparable err a -> Form comparable err a
 updateForm msg (Form fields validate) =
     case msg of
-        UpdateStrField comparable s ->
+        UpdateStringField comparable s ->
             Form (setValue comparable (string s) fields) validate
 
-        UpdateBooleanField comparable b ->
+        UpdateBoolField comparable b ->
             Form (setValue comparable (bool b) fields) validate
 
 

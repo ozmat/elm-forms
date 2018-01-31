@@ -97,7 +97,7 @@ inputText : String -> String -> Html Msg
 inputText place fieldName =
     input
         [ placeholder place
-        , onInput (Form << U.UpdateStrField fieldName)
+        , onInput (Form << U.UpdateStringField fieldName)
         , myStyle
         ]
         []
