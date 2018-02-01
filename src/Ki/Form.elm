@@ -1,6 +1,7 @@
 module Ki.Form exposing (..)
 
 import Dict as D exposing (Dict)
+import Vi.Validation as VA exposing (Validation(..))
 import Ki.Field as F exposing (Group)
 import Ki.Validation as V exposing (Validate, FieldError, FormError)
 
@@ -17,18 +18,18 @@ form =
 validate : Form comparable err a -> Result (List (FormError comparable err)) a
 validate (Form fields validate) =
     case validate fields of
-        V.Success a ->
+        Success a ->
             Ok a
 
-        V.Failure ve ->
-            Err (V.toList ve)
+        Failure ve ->
+            Err (VA.toList ve)
 
 
 validateD : Form comparable err a -> Result (Dict comparable (FieldError err)) a
 validateD (Form fields validate) =
     case validate fields of
-        V.Success a ->
+        Success a ->
             Ok a
 
-        V.Failure ve ->
-            Err (D.fromList (List.map V.toTuple (V.toList ve)))
+        Failure ve ->
+            Err (D.fromList (List.map V.toTuple (VA.toList ve)))
