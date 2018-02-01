@@ -1,7 +1,7 @@
 module Forms.Field
     exposing
         ( -- Field
-          Field
+          Field(..)
         , Group
           -- Helpers
         , string
