@@ -1,4 +1,20 @@
-module Ki.Field exposing (..)
+module Ki.Field
+    exposing
+        ( -- Field
+          Field
+        , Group
+          -- Helpers
+        , string
+        , bool
+        , group
+        , fields
+        , stringWithValue
+        , boolWithValue
+          -- Getters and Setter
+        , getValue
+        , getGroup
+        , setValue
+        )
 
 import Dict as D exposing (Dict)
 import Ki.Value as V exposing (Value)

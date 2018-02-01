@@ -1,4 +1,12 @@
-module Ki.Value exposing (..)
+module Ki.Value
+    exposing
+        ( Value(..)
+        , string
+        , bool
+        , defaultString
+        , defaultBool
+        , safeUpdate
+        )
 
 -- Value
 -- text input and checkbox

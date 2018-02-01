@@ -1,4 +1,10 @@
-module Ki.Form exposing (..)
+module Ki.Form
+    exposing
+        ( Form(..)
+        , form
+        , validate
+        , validateD
+        )
 
 import Dict as D exposing (Dict)
 import Vi.Validation as VA exposing (Validation(..))

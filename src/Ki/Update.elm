@@ -1,11 +1,15 @@
-module Ki.Update exposing (..)
+module Ki.Update
+    exposing
+        ( Msg(..)
+        , updateForm
+        , withSetter
+        )
 
 import Ki.Form as F exposing (Form(..))
 import Ki.Field as FI exposing (setValue)
 import Ki.Value as V exposing (string, bool)
 
 
--- TODO add helper to lift MSG in view ?
 -- MSG
 
 
