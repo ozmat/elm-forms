@@ -1,4 +1,4 @@
-module Ki.Validation
+module Forms.Validation
     exposing
         ( -- Field validation
           FieldError(..)
@@ -37,8 +37,8 @@ module Ki.Validation
 
 import Regex
 import Vi.Validation as VA exposing (Validation(..))
-import Ki.Field as F exposing (Group)
-import Ki.Value as V exposing (Value)
+import Forms.Field as F exposing (Group)
+import Forms.Value as V exposing (Value)
 
 
 -- TODO side-effect select validation ? Use the update messages to implement custom code ?

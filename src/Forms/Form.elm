@@ -1,4 +1,4 @@
-module Ki.Form
+module Forms.Form
     exposing
         ( Form(..)
         , form
@@ -8,8 +8,8 @@ module Ki.Form
 
 import Dict as D exposing (Dict)
 import Vi.Validation as VA exposing (Validation(..))
-import Ki.Field as F exposing (Group)
-import Ki.Validation as V exposing (Validate, FieldError, FormError)
+import Forms.Field as F exposing (Group)
+import Forms.Validation as V exposing (Validate, FieldError, FormError)
 
 
 type Form comparable err a

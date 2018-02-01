@@ -1,4 +1,4 @@
-module Ki.Field
+module Forms.Field
     exposing
         ( -- Field
           Field
@@ -17,7 +17,7 @@ module Ki.Field
         )
 
 import Dict as D exposing (Dict)
-import Ki.Value as V exposing (Value)
+import Forms.Value as V exposing (Value)
 
 
 -- Field
