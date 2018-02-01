@@ -9,7 +9,9 @@ module Ki.Validation
           -- Basic validation
         , stringValid
         , boolValid
+        , intOptional
         , intValid
+        , floatOptional
         , floatValid
         , passwordMatch
           -- Form validation
@@ -103,35 +105,37 @@ boolValid valid value =
 
 
 
--- TODO will not work with optional, fix it
+-- TODO use intOptional and intValid OR force intValid to work only with string ?
+
+
+intOptional : (Int -> FieldValidation err a) -> String -> FieldValidation err a
+intOptional valid s =
+    case String.toInt s of
+        Ok i ->
+            valid i
+
+        Err _ ->
+            VA.failure NotInt
 
 
 intValid : (Int -> FieldValidation err a) -> Value -> FieldValidation err a
 intValid valid value =
-    stringValid
-        (\s ->
-            case String.toInt s of
-                Ok i ->
-                    valid i
+    stringValid (intOptional valid) value
 
-                Err _ ->
-                    VA.failure NotInt
-        )
-        value
+
+floatOptional : (Float -> FieldValidation err a) -> String -> FieldValidation err a
+floatOptional valid s =
+    case String.toFloat s of
+        Ok f ->
+            valid f
+
+        Err _ ->
+            VA.failure NotFloat
 
 
 floatValid : (Float -> FieldValidation err a) -> Value -> FieldValidation err a
 floatValid valid value =
-    stringValid
-        (\s ->
-            case String.toFloat s of
-                Ok f ->
-                    valid f
-
-                Err _ ->
-                    VA.failure NotFloat
-        )
-        value
+    stringValid (floatOptional valid) value
 
 
 
@@ -206,6 +210,7 @@ fieldValid fields comparable valid =
 
 
 -- Required
+-- TODO does required (string) == not empty ?
 
 
 required : Group comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b

@@ -75,8 +75,8 @@ view : Model -> Html Msg
 view model =
     div []
         [ inputText ">2" "z"
-        , inputText "== dd" "r"
-        , inputText "just str" "zz"
+        , inputText "optional maybe == dd" "r"
+        , inputText "== qq" "zz"
         , inputText "just str" "test"
         , inputText "should match" "password"
         , inputText "should match" "passwordA"
@@ -174,12 +174,12 @@ test3 fields =
             )
         |> VA.fieldGroup fields "group1" juleValidate
         |> VA.twoFields fields "password" "passwordA" (VA.passwordMatch VA.success)
-        |> VA.required fields "int" (VA.intValid VA.success)
-        |> VA.required fields "float" (VA.floatValid VA.success)
+        |> VA.optional fields "int" (VA.intOptional VA.success) 0
+        |> VA.optional fields "float" (VA.floatOptional VA.success) 15.5
 
 
 juleValidate : VA.Validate String String Jule
 juleValidate fields =
     VA.valid Jule
-        |> VA.required fields "zz" (VA.stringValid VA.success)
+        |> VA.required fields "zz" (VA.stringValid (VA.validation "not good2" ((==) "qq")))
         |> VA.required fields "test" (VA.stringValid VA.success)
