@@ -4,7 +4,6 @@ import Html exposing (Html, Attribute, beginnerProgram, text, div, input)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Debug exposing (log)
-import Dict as D
 
 
 -- Can't reexport ...
@@ -19,6 +18,7 @@ import Ki.Update as U
 -- MAIN
 
 
+main : Program Never Model Msg
 main =
     beginnerProgram
         { model = initModel
@@ -75,13 +75,14 @@ view : Model -> Html Msg
 view model =
     div []
         [ inputText ">2" "z"
-        , inputText "== dd" "r"
-        , inputText "just str" "zz"
-        , inputText "just str" "test"
+        , inputText "optional maybe == dd" "r"
+        , inputText "== qq" "zz"
+        , inputText ">0 && <6" "test"
         , inputText "should match" "password"
         , inputText "should match" "passwordA"
-        , inputText "is int" "int"
-        , inputText "is float" "float"
+        , inputText "optional int" "int"
+        , inputText "optional float" "float"
+        , inputText "is mail" "mail"
 
         -- , div [ myStyle ] [ text (String.reverse model.c) ]
         ]
@@ -132,6 +133,7 @@ test2 =
         , ( "passwordA", F.string )
         , ( "int", F.string )
         , ( "float", F.string )
+        , ( "mail", F.string )
         ]
 
 
@@ -142,6 +144,7 @@ type alias Jean =
     , password : String
     , i : Int
     , f : Float
+    , m : String
     }
 
 
@@ -154,32 +157,33 @@ type alias Jule =
 test3 : VA.Validate String String Jean
 test3 fields =
     VA.valid Jean
-        |> VA.requiredAcc fields
+        |> VA.required fields
             "z"
-            (VA.stringField
+            (VA.stringValid
                 (\s ->
                     if String.length s > 2 then
-                        VA.validF s
+                        VA.success s
                     else
                         VA.customFailure "not long enough"
                 )
             )
-        |> VA.optionalMaybeAcc fields
+        |> VA.optionalMaybe fields
             "r"
             (\s ->
                 if s == "dd" then
-                    VA.validF s
+                    VA.success s
                 else
                     VA.customFailure "not good"
             )
-        |> VA.fieldGroupAcc fields "group1" juleValidate
-        |> VA.twoFieldsAcc fields "password" "passwordA" VA.passwordFields
-        |> VA.requiredAcc fields "int" (VA.intField VA.validF)
-        |> VA.requiredAcc fields "float" (VA.floatField VA.validF)
+        |> VA.fieldGroup fields "group1" juleValidate
+        |> VA.twoFields fields "password" "passwordA" (VA.passwordMatch VA.success)
+        |> VA.optional fields "int" (VA.int VA.success) 0
+        |> VA.optional fields "float" (VA.float VA.success) 15.5
+        |> VA.required fields "mail" (VA.stringValid <| VA.email VA.success)
 
 
 juleValidate : VA.Validate String String Jule
 juleValidate fields =
     VA.valid Jule
-        |> VA.requiredAcc fields "zz" (VA.stringField VA.validF)
-        |> VA.requiredAcc fields "test" (VA.stringField VA.validF)
+        |> VA.required fields "zz" (VA.stringValid (VA.validation "not good2" ((==) "qq")))
+        |> VA.required fields "test" (VA.stringValid <| VA.length 0 6 VA.success)
