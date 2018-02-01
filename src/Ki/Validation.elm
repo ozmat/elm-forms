@@ -9,10 +9,8 @@ module Ki.Validation
           -- Basic validation
         , stringValid
         , boolValid
-        , intOptional
-        , intValid
-        , floatOptional
-        , floatValid
+        , int
+        , float
         , email
         , length
         , passwordMatch
@@ -111,11 +109,10 @@ boolValid valid value =
 
 
 -- Type-casting validation helpers
--- TODO use intOptional and intValid OR force intValid to work only with string ?
 
 
-intOptional : (Int -> FieldValidation err a) -> String -> FieldValidation err a
-intOptional valid s =
+int : (Int -> FieldValidation err a) -> String -> FieldValidation err a
+int valid s =
     case String.toInt s of
         Ok i ->
             valid i
@@ -124,13 +121,8 @@ intOptional valid s =
             VA.failure NotInt
 
 
-intValid : (Int -> FieldValidation err a) -> Value -> FieldValidation err a
-intValid valid value =
-    stringValid (intOptional valid) value
-
-
-floatOptional : (Float -> FieldValidation err a) -> String -> FieldValidation err a
-floatOptional valid s =
+float : (Float -> FieldValidation err a) -> String -> FieldValidation err a
+float valid s =
     case String.toFloat s of
         Ok f ->
             valid f
@@ -139,43 +131,30 @@ floatOptional valid s =
             VA.failure NotFloat
 
 
-floatValid : (Float -> FieldValidation err a) -> Value -> FieldValidation err a
-floatValid valid value =
-    stringValid (floatOptional valid) value
+
+-- Basic validation helpers
 
 
-
--- Basic validation
-
-
-email : (String -> FieldValidation err a) -> Value -> FieldValidation err a
-email valid value =
-    stringValid
-        (\s ->
-            -- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/email
-            if Regex.contains (Regex.regex "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$") s then
-                valid s
-            else
-                VA.failure NotEmail
-        )
-        value
+email : (String -> FieldValidation err a) -> String -> FieldValidation err a
+email valid s =
+    -- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/email
+    if Regex.contains (Regex.regex "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$") s then
+        valid s
+    else
+        VA.failure NotEmail
 
 
-length : Int -> Int -> (String -> FieldValidation err a) -> Value -> FieldValidation err a
-length low high valid value =
-    stringValid
-        (\s ->
-            let
-                len =
-                    String.length s
-            in
-                if len > low && len < high then
-                    valid s
-                else
-                    -- TODO returns the length
-                    VA.failure NotLength
-        )
-        value
+length : Int -> Int -> (String -> FieldValidation err a) -> String -> FieldValidation err a
+length low high valid s =
+    let
+        len =
+            String.length s
+    in
+        if len > low && len < high then
+            valid s
+        else
+            -- TODO returns the length ?
+            VA.failure NotLength
 
 
 passwordMatch : (String -> FieldValidation err a) -> Value -> Value -> FieldValidation err a

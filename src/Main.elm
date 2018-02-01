@@ -177,13 +177,13 @@ test3 fields =
             )
         |> VA.fieldGroup fields "group1" juleValidate
         |> VA.twoFields fields "password" "passwordA" (VA.passwordMatch VA.success)
-        |> VA.optional fields "int" (VA.intOptional VA.success) 0
-        |> VA.optional fields "float" (VA.floatOptional VA.success) 15.5
-        |> VA.required fields "mail" (VA.email VA.success)
+        |> VA.optional fields "int" (VA.int VA.success) 0
+        |> VA.optional fields "float" (VA.float VA.success) 15.5
+        |> VA.required fields "mail" (VA.stringValid <| VA.email VA.success)
 
 
 juleValidate : VA.Validate String String Jule
 juleValidate fields =
     VA.valid Jule
         |> VA.required fields "zz" (VA.stringValid (VA.validation "not good2" ((==) "qq")))
-        |> VA.required fields "test" (VA.length 0 6 VA.success)
+        |> VA.required fields "test" (VA.stringValid <| VA.length 0 6 VA.success)
