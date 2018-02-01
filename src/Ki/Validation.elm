@@ -1,14 +1,44 @@
-module Ki.Validation exposing (..)
+module Ki.Validation
+    exposing
+        ( -- Field validation
+          FieldError(..)
+        , failure
+        , customFailure
+        , success
+        , validation
+          -- Basic validation
+        , stringValid
+        , boolValid
+        , intValid
+        , floatValid
+        , passwordMatch
+          -- Form validation
+        , FormError
+        , valid
+        , toTuple
+          -- Validate
+        , Validate
+        , required
+        , required1
+        , harcoded
+        , harcoded1
+        , optional
+        , optional1
+        , optionalMaybe
+        , optionalMaybe1
+        , twoFields
+        , twoFields1
+        , fieldGroup
+        , fieldGroup1
+        )
 
 import Vi.Validation as VA exposing (Validation(..))
 import Ki.Field as F exposing (Group)
 import Ki.Value as V exposing (Value)
 
 
-{- Concrete usage of validation for Form -}
--- Field validation
--- TODO refactor "valid"
 -- TODO side-effect select validation ? Use the update messages to implement custom code ?
+{- Field validation -}
 
 
 type FieldError err
@@ -24,37 +54,36 @@ type alias FieldValidation err a =
     Validation (FieldError err) a
 
 
+
+-- Helpers
+
+
+failure : FieldError err -> FieldValidation err a
+failure fe =
+    VA.failure fe
+
+
 customFailure : err -> FieldValidation err a
 customFailure err =
     VA.failure (CustomError err)
 
 
-validF : a -> FieldValidation err a
-validF =
+success : a -> FieldValidation err a
+success =
     VA.success
 
 
-fieldValidation : err -> (a -> Bool) -> a -> FieldValidation err a
-fieldValidation err valid a =
+validation : err -> (a -> Bool) -> a -> FieldValidation err a
+validation err valid a =
     VA.validation (CustomError err) valid a
 
 
-missingField : (Value -> FieldValidation err a) -> Maybe Value -> FieldValidation err a
-missingField valid mvalue =
-    case mvalue of
-        Nothing ->
-            VA.failure MissingField
 
-        Just value ->
-            valid value
+-- Basic validation helpers
 
 
-
--- TODO Use a Type FieldType ? To replace stringField, boolField and detail WrongType
-
-
-stringField : (String -> FieldValidation err a) -> Value -> FieldValidation err a
-stringField valid value =
+stringValid : (String -> FieldValidation err a) -> Value -> FieldValidation err a
+stringValid valid value =
     case value of
         V.String s ->
             valid s
@@ -63,8 +92,8 @@ stringField valid value =
             VA.failure WrongType
 
 
-boolField : (Bool -> FieldValidation err a) -> Value -> FieldValidation err a
-boolField valid value =
+boolValid : (Bool -> FieldValidation err a) -> Value -> FieldValidation err a
+boolValid valid value =
     case value of
         V.Bool b ->
             valid b
@@ -77,9 +106,9 @@ boolField valid value =
 -- TODO will not work with optional, fix it
 
 
-intField : (Int -> FieldValidation err a) -> Value -> FieldValidation err a
-intField valid value =
-    stringField
+intValid : (Int -> FieldValidation err a) -> Value -> FieldValidation err a
+intValid valid value =
+    stringValid
         (\s ->
             case String.toInt s of
                 Ok i ->
@@ -91,9 +120,9 @@ intField valid value =
         value
 
 
-floatField : (Float -> FieldValidation err a) -> Value -> FieldValidation err a
-floatField valid value =
-    stringField
+floatValid : (Float -> FieldValidation err a) -> Value -> FieldValidation err a
+floatValid valid value =
+    stringValid
         (\s ->
             case String.toFloat s of
                 Ok f ->
@@ -109,12 +138,12 @@ floatField valid value =
 -- TODO Add basic validation (email, length)
 
 
-passwordFields : Value -> Value -> FieldValidation err String
-passwordFields password passwordA =
-    case ( password, passwordA ) of
+passwordMatch : (String -> FieldValidation err a) -> Value -> Value -> FieldValidation err a
+passwordMatch valid password passwordAgain =
+    case ( password, passwordAgain ) of
         ( V.String s1, V.String s2 ) ->
             if s1 == s2 then
-                VA.success s1
+                valid s1
             else
                 VA.failure NotEqual
 
@@ -123,7 +152,7 @@ passwordFields password passwordA =
 
 
 
--- Form validation
+{- Form validation -}
 
 
 type FormError comparable err
@@ -134,6 +163,15 @@ type alias FormValidation comparable err a =
     VA.Validation (FormError comparable err) a
 
 
+
+-- Helpers
+
+
+valid : a -> FormValidation comparable err a
+valid =
+    VA.success
+
+
 toTuple : FormError comparable err -> ( comparable, FieldError err )
 toTuple (FormError comparable fe) =
     ( comparable, fe )
@@ -141,12 +179,7 @@ toTuple (FormError comparable fe) =
 
 mapFormError : comparable -> FieldValidation err a -> FormValidation comparable err a
 mapFormError comparable fv =
-    case fv of
-        Failure fe ->
-            Failure (VA.mapError (FormError comparable) fe)
-
-        Success a ->
-            Success a
+    VA.mapError (FormError comparable) fv
 
 
 
@@ -157,18 +190,18 @@ type alias Validate comparable err a =
     Group comparable -> FormValidation comparable err a
 
 
-valid : a -> FormValidation comparable err a
-valid =
-    VA.success
-
-
-
-{- Validate a Field -}
-
-
 fieldValid : Group comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err a
 fieldValid fields comparable valid =
-    mapFormError comparable (missingField valid (F.getValue comparable fields))
+    let
+        missing mvalue =
+            case mvalue of
+                Nothing ->
+                    VA.failure MissingField
+
+                Just value ->
+                    valid value
+    in
+        mapFormError comparable (missing (F.getValue comparable fields))
 
 
 
@@ -177,12 +210,12 @@ fieldValid fields comparable valid =
 
 required : Group comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 required fields comparable valid fvf =
-    VA.andMap (fieldValid fields comparable valid) fvf
-
-
-requiredAcc : Group comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-requiredAcc fields comparable valid fvf =
     VA.andMapAcc (fieldValid fields comparable valid) fvf
+
+
+required1 : Group comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+required1 fields comparable valid fvf =
+    VA.andMap (fieldValid fields comparable valid) fvf
 
 
 
@@ -192,12 +225,12 @@ requiredAcc fields comparable valid fvf =
 
 harcoded : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 harcoded fields comparable a fvf =
-    VA.andMap (fieldValid fields comparable (\_ -> validF a)) fvf
+    VA.andMapAcc (fieldValid fields comparable (\_ -> success a)) fvf
 
 
-harcodedAcc : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-harcodedAcc fields comparable a fvf =
-    VA.andMapAcc (fieldValid fields comparable (\_ -> validF a)) fvf
+harcoded1 : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+harcoded1 fields comparable a fvf =
+    VA.andMap (fieldValid fields comparable (\_ -> success a)) fvf
 
 
 
@@ -206,26 +239,26 @@ harcodedAcc fields comparable a fvf =
 
 
 optional_ : (String -> FieldValidation err a) -> a -> (Value -> FieldValidation err a)
-optional_ svalid default =
+optional_ valid default =
     \value ->
-        stringField
+        stringValid
             (\s ->
                 if String.isEmpty s then
-                    validF default
+                    success default
                 else
-                    svalid s
+                    valid s
             )
             value
 
 
 optional : Group comparable -> comparable -> (String -> FieldValidation err a) -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 optional fields comparable valid default fvf =
-    VA.andMap (fieldValid fields comparable (optional_ valid default)) fvf
-
-
-optionalAcc : Group comparable -> comparable -> (String -> FieldValidation err a) -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-optionalAcc fields comparable valid default fvf =
     VA.andMapAcc (fieldValid fields comparable (optional_ valid default)) fvf
+
+
+optional1 : Group comparable -> comparable -> (String -> FieldValidation err a) -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+optional1 fields comparable valid default fvf =
+    VA.andMap (fieldValid fields comparable (optional_ valid default)) fvf
 
 
 
@@ -238,73 +271,84 @@ optionalMaybe fields comparable valid fvf =
     optional fields comparable (\s -> VA.map Just (valid s)) Nothing fvf
 
 
-optionalMaybeAcc : Group comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
-optionalMaybeAcc fields comparable valid fvf =
-    optionalAcc fields comparable (\s -> VA.map Just (valid s)) Nothing fvf
+optionalMaybe1 : Group comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
+optionalMaybe1 fields comparable valid fvf =
+    optional1 fields comparable (\s -> VA.map Just (valid s)) Nothing fvf
 
 
 
-{- Validate two fields -}
+-- TwoFields
 -- TODO implement a generic version (x fields) if this feature is used
+-- TODO make sure failing on both fields is what we want ?
 
 
 fieldsValid : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err a
 fieldsValid fields comparable1 comparable2 valid =
     let
-        missing1 =
-            FormError comparable1 MissingField
+        fe1 =
+            FormError comparable1
 
-        missing2 =
-            FormError comparable2 MissingField
+        fe2 =
+            FormError comparable2
+
+        both err =
+            VA.ErrorList [ fe1 err, fe2 err ]
+
+        replace ve =
+            case ve of
+                VA.Error e ->
+                    both e
+
+                VA.ErrorList l ->
+                    VA.ErrorList (List.map fe1 l ++ List.map fe2 l)
     in
         case ( F.getValue comparable1 fields, F.getValue comparable2 fields ) of
             ( Nothing, Just _ ) ->
-                VA.failure missing1
+                VA.failure (fe1 MissingField)
 
             ( Just _, Nothing ) ->
-                VA.failure missing2
+                VA.failure (fe2 MissingField)
 
             ( Nothing, Nothing ) ->
-                Failure (VA.ErrorList [ missing1, missing2 ])
+                Failure (both MissingField)
 
             ( Just value1, Just value2 ) ->
-                mapFormError comparable1 (valid value1 value2)
+                VA.mapValidationError replace (valid value1 value2)
 
 
 twoFields : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 twoFields fields comparable1 comparable2 valid fvf =
-    VA.andMap (fieldsValid fields comparable1 comparable2 valid) fvf
-
-
-twoFieldsAcc : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-twoFieldsAcc fields comparable1 comparable2 valid fvf =
     VA.andMapAcc (fieldsValid fields comparable1 comparable2 valid) fvf
 
 
+twoFields1 : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+twoFields1 fields comparable1 comparable2 valid fvf =
+    VA.andMap (fieldsValid fields comparable1 comparable2 valid) fvf
 
-{- Validate a Group -}
 
 
-missingGroup : (Group comparable -> FormValidation comparable err a) -> comparable -> Maybe (Group comparable) -> FormValidation comparable err a
-missingGroup valid comparable mgroup =
-    case mgroup of
-        Nothing ->
-            mapFormError comparable (VA.failure MissingField)
-
-        Just value ->
-            valid value
+-- FieldGroup
 
 
 groupValid : Group comparable -> comparable -> (Group comparable -> FormValidation comparable err a) -> FormValidation comparable err a
 groupValid fields comparable valid =
-    missingGroup valid comparable (F.getGroup comparable fields)
+    let
+        missing mgroup =
+            case mgroup of
+                Nothing ->
+                    mapFormError comparable (VA.failure MissingField)
+
+                Just value ->
+                    valid value
+    in
+        missing (F.getGroup comparable fields)
 
 
 fieldGroup : Group comparable -> comparable -> (Group comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 fieldGroup fields comparable valid fvf =
-    VA.andMap (groupValid fields comparable valid) fvf
-
-
-fieldGroupAcc : Group comparable -> comparable -> (Group comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-fieldGroupAcc fields comparable valid fvf =
     VA.andMapAcc (groupValid fields comparable valid) fvf
+
+
+fieldGroup1 : Group comparable -> comparable -> (Group comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+fieldGroup1 fields comparable valid fvf =
+    VA.andMap (groupValid fields comparable valid) fvf

@@ -154,32 +154,32 @@ type alias Jule =
 test3 : VA.Validate String String Jean
 test3 fields =
     VA.valid Jean
-        |> VA.requiredAcc fields
+        |> VA.required fields
             "z"
-            (VA.stringField
+            (VA.stringValid
                 (\s ->
                     if String.length s > 2 then
-                        VA.validF s
+                        VA.success s
                     else
                         VA.customFailure "not long enough"
                 )
             )
-        |> VA.optionalMaybeAcc fields
+        |> VA.optionalMaybe fields
             "r"
             (\s ->
                 if s == "dd" then
-                    VA.validF s
+                    VA.success s
                 else
                     VA.customFailure "not good"
             )
-        |> VA.fieldGroupAcc fields "group1" juleValidate
-        |> VA.twoFieldsAcc fields "password" "passwordA" VA.passwordFields
-        |> VA.requiredAcc fields "int" (VA.intField VA.validF)
-        |> VA.requiredAcc fields "float" (VA.floatField VA.validF)
+        |> VA.fieldGroup fields "group1" juleValidate
+        |> VA.twoFields fields "password" "passwordA" (VA.passwordMatch VA.success)
+        |> VA.required fields "int" (VA.intValid VA.success)
+        |> VA.required fields "float" (VA.floatValid VA.success)
 
 
 juleValidate : VA.Validate String String Jule
 juleValidate fields =
     VA.valid Jule
-        |> VA.requiredAcc fields "zz" (VA.stringField VA.validF)
-        |> VA.requiredAcc fields "test" (VA.stringField VA.validF)
+        |> VA.required fields "zz" (VA.stringValid VA.success)
+        |> VA.required fields "test" (VA.stringValid VA.success)

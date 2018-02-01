@@ -1,14 +1,18 @@
 module Vi.Validation
     exposing
-        ( ValidationError(..)
+        ( -- Validation error
+          ValidationError(..)
         , append
         , toList
-        , mapError
+        , errorMap
+          -- Validation
         , Validation(..)
         , failure
         , success
         , validation
         , map
+        , mapError
+        , mapValidationError
         , andMap
         , andMapAcc
         )
@@ -55,8 +59,8 @@ toList ve =
 -- Map
 
 
-mapError : (err1 -> err2) -> ValidationError err1 -> ValidationError err2
-mapError f ve =
+errorMap : (err1 -> err2) -> ValidationError err1 -> ValidationError err2
+errorMap f ve =
     case ve of
         Error err1 ->
             Error (f err1)
@@ -108,6 +112,25 @@ map f validation =
 
         Failure ve ->
             Failure ve
+
+
+mapError : (err1 -> err2) -> Validation err1 a -> Validation err2 a
+mapError f validation =
+    mapValidationError (errorMap f) validation
+
+
+mapValidationError : (ValidationError err1 -> ValidationError err2) -> Validation err1 a -> Validation err2 a
+mapValidationError f validation =
+    case validation of
+        Success a ->
+            Success a
+
+        Failure ve ->
+            Failure (f ve)
+
+
+
+-- AndMap
 
 
 andMap : Validation err a -> Validation err (a -> b) -> Validation err b
