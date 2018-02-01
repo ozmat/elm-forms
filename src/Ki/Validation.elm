@@ -13,6 +13,8 @@ module Ki.Validation
         , intValid
         , floatOptional
         , floatValid
+        , email
+        , length
         , passwordMatch
           -- Form validation
         , FormError
@@ -34,6 +36,7 @@ module Ki.Validation
         , fieldGroup1
         )
 
+import Regex
 import Vi.Validation as VA exposing (Validation(..))
 import Ki.Field as F exposing (Group)
 import Ki.Value as V exposing (Value)
@@ -44,12 +47,14 @@ import Ki.Value as V exposing (Value)
 
 
 type FieldError err
-    = MissingField
+    = CustomError err
+    | MissingField
     | WrongType
-    | CustomError err
-    | NotEqual
     | NotInt
     | NotFloat
+    | NotEmail
+    | NotLength
+    | NotEqual
 
 
 type alias FieldValidation err a =
@@ -61,8 +66,8 @@ type alias FieldValidation err a =
 
 
 failure : FieldError err -> FieldValidation err a
-failure fe =
-    VA.failure fe
+failure =
+    VA.failure
 
 
 customFailure : err -> FieldValidation err a
@@ -81,7 +86,7 @@ validation err valid a =
 
 
 
--- Basic validation helpers
+-- Type validation helpers
 
 
 stringValid : (String -> FieldValidation err a) -> Value -> FieldValidation err a
@@ -105,6 +110,7 @@ boolValid valid value =
 
 
 
+-- Type-casting validation helpers
 -- TODO use intOptional and intValid OR force intValid to work only with string ?
 
 
@@ -139,7 +145,37 @@ floatValid valid value =
 
 
 
--- TODO Add basic validation (email, length)
+-- Basic validation
+
+
+email : (String -> FieldValidation err a) -> Value -> FieldValidation err a
+email valid value =
+    stringValid
+        (\s ->
+            -- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/email
+            if Regex.contains (Regex.regex "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$") s then
+                valid s
+            else
+                VA.failure NotEmail
+        )
+        value
+
+
+length : Int -> Int -> (String -> FieldValidation err a) -> Value -> FieldValidation err a
+length low high valid value =
+    stringValid
+        (\s ->
+            let
+                len =
+                    String.length s
+            in
+                if len > low && len < high then
+                    valid s
+                else
+                    -- TODO returns the length
+                    VA.failure NotLength
+        )
+        value
 
 
 passwordMatch : (String -> FieldValidation err a) -> Value -> Value -> FieldValidation err a

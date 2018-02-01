@@ -4,7 +4,6 @@ import Html exposing (Html, Attribute, beginnerProgram, text, div, input)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Debug exposing (log)
-import Dict as D
 
 
 -- Can't reexport ...
@@ -19,6 +18,7 @@ import Ki.Update as U
 -- MAIN
 
 
+main : Program Never Model Msg
 main =
     beginnerProgram
         { model = initModel
@@ -77,11 +77,12 @@ view model =
         [ inputText ">2" "z"
         , inputText "optional maybe == dd" "r"
         , inputText "== qq" "zz"
-        , inputText "just str" "test"
+        , inputText ">0 && <6" "test"
         , inputText "should match" "password"
         , inputText "should match" "passwordA"
-        , inputText "is int" "int"
-        , inputText "is float" "float"
+        , inputText "optional int" "int"
+        , inputText "optional float" "float"
+        , inputText "is mail" "mail"
 
         -- , div [ myStyle ] [ text (String.reverse model.c) ]
         ]
@@ -132,6 +133,7 @@ test2 =
         , ( "passwordA", F.string )
         , ( "int", F.string )
         , ( "float", F.string )
+        , ( "mail", F.string )
         ]
 
 
@@ -142,6 +144,7 @@ type alias Jean =
     , password : String
     , i : Int
     , f : Float
+    , m : String
     }
 
 
@@ -176,10 +179,11 @@ test3 fields =
         |> VA.twoFields fields "password" "passwordA" (VA.passwordMatch VA.success)
         |> VA.optional fields "int" (VA.intOptional VA.success) 0
         |> VA.optional fields "float" (VA.floatOptional VA.success) 15.5
+        |> VA.required fields "mail" (VA.email VA.success)
 
 
 juleValidate : VA.Validate String String Jule
 juleValidate fields =
     VA.valid Jule
         |> VA.required fields "zz" (VA.stringValid (VA.validation "not good2" ((==) "qq")))
-        |> VA.required fields "test" (VA.stringValid VA.success)
+        |> VA.required fields "test" (VA.length 0 6 VA.success)
