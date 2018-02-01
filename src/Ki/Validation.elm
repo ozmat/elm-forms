@@ -11,8 +11,9 @@ module Ki.Validation
         , boolValid
         , int
         , float
-        , email
+        , notEmpty
         , length
+        , email
         , passwordMatch
           -- Form validation
         , FormError
@@ -50,9 +51,10 @@ type FieldError err
     | WrongType
     | NotInt
     | NotFloat
+    | EmptyString
+    | WrongLength
     | NotEmail
-    | NotLength
-    | NotEqual
+    | PasswordNotEqual
 
 
 type alias FieldValidation err a =
@@ -70,7 +72,7 @@ failure =
 
 customFailure : err -> FieldValidation err a
 customFailure err =
-    VA.failure (CustomError err)
+    failure (CustomError err)
 
 
 success : a -> FieldValidation err a
@@ -94,7 +96,7 @@ stringValid valid value =
             valid s
 
         _ ->
-            VA.failure WrongType
+            failure WrongType
 
 
 boolValid : (Bool -> FieldValidation err a) -> Value -> FieldValidation err a
@@ -104,7 +106,7 @@ boolValid valid value =
             valid b
 
         _ ->
-            VA.failure WrongType
+            failure WrongType
 
 
 
@@ -118,7 +120,7 @@ int valid s =
             valid i
 
         Err _ ->
-            VA.failure NotInt
+            failure NotInt
 
 
 float : (Float -> FieldValidation err a) -> String -> FieldValidation err a
@@ -128,20 +130,19 @@ float valid s =
             valid f
 
         Err _ ->
-            VA.failure NotFloat
+            failure NotFloat
 
 
 
 -- Basic validation helpers
 
 
-email : (String -> FieldValidation err a) -> String -> FieldValidation err a
-email valid s =
-    -- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/email
-    if Regex.contains (Regex.regex "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$") s then
-        valid s
+notEmpty : (String -> FieldValidation err a) -> String -> FieldValidation err a
+notEmpty valid s =
+    if String.isEmpty s then
+        failure EmptyString
     else
-        VA.failure NotEmail
+        valid s
 
 
 length : Int -> Int -> (String -> FieldValidation err a) -> String -> FieldValidation err a
@@ -154,7 +155,16 @@ length low high valid s =
             valid s
         else
             -- TODO returns the length ?
-            VA.failure NotLength
+            failure WrongLength
+
+
+email : (String -> FieldValidation err a) -> String -> FieldValidation err a
+email valid s =
+    -- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/email
+    if Regex.contains (Regex.regex "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$") s then
+        valid s
+    else
+        failure NotEmail
 
 
 passwordMatch : (String -> FieldValidation err a) -> Value -> Value -> FieldValidation err a
@@ -164,10 +174,10 @@ passwordMatch valid password passwordAgain =
             if s1 == s2 then
                 valid s1
             else
-                VA.failure NotEqual
+                failure PasswordNotEqual
 
         _ ->
-            VA.failure WrongType
+            failure WrongType
 
 
 
@@ -215,7 +225,7 @@ fieldValid fields comparable valid =
         missing mvalue =
             case mvalue of
                 Nothing ->
-                    VA.failure MissingField
+                    failure MissingField
 
                 Just value ->
                     valid value
@@ -225,7 +235,6 @@ fieldValid fields comparable valid =
 
 
 -- Required
--- TODO does required (string) == not empty ?
 
 
 required : Group comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
@@ -356,7 +365,7 @@ groupValid fields comparable valid =
         missing mgroup =
             case mgroup of
                 Nothing ->
-                    mapFormError comparable (VA.failure MissingField)
+                    mapFormError comparable (failure MissingField)
 
                 Just value ->
                     valid value

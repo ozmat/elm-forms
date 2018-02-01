@@ -78,6 +78,7 @@ view model =
         , inputText "optional maybe == dd" "r"
         , inputText "== qq" "zz"
         , inputText ">0 && <6" "test"
+        , inputText "notEmpty" "der"
         , inputText "should match" "password"
         , inputText "should match" "passwordA"
         , inputText "optional int" "int"
@@ -127,6 +128,7 @@ test2 =
           , F.group
                 [ ( "zz", F.string )
                 , ( "test", F.string )
+                , ( "der", F.string )
                 ]
           )
         , ( "password", F.string )
@@ -151,6 +153,7 @@ type alias Jean =
 type alias Jule =
     { a : String
     , b : String
+    , c : String
     }
 
 
@@ -185,5 +188,6 @@ test3 fields =
 juleValidate : VA.Validate String String Jule
 juleValidate fields =
     VA.valid Jule
-        |> VA.required fields "zz" (VA.stringValid (VA.validation "not good2" ((==) "qq")))
+        |> VA.required fields "zz" (VA.stringValid <| VA.validation "not good2" ((==) "qq"))
         |> VA.required fields "test" (VA.stringValid <| VA.length 0 6 VA.success)
+        |> VA.required fields "der" (VA.stringValid <| VA.notEmpty VA.success)
