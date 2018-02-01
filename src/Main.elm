@@ -1,9 +1,10 @@
 module Main exposing (..)
 
-import Html exposing (Html, Attribute, beginnerProgram, text, div, input)
+import Html exposing (Html, Attribute, program, text, div, input)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Debug exposing (log)
+import Random
 
 
 -- Can't reexport ...
@@ -20,10 +21,11 @@ import Ki.Update as U
 
 main : Program Never Model Msg
 main =
-    beginnerProgram
-        { model = initModel
-        , view = view
+    program
+        { init = init
         , update = update
+        , subscriptions = (\_ -> Sub.none)
+        , view = view
         }
 
 
@@ -33,12 +35,15 @@ main =
 
 type alias Model =
     { form : FO.Form String String Jean
+    , random : ( String, Int )
     }
 
 
-initModel : Model
-initModel =
-    Model (FO.form test2 test3)
+init : ( Model, Cmd Msg )
+init =
+    ( Model (FO.form test2 test3) ( "", -1 )
+    , Cmd.none
+    )
 
 
 
@@ -47,13 +52,14 @@ initModel =
 
 type Msg
     = Form (U.Msg String)
+    | RandomInt String Int
 
 
 
 -- UPDATE
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Form formMsg ->
@@ -64,7 +70,16 @@ update msg model =
                 y =
                     log "" (FO.validateD newModel.form)
             in
-                newModel
+                ( newModel
+                , U.effectsS model formMsg (\_ key _ -> Random.generate (RandomInt key) (Random.int 5 15))
+                )
+
+        RandomInt s i ->
+            let
+                y =
+                    log "" ( s, i )
+            in
+                { model | random = ( s, i ) } ! []
 
 
 

@@ -3,6 +3,10 @@ module Ki.Update
         ( Msg(..)
         , updateForm
         , withSetter
+          -- Side effects
+        , effects
+        , effectsS
+        , effectsB
         )
 
 import Ki.Form as F exposing (Form(..))
@@ -42,3 +46,27 @@ updateForm msg (Form fields validate) =
 withSetter : a -> Form comparable err a -> (Form comparable err a -> a -> a) -> Msg comparable -> a
 withSetter model form setter msg =
     setter (updateForm msg form) model
+
+
+
+-- Side effects
+
+
+effects : a -> Msg comparable -> (a -> comparable -> String -> Cmd msg) -> (a -> comparable -> Bool -> Cmd msg) -> Cmd msg
+effects model msg stringEffects boolEffects =
+    case msg of
+        UpdateStringField comparable s ->
+            stringEffects model comparable s
+
+        UpdateBoolField comparable b ->
+            boolEffects model comparable b
+
+
+effectsS : a -> Msg comparable -> (a -> comparable -> String -> Cmd msg) -> Cmd msg
+effectsS model msg stringEffects =
+    effects model msg stringEffects (\_ _ _ -> Cmd.none)
+
+
+effectsB : a -> Msg comparable -> (a -> comparable -> Bool -> Cmd msg) -> Cmd msg
+effectsB model msg boolEffects =
+    effects model msg (\_ _ _ -> Cmd.none) boolEffects
