@@ -18,6 +18,7 @@ module Forms.Validation
         , passwordMatch
           -- Form validation
         , FormError(..)
+        , FormValidation
         , valid
         , toTuple
           -- Validate
@@ -309,7 +310,6 @@ optionalMaybe1 fields comparable valid fvf =
 
 -- TwoFields
 -- TODO implement a generic version (x fields) if this feature is used
--- TODO make sure failing on both fields is what we want ?
 
 
 fieldsValid : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err a
