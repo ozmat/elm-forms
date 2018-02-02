@@ -24,8 +24,8 @@ module Forms.Validation
         , Validate
         , required
         , required1
-        , harcoded
-        , harcoded1
+        , hardcoded
+        , hardcoded1
         , optional
         , optional1
         , optionalMaybe
@@ -253,13 +253,13 @@ required1 fields comparable valid fvf =
 -- ```|> required fields comparable (\_ -> valid a)```
 
 
-harcoded : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-harcoded fields comparable a fvf =
+hardcoded : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+hardcoded fields comparable a fvf =
     VA.andMapAcc (fieldValid fields comparable (\_ -> success a)) fvf
 
 
-harcoded1 : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-harcoded1 fields comparable a fvf =
+hardcoded1 : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+hardcoded1 fields comparable a fvf =
     VA.andMap (fieldValid fields comparable (\_ -> success a)) fvf
 
 
