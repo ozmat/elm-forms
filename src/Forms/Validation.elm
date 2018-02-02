@@ -2,6 +2,7 @@ module Forms.Validation
     exposing
         ( -- Field validation
           FieldError(..)
+        , FieldValidation
         , failure
         , customFailure
         , success
@@ -16,7 +17,7 @@ module Forms.Validation
         , email
         , passwordMatch
           -- Form validation
-        , FormError
+        , FormError(..)
         , valid
         , toTuple
           -- Validate

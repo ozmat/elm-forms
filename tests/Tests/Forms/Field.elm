@@ -80,7 +80,7 @@ all =
                 \s ->
                     setValue "notfound" (V.string s) (fixture2 "")
                         |> Expect.equal (fixture2 "")
-            , test "has no effect if the Value has a diffrent type" <|
+            , test "has no effect if the Value has a different type" <|
                 \_ ->
                     setValue "key1" (V.defaultBool) (fixture2 "")
                         |> Expect.equal (fixture2 "")
