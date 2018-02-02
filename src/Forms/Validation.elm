@@ -43,7 +43,6 @@ import Forms.Field as F exposing (Group)
 import Forms.Value as V exposing (Value)
 
 
--- TODO side-effect select validation ? Use the update messages to implement custom code ?
 {- Field validation -}
 
 
@@ -156,7 +155,6 @@ length low high valid s =
         if len > low && len < high then
             valid s
         else
-            -- TODO returns the length ?
             failure WrongLength
 
 

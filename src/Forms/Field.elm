@@ -21,7 +21,7 @@ import Forms.Value as V exposing (Value)
 
 
 -- Field
--- TODO Implement our RB Tree instead of using the Dict one ?
+-- TODO Implement our own RB Tree instead of using the Dict one ?
 
 
 type Field comparable
