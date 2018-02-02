@@ -1,7 +1,8 @@
-module Ki.Validation
+module Forms.Validation
     exposing
         ( -- Field validation
           FieldError(..)
+        , FieldValidation
         , failure
         , customFailure
         , success
@@ -16,15 +17,16 @@ module Ki.Validation
         , email
         , passwordMatch
           -- Form validation
-        , FormError
+        , FormError(..)
+        , FormValidation
         , valid
         , toTuple
           -- Validate
         , Validate
         , required
         , required1
-        , harcoded
-        , harcoded1
+        , hardcoded
+        , hardcoded1
         , optional
         , optional1
         , optionalMaybe
@@ -37,11 +39,10 @@ module Ki.Validation
 
 import Regex
 import Vi.Validation as VA exposing (Validation(..))
-import Ki.Field as F exposing (Group)
-import Ki.Value as V exposing (Value)
+import Forms.Field as F exposing (Group)
+import Forms.Value as V exposing (Value)
 
 
--- TODO side-effect select validation ? Use the update messages to implement custom code ?
 {- Field validation -}
 
 
@@ -154,7 +155,6 @@ length low high valid s =
         if len > low && len < high then
             valid s
         else
-            -- TODO returns the length ?
             failure WrongLength
 
 
@@ -252,13 +252,13 @@ required1 fields comparable valid fvf =
 -- ```|> required fields comparable (\_ -> valid a)```
 
 
-harcoded : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-harcoded fields comparable a fvf =
+hardcoded : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+hardcoded fields comparable a fvf =
     VA.andMapAcc (fieldValid fields comparable (\_ -> success a)) fvf
 
 
-harcoded1 : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-harcoded1 fields comparable a fvf =
+hardcoded1 : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+hardcoded1 fields comparable a fvf =
     VA.andMap (fieldValid fields comparable (\_ -> success a)) fvf
 
 
@@ -308,7 +308,6 @@ optionalMaybe1 fields comparable valid fvf =
 
 -- TwoFields
 -- TODO implement a generic version (x fields) if this feature is used
--- TODO make sure failing on both fields is what we want ?
 
 
 fieldsValid : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err a

@@ -9,11 +9,11 @@ import Random
 
 -- Can't reexport ...
 
-import Ki.Value as V exposing (..)
-import Ki.Field as F exposing (..)
-import Ki.Validation as VA exposing (..)
-import Ki.Form as FO
-import Ki.Update as U
+import Forms.Value as V exposing (..)
+import Forms.Field as F exposing (..)
+import Forms.Validation as VA exposing (..)
+import Forms.Form as FO
+import Forms.Update as U
 
 
 -- MAIN

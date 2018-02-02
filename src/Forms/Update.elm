@@ -1,4 +1,4 @@
-module Ki.Update
+module Forms.Update
     exposing
         ( Msg(..)
         , updateForm
@@ -9,9 +9,9 @@ module Ki.Update
         , effectsB
         )
 
-import Ki.Form as F exposing (Form(..))
-import Ki.Field as FI exposing (setValue)
-import Ki.Value as V exposing (string, bool)
+import Forms.Form as F exposing (Form(..))
+import Forms.Field as FI exposing (setValue)
+import Forms.Value as V exposing (string, bool)
 
 
 -- MSG

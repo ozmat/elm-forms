@@ -1,7 +1,7 @@
-module Ki.Field
+module Forms.Field
     exposing
         ( -- Field
-          Field
+          Field(..)
         , Group
           -- Helpers
         , string
@@ -17,11 +17,11 @@ module Ki.Field
         )
 
 import Dict as D exposing (Dict)
-import Ki.Value as V exposing (Value)
+import Forms.Value as V exposing (Value)
 
 
 -- Field
--- TODO Implement our RB Tree instead of using the Dict one ?
+-- TODO Implement our own RB Tree instead of using the Dict one ?
 
 
 type Field comparable

@@ -1,4 +1,4 @@
-module Ki.Value
+module Forms.Value
     exposing
         ( Value(..)
         , string
