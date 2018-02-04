@@ -8,47 +8,95 @@ module Forms.Value
         , safeUpdate
         )
 
--- Value
--- text input and checkbox
+{-| A `Value` is the value inside a [`Field`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Field#Field)
 
 
+# Definition
+
+@docs Value
+
+
+# Common Helpers
+
+@docs string, bool, defaultString, defaultBool
+
+
+# Update
+
+@docs safeUpdate
+
+-}
+
+
+{-| A `Value` can be a `String` (form input) or a `Bool` (form checkbox)
+
+    String "some input value"
+
+    Bool True
+
+-}
 type Value
     = String String
     | Bool Bool
 
 
 
--- Wrapper
+-- Common helpers
 
 
+{-| Helps creating a `String` `Value`
+
+    string "some input value" -- String "some input value"
+
+-}
 string : String -> Value
 string =
     String
 
 
+{-| Helps creating a `Bool` `Value`
+
+    bool True -- Bool True
+
+-}
 bool : Bool -> Value
 bool =
     Bool
 
 
+{-| Is the default `String` `Value` (empty string)
 
--- Default
+    String ""
 
-
+-}
 defaultString : Value
 defaultString =
     String ""
 
 
+{-| Is the default `Bool` `Value` (false)
+
+    Bool False
+
+-}
 defaultBool : Value
 defaultBool =
     Bool False
 
 
 
--- Safe update
+-- Update
 
 
+{-| Only updates `Value`s of same type
+
+    safeUpdate (String "new one") (String "old one")
+        |> Expect.equal (String "new one")
+
+    safeUpdate (String "new one") (Bool False)
+        |> Expect.equal (Bool False)
+
+-}
 safeUpdate : Value -> Value -> Value
 safeUpdate value original =
     case ( value, original ) of
