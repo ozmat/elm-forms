@@ -8,7 +8,8 @@
     ],
     "exposed-modules": [
         "Forms.Value",
-        "Forms.Field"
+        "Forms.Field",
+        "Forms.Validation"
     ],
     "dependencies": {
         "elm-lang/core": "5.0.0 <= v < 6.0.0",
