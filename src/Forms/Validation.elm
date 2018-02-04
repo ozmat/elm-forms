@@ -38,7 +38,7 @@ module Forms.Validation
         )
 
 import Regex
-import Vi.Validation as VA exposing (Validation(..))
+import Validation as VA exposing (Validation(..))
 import Forms.Field as F exposing (Group)
 import Forms.Value as V exposing (Value)
 

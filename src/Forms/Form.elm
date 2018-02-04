@@ -7,7 +7,7 @@ module Forms.Form
         )
 
 import Dict as D exposing (Dict)
-import Vi.Validation as VA exposing (Validation(..))
+import Validation as VA exposing (Validation(..))
 import Forms.Field as F exposing (Group)
 import Forms.Validation as V exposing (Validate, FieldError, FormError)
 

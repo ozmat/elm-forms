@@ -3,7 +3,7 @@ module Tests.Forms.Validation exposing (..)
 import Expect
 import Test exposing (..)
 import Fuzz exposing (bool, string)
-import Vi.Validation as VA
+import Validation as VA
 import Forms.Validation exposing (..)
 import Forms.Value as V
 import Forms.Field as F
