@@ -8,7 +8,7 @@ module Forms.Value
         , safeUpdate
         )
 
-{-| A `Value` is the value inside a [`Field`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Field#Field)
+{-| A `Value` represents the value inside a [`Field`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Field)
 
 
 # Definition

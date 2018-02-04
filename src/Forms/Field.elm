@@ -16,52 +16,129 @@ module Forms.Field
         , setValue
         )
 
+{-| A `Field` represents a [`Form`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Form#Form) field
+
+
+# Definition
+
+@docs Field, Group
+
+
+# Common Helpers
+
+@docs string, bool, group, fields, stringWithValue, boolWithValue
+
+
+# Search
+
+@docs getValue, getGroup, setValue
+
+-}
+
 import Dict as D exposing (Dict)
 import Forms.Value as V exposing (Value)
 
 
--- Field
--- TODO Implement our own RB Tree instead of using the Dict one ?
+{-| A `Field` can be a simple field with a `Value` (= `FieldValue`) or a
+group of fields (= `FieldGroup`)
 
+    simpleField : Field comparable
+    simpleField =
+        FieldValue (String "some input value")
 
+    groupOfFields : Field comparable
+    groupOfFields =
+        FieldGroup (Dict.fromList [ ( comparable1, simpleField ), ( comparable2, simpleField ) ])
+
+-}
 type Field comparable
     = FieldGroup (Group comparable)
     | FieldValue Value
 
 
+{-| A `Group` is a group of `Field`s. The underlying data structure is a [`Dict`](http://package.elm-lang.org/packages/elm-lang/core/latest/Dict#Dict)
+-}
 type alias Group comparable =
     Dict comparable (Field comparable)
 
 
+
+-- Common Helpers
+
+
+{-| Is a shortcut to create a `Field` with the [default `String` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
+
+    string -- FieldValue (Forms.Value.defaultString)
+
+-}
 string : Field comparable
 string =
     FieldValue V.defaultString
 
 
+{-| Is a shortcut to create a `Field` with the [default `Bool` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultBool)
+
+    bool -- FieldValue (Forms.Value.defaultBool)
+
+-}
 bool : Field comparable
 bool =
     FieldValue V.defaultBool
 
 
+{-| Is a shortcut to create a `Field` with a `Group` of fields. The function
+takes a `List` of `Tuple` and creates the `Group` for you :
+
+    tupleExample : ( comparable, Field comparable )
+    tupleExample =
+        (comparable, string)
+
+    group [tupleExample, ...] -- FieldGroup ...
+
+-}
 group : List ( comparable, Field comparable ) -> Field comparable
 group g =
-    FieldGroup (D.fromList g)
+    FieldGroup (fields g)
 
 
+{-| Is a shortcut to create a `Group` of `Field`s. The function takes a
+`List` of `Tuple`
+
+    someFormFields : Group comparable
+    someFormFields =
+        fields
+            [ ( comparable1, string )
+            , ( comparable2, bool )
+            , ( comparable3
+              , group
+                    [ ( comparable4, string )
+                    , ( comparable5, string )
+                    , ( comparable6, string )
+                    ]
+              )
+            ]
+
+-}
 fields : List ( comparable, Field comparable ) -> Group comparable
 fields =
     D.fromList
 
 
+{-| Is a shortcut to create a `Field` with an initial `String` `Value`
 
--- With custom value
+    stringWithValue "initial" -- FieldValue (String "initial")
 
-
+-}
 stringWithValue : String -> Field comparable
 stringWithValue s =
     FieldValue (V.string s)
 
 
+{-| Is a shortcut to create a `Field` with an initial `Bool` `Value`
+
+    boolWithValue True -- FieldValue (Bool True)
+
+-}
 boolWithValue : Bool -> Field comparable
 boolWithValue b =
     FieldValue (V.bool b)
@@ -106,7 +183,7 @@ updateGroup group field =
 
 
 
--- Walk through Group -> get
+-- Group traversal -> get
 
 
 getField : comparable -> Group comparable -> Maybe (Field comparable)
@@ -133,6 +210,9 @@ getField comparable group =
                 D.foldl walk Nothing group
 
 
+{-| Retrieves the `Value` associated with a key. If the key is not found or
+the `Field` is not a `FieldValue` returns `Nothing`
+-}
 getValue : comparable -> Group comparable -> Maybe Value
 getValue comparable group =
     case getField comparable group of
@@ -148,6 +228,9 @@ getValue comparable group =
             Nothing
 
 
+{-| Retrieves the `Group` associated with a key. If the key is not found or
+the `Field` is not a `FieldGroup` returns `Nothing`
+-}
 getGroup : comparable -> Group comparable -> Maybe (Group comparable)
 getGroup comparable group =
     case getField comparable group of
@@ -164,9 +247,13 @@ getGroup comparable group =
 
 
 
--- Walk through Group -> set
+-- Group traversal -> set
 
 
+{-| Updates the `Value` associated with a key. It will only update the `Value`
+if the key is found, the `Field` is a `FieldValue` and the `Value`s have the
+same type
+-}
 setValue : comparable -> Value -> Group comparable -> Group comparable
 setValue comparable value group =
     let
