@@ -7,9 +7,9 @@ module Forms.Form
         )
 
 import Dict as D exposing (Dict)
-import Validation as VA exposing (Validation(..))
+import Validation as VA
 import Forms.Field as F exposing (Group)
-import Forms.Validation as V exposing (Validate, FieldError, FormError)
+import Forms.Validation as V exposing (Validate, FieldError)
 
 
 -- Form
@@ -30,24 +30,12 @@ form =
 
 validate : Form comparable err a -> Result (List ( comparable, FieldError err )) a
 validate (Form fields validate) =
-    case validate fields of
-        Success a ->
-            Ok a
-
-        Failure ve ->
-            Err (toTupleList ve)
+    validate fields
+        |> VA.toResult
+        |> Result.mapError (List.map V.toTuple)
 
 
 validateD : Form comparable err a -> Result (Dict comparable (FieldError err)) a
-validateD (Form fields validate) =
-    case validate fields of
-        Success a ->
-            Ok a
-
-        Failure ve ->
-            Err (D.fromList (toTupleList ve))
-
-
-toTupleList : VA.ValidationError (FormError comparable err) -> List ( comparable, FieldError err )
-toTupleList ve =
-    List.map V.toTuple (VA.toList ve)
+validateD fo =
+    validate fo
+        |> Result.mapError D.fromList
