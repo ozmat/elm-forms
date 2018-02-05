@@ -17,8 +17,7 @@ module Forms.Field
         )
 
 {-| A `Field` represents a [`Form`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Form#Form) field.
-Please refer to the [basic examples]() (or [advanced examples]()) for a better
-understanding
+Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a better understanding
 
 
 # Definition

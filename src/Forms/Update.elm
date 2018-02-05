@@ -9,7 +9,7 @@ module Forms.Update
         )
 
 {-| This module provides helpers for your update function. Please refer to the
-[basic examples]() (or [advanced examples]()) for a better understanding
+[examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a better understanding
 
 
 # Message

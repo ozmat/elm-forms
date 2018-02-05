@@ -38,7 +38,7 @@ module Forms.Validation
         )
 
 {-| This module provides the validation logic for the library. Please refer to
-the [basic examples]() (or [advanced examples]()) for a better understanding
+the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a better understanding
 
 
 # Field Validation

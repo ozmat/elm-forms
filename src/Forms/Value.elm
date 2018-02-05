@@ -9,8 +9,7 @@ module Forms.Value
         )
 
 {-| A `Value` represents the value inside a [`Field`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Field).
-Please refer to the [basic examples]() (or [advanced examples]()) for a better
-understanding
+Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a better understanding
 
 
 # Definition

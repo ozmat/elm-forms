@@ -8,8 +8,7 @@ module Forms.Form
 
 {-| `Form` is the top level type of the library. It is built with a [`Group`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Group)
 of `Field`s and a [`Validate`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#Validate) function.
-Please refer to the [basic examples]() (or [advanced examples]()) for a better
-understanding
+Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a better understanding
 
 
 # Definition
