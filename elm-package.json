@@ -10,7 +10,8 @@
         "Forms.Value",
         "Forms.Field",
         "Forms.Validation",
-        "Forms.Form"
+        "Forms.Form",
+        "Forms.Update"
     ],
     "dependencies": {
         "elm-lang/core": "5.0.0 <= v < 6.0.0",
