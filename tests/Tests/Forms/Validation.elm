@@ -99,14 +99,18 @@ all =
                         |> Expect.equal (failure NotEmail)
             ]
         , describe "Validation.passwordMatch"
-            [ fuzz string "helps validating a two fields with String/Password matching values" <|
-                \s ->
-                    passwordMatch success (V.string s) (V.string s)
-                        |> Expect.equal (success s)
+            [ test "helps validating a two fields with String/Password matching values" <|
+                \_ ->
+                    passwordMatch success (V.string "notempty") (V.string "notempty")
+                        |> Expect.equal (success "notempty")
             , test "fails if not String Values" <|
                 \_ ->
                     passwordMatch success (V.string "") (V.bool True)
                         |> Expect.equal (failure WrongType)
+            , test "first empty string" <|
+                \_ ->
+                    passwordMatch success (V.string "") (V.string "")
+                        |> Expect.equal (failure EmptyString)
             , test "fails if not equal" <|
                 \_ ->
                     passwordMatch success (V.string "ab") (V.string "abc")
@@ -179,18 +183,22 @@ all =
                         |> Expect.equal (formE "key1" (CustomError "error"))
             ]
         , describe "Validation.twoFields"
-            [ fuzz string "helps validating two fields together" <|
-                \s ->
-                    twoFields (fields2 s s) "key2" "key3" (passwordMatch success) (valid Required)
-                        |> Expect.equal (valid (Required s))
+            [ test "helps validating two fields together" <|
+                \_ ->
+                    twoFields (fields2 "notempty" "notempty") "key2" "key3" (passwordMatch success) (valid Required)
+                        |> Expect.equal (valid (Required "notempty"))
             , test "fails if the first field is missing" <|
                 \_ ->
-                    twoFields (fields2 "" "") "notfound" "key3" (passwordMatch success) (valid Required)
-                        |> Expect.equal (formE "notfound" MissingField)
+                    twoFields (fields2 "" "") "notfound1" "key3" (passwordMatch success) (valid Required)
+                        |> Expect.equal (formE "notfound1" MissingField)
             , test "fails if the second field is missing" <|
                 \_ ->
                     twoFields (fields2 "" "") "key2" "notfound2" (passwordMatch success) (valid Required)
                         |> Expect.equal (formE "notfound2" MissingField)
+            , test "fails if both fields are missing" <|
+                \_ ->
+                    twoFields (fields2 "" "") "notfound1" "notfound2" (passwordMatch success) (valid Required)
+                        |> Expect.equal (formEL "notfound1" "notfound2" MissingField)
             , test "fails on both fields if the validation fails" <|
                 \_ ->
                     twoFields (fields2 "a" "b") "key2" "key3" (passwordMatch success) (valid Required)

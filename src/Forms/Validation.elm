@@ -333,7 +333,9 @@ passwordMatch : (String -> FieldValidation err a) -> Value -> Value -> FieldVali
 passwordMatch valid password passwordAgain =
     case ( password, passwordAgain ) of
         ( V.String s1, V.String s2 ) ->
-            if s1 == s2 then
+            if String.isEmpty s1 && String.isEmpty s2 then
+                failure EmptyString
+            else if s1 == s2 then
                 valid s1
             else
                 failure PasswordNotEqual
@@ -546,6 +548,7 @@ optionalMaybe1 fields comparable valid fvf =
 
 -- TwoFields
 -- TODO implement a generic version (x fields) if this feature is used
+-- TODO make sure we want to fail on both fields
 
 
 fieldsValid : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err a
