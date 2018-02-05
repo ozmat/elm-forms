@@ -159,8 +159,6 @@ success =
 
     type YourError
         = MustBeEmpty
-        | YourError2
-        | ...
 
     emptyValidation : String -> FieldValidation YourError String
     emptyValidation =
@@ -181,8 +179,6 @@ fails with a `WrongType` `FieldError`.
 
     type YourError
         = MustBeEmpty
-        | YourError2
-        | ...
 
     validateEmptyField : Value -> FieldValidation YourError String
     validateEmptyField =
@@ -204,8 +200,6 @@ fails with a `WrongType` `FieldError`.
 
     type YourError
         = MustBeChecked
-        | YourError2
-        | ...
 
     validateCheckedField : Value -> FieldValidation YourError Bool
     validateCheckedField =
@@ -231,8 +225,8 @@ cannot be cast, fails with a `NotInt` `FieldError`.
 
     doYourValidation : Int -> FieldValidation err a
 
-    validateFunction : Value -> FieldValidation err a
-    validateFunction =
+    validateField : Value -> FieldValidation err a
+    validateField =
         stringValid (int (doYourValidation))
 
 -}
@@ -251,8 +245,8 @@ cannot be cast, fails with a `NotFloat` `FieldError`.
 
     doYourValidation : Float -> FieldValidation err a
 
-    validateFunction : Value -> FieldValidation err a
-    validateFunction =
+    validateField : Value -> FieldValidation err a
+    validateField =
         stringValid (float (doYourValidation))
 
 -}
@@ -271,8 +265,8 @@ fails with an `EmptyString` `FieldError`.
 
     doYourValidation : String -> FieldValidation err a
 
-    validateFunction : Value -> FieldValidation err a
-    validateFunction =
+    validateField : Value -> FieldValidation err a
+    validateField =
         stringValid (notEmpty (doYourValidation))
 
 -}
@@ -289,8 +283,8 @@ If the `String` has a different length, fails with a `WrongLength` `FieldError`.
 
     doYourValidation : String -> FieldValidation err a
 
-    validateFunction : Value -> FieldValidation err a
-    validateFunction =
+    validateField : Value -> FieldValidation err a
+    validateField =
         stringValid (length low high (doYourValidation))
 
 -}
@@ -311,8 +305,8 @@ fails with a `NotEmail` `FieldError`.
 
     doYourValidation : String -> FieldValidation err a
 
-    validateFunction : Value -> FieldValidation err a
-    validateFunction =
+    validateField : Value -> FieldValidation err a
+    validateField =
         stringValid (email (doYourValidation))
 
 -}
@@ -330,8 +324,8 @@ don't match, fails with a `PasswordNotEqual` `FieldError`.
 
     doYourValidation : String -> FieldValidation err a
 
-    validateFunction : Value -> Value -> FieldValidation err a
-    validateFunction =
+    validateField : Value -> Value -> FieldValidation err a
+    validateField =
         passwordMatch (doYourValidation)
 
 -}
@@ -393,7 +387,7 @@ mapFormError comparable fv =
 -- Validate a Form
 
 
-{-| `Validate` is a type alias representing a function that validates a `Form`.
+{-| `Validate` represents a function that validates a `Form`.
 It takes a `Group` of `Field`s and returns a `FormValidation`
 -}
 type alias Validate comparable err a =

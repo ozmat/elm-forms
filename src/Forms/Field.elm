@@ -16,7 +16,9 @@ module Forms.Field
         , setValue
         )
 
-{-| A `Field` represents a [`Form`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Form#Form) field
+{-| A `Field` represents a [`Form`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Form#Form) field.
+Please refer to the [basic examples]() (or [advanced examples]()) for a better
+understanding
 
 
 # Definition
@@ -42,13 +44,9 @@ import Forms.Value as V exposing (Value)
 {-| A `Field` can be a simple field with a `Value` (= `FieldValue`) or a
 group of fields (= `FieldGroup`)
 
-    simpleField : Field comparable
-    simpleField =
-        FieldValue (String "some input value")
+    FieldValue (String "some input value")
 
-    groupOfFields : Field comparable
-    groupOfFields =
-        FieldGroup (Dict.fromList [ ( comparable1, simpleField ), ( comparable2, simpleField ) ])
+    FieldGroup (Dict.fromList [ ... ])
 
 -}
 type Field comparable
@@ -93,7 +91,7 @@ takes a `List` of `Tuple` and creates the `Group` for you :
     tupleExample =
         (comparable, string)
 
-    group [tupleExample, ...] -- FieldGroup ...
+    group [tupleExample, ...] -- FieldGroup (Dict.fromList [ ... ])
 
 -}
 group : List ( comparable, Field comparable ) -> Field comparable
@@ -212,6 +210,20 @@ getField comparable group =
 
 {-| Retrieves the `Value` associated with a key. If the key is not found or
 the `Field` is not a `FieldValue` returns `Nothing`
+
+    someFormFields : Group comparable
+    someFormFields =
+        fields
+            [ ( comparable1, string )
+            , ( comparable2, bool )
+            , ( comparable3, group [] )
+            ]
+
+    getValue comparable1 someFormFields -- Just (String ...)
+    getValue comparable2 someFormFields -- Just (Bool ...)
+    getValue comparable3 someFormFields -- Nothing
+    getValue notfound someFormFields    -- Nothing
+
 -}
 getValue : comparable -> Group comparable -> Maybe Value
 getValue comparable group =
@@ -230,6 +242,20 @@ getValue comparable group =
 
 {-| Retrieves the `Group` associated with a key. If the key is not found or
 the `Field` is not a `FieldGroup` returns `Nothing`
+
+    someFormFields : Group comparable
+    someFormFields =
+        fields
+            [ ( comparable1, string )
+            , ( comparable2, bool )
+            , ( comparable3, group [] )
+            ]
+
+    getGroup comparable1 someFormFields -- Nothing
+    getGroup comparable2 someFormFields -- Nothing
+    getGroup comparable3 someFormFields -- Just (Dict.fromList [ ... ])
+    getGroup notfound someFormFields    -- Nothing
+
 -}
 getGroup : comparable -> Group comparable -> Maybe (Group comparable)
 getGroup comparable group =
@@ -253,6 +279,19 @@ getGroup comparable group =
 {-| Updates the `Value` associated with a key. It will only update the `Value`
 if the key is found, the `Field` is a `FieldValue` and the `Value`s have the
 same type
+
+    someFormFields : Group comparable
+    someFormFields =
+        fields
+            [ ( comparable1, string )
+            , ( comparable2, group [] )
+            ]
+
+    setValue comparable1 (String ...) someFormFields -- updates
+    setValue comparable1 (Bool ...) someFormFields   -- doesn't update
+    setValue comparable2 (...) someFormFields        -- doesn't update
+    setValue notfound (...) someFormFields           -- doesn't update
+
 -}
 setValue : comparable -> Value -> Group comparable -> Group comparable
 setValue comparable value group =

@@ -8,7 +8,9 @@ module Forms.Value
         , safeUpdate
         )
 
-{-| A `Value` represents the value inside a [`Field`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Field)
+{-| A `Value` represents the value inside a [`Field`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Field).
+Please refer to the [basic examples]() (or [advanced examples]()) for a better
+understanding
 
 
 # Definition
@@ -90,11 +92,8 @@ defaultBool =
 
 {-| Only updates `Value`s of same type
 
-    safeUpdate (String "new one") (String "old one")
-        |> Expect.equal (String "new one")
-
-    safeUpdate (String "new one") (Bool False)
-        |> Expect.equal (Bool False)
+    safeUpdate (String "new one") (String "old one") -- String "new one"
+    safeUpdate (String "new one") (Bool False)       -- Bool False
 
 -}
 safeUpdate : Value -> Value -> Value
