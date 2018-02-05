@@ -138,16 +138,10 @@ all =
                     required (fields1 "notaa") "key1" (stringValid valFail) (valid Required)
                         |> Expect.equal (formE "key1" (CustomError "error"))
             ]
-        , describe "Validation.hardcoded"
-            [ fuzz string "helps validating a hardcoded Field" <|
-                \s ->
-                    hardcoded (fields1 "whatever") "key1" s (valid Required)
-                        |> Expect.equal (valid (Required s))
-            , test "fails if the field is missing" <|
-                \_ ->
-                    hardcoded (fields1 "") "notfound" "" (valid Required)
-                        |> Expect.equal (formE "notfound" MissingField)
-            ]
+        , fuzz string "Validation.hardcoded helps harcoding a value during a Validation" <|
+            \s ->
+                hardcoded s (valid Required)
+                    |> Expect.equal (valid (Required s))
         , describe "Validation.optional"
             [ test "helps validating an optional Field with a default value" <|
                 \_ ->

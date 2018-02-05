@@ -437,35 +437,29 @@ required1 fields comparable valid fvf =
     VA.andMap (fieldValid fields comparable valid) fvf
 
 
-{-| Hardcodes a value for a `Field`. This is useful when you need to harcode
-a specific value in the validation process
+{-| Hardcodes a value. This is useful when you need to harcode
+a specific value during the validation process
 
     ...
-        |> hardcoded fields comparable yourHardcodedValue
-        ...
-
-`hardcoded` is equivalent to a specific `required`:
-
-    ...
-        |> required fields comparable (\_ -> success yourHardcodedValue)
+        |> hardcoded yourHardcodedValue
         ...
 
 -}
-hardcoded : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-hardcoded fields comparable a fvf =
-    required fields comparable (\_ -> success a) fvf
+hardcoded : a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+hardcoded a fvf =
+    VA.andMapAcc (valid a) fvf
 
 
 {-| Hardcodes a value for a `Field` (binding)
 
     ...
-        |> hardcoded1 fields comparable yourHardcodedValue
+        |> hardcoded1 yourHardcodedValue
         ...
 
 -}
-hardcoded1 : Group comparable -> comparable -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-hardcoded1 fields comparable a fvf =
-    required1 fields comparable (\_ -> success a) fvf
+hardcoded1 : a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+hardcoded1 a fvf =
+    VA.andMap (valid a) fvf
 
 
 
