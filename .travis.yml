@@ -6,6 +6,8 @@ node_js: node
 cache:
   directories:
     - elm-stuff/build-artifacts
+    - tests/elm-stuff/build-artifacts
+    - examples/elm-stuff/build-artifacts
     - sysconfcpus
 
 before_install:
@@ -24,12 +26,29 @@ install:
   - mv $(npm config get prefix)/bin/elm-make $(npm config get prefix)/bin/elm-make-old
   - printf "#\041/bin/bash\n\necho \"Running elm-make with sysconfcpus -n 2\"\n\n$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-make-old \"\$@\"" > $(npm config get prefix)/bin/elm-make
   - chmod +x $(npm config get prefix)/bin/elm-make
+  # Lib
   - travis_retry elm-package install -y
+  # Tests
   - cd tests
+  - travis_retry elm-package install -y
+  - cd ..
+  # Examples
+  - cd examples
+  - cp 1-basic/elm-package.json .
   - travis_retry elm-package install -y
   - cd ..
 
 script:
-  - elm-format --validate src tests
+  # Format
+  - elm-format --validate src tests examples
+  # Lib
   - elm-make --yes
+  # Tests
   - elm-test
+  # Examples
+  - cd examples
+  - elm-make 1-basic/Main.elm
+  - elm-make 2-custom/Main.elm
+  - elm-make 3-effects/Main.elm
+  - elm-make 4-transform/Main.elm
+  - cd ..
