@@ -40,7 +40,7 @@ Here is a list of different features that we need when dealing with Forms imo
    elm-lang/html ... The library should only provide function to use in the
    view layer
 
-And the library should also be :
+Plus, the library should also be :
 
 - **Easy to use**
    
