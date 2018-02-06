@@ -23,7 +23,6 @@ Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/ex
 -}
 
 import Dict as D exposing (Dict)
-import Validation as VA
 import Forms.Field as F exposing (Group)
 import Forms.Validation as V exposing (Validate, FieldError)
 
@@ -51,15 +50,12 @@ and `Field`s to run the validation process, then it will convert the
 -}
 validate : Form comparable err a -> Result (List ( comparable, FieldError err )) a
 validate (Form fields validate) =
-    validate fields
-        |> VA.toResult
-        |> Result.mapError (List.map V.toTuple)
+    V.toResult (validate fields)
 
 
-{-| Equivalent to the previous one but returns a
-`Dict` of error instead of a `List`.
+{-| Equivalent to the previous one but returns a `Dict` of errors, in case of
+failure, instead of a `List`.
 -}
 validateD : Form comparable err a -> Result (Dict comparable (FieldError err)) a
 validateD fo =
-    validate fo
-        |> Result.mapError D.fromList
+    Result.mapError D.fromList (validate fo)
