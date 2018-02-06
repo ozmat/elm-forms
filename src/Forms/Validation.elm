@@ -21,6 +21,7 @@ module Forms.Validation
         , FormValidation
         , valid
         , toTuple
+        , toResult
           -- Validate
         , Validate
         , required
@@ -68,7 +69,7 @@ the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a be
 
 ### Common Helpers
 
-@docs valid, toTuple
+@docs valid, toTuple, toResult
 
 
 # Validate
@@ -378,6 +379,13 @@ valid =
 toTuple : FormError comparable err -> ( comparable, FieldError err )
 toTuple (FormError comparable fe) =
     ( comparable, fe )
+
+
+{-| Converts a `FormValidation` into a Result
+-}
+toResult : FormValidation comparable err a -> Result (List ( comparable, FieldError err )) a
+toResult validation =
+    Result.mapError (List.map toTuple) (VA.toResult validation)
 
 
 mapFormError : comparable -> FieldValidation err a -> FormValidation comparable err a

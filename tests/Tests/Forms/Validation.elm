@@ -124,10 +124,20 @@ all =
             \s ->
                 valid s
                     |> Expect.equal (VA.success s)
-        , fuzz string "Validation.toTuple turns a FormError into a Tuple" <|
-            \s ->
+        , test "Validation.toTuple turns a FormError into a Tuple" <|
+            \_ ->
                 toTuple (FormError "key" WrongType)
                     |> Expect.equal ( "key", WrongType )
+        , describe "Validation.toResult"
+            [ fuzz string " turns a FormValidation into a Result (Success)" <|
+                \s ->
+                    toResult (valid s)
+                        |> Expect.equal (Ok s)
+            , fuzz string " turns a FormValidation into a Result (Failure)" <|
+                \s ->
+                    toResult (VA.failure (FormError s WrongType))
+                        |> Expect.equal (Err [ ( s, WrongType ) ])
+            ]
         , describe "Validation.required"
             [ fuzz string "helps validating a required Field" <|
                 \s ->
