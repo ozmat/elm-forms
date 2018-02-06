@@ -34,7 +34,6 @@ install:
   - cd ..
   # Examples
   - cd examples
-  - cp 1-basic/elm-package.json .
   - travis_retry elm-package install -y
   - cd ..
 
@@ -46,9 +45,4 @@ script:
   # Tests
   - elm-test
   # Examples
-  - cd examples
-  - elm-make 1-basic/Main.elm
-  - elm-make 2-custom/Main.elm
-  - elm-make 3-effects/Main.elm
-  - elm-make 4-transform/Main.elm
-  - cd ..
+  - examples/travis-build-examples.sh
