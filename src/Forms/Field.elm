@@ -2,7 +2,7 @@ module Forms.Field
     exposing
         ( -- Field
           Field(..)
-        , Group
+        , Fields
           -- Helpers
         , string
         , bool
@@ -22,7 +22,7 @@ Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/ex
 
 # Definition
 
-@docs Field, Group
+@docs Field, Fields
 
 
 # Common Helpers
@@ -40,8 +40,8 @@ import Dict as D exposing (Dict)
 import Forms.Value as V exposing (Value)
 
 
-{-| A `Field` can be a simple field with a `Value` (= `FieldValue`) or a
-group of fields (= `FieldGroup`)
+{-| A `Field` can either hold a `Value` (= `FieldValue`) or a
+group of `Field`s (= `FieldGroup`)
 
     FieldValue (String "some input value")
 
@@ -49,13 +49,13 @@ group of fields (= `FieldGroup`)
 
 -}
 type Field comparable
-    = FieldGroup (Group comparable)
-    | FieldValue Value
+    = FieldValue Value
+    | FieldGroup (Fields comparable)
 
 
-{-| A `Group` is a group of `Field`s. The underlying data structure is a [`Dict`](http://package.elm-lang.org/packages/elm-lang/core/latest/Dict#Dict)
+{-| `Fields` is a group of `Field`s. The underlying data structure is a [`Dict`](http://package.elm-lang.org/packages/elm-lang/core/latest/Dict#Dict)
 -}
-type alias Group comparable =
+type alias Fields comparable =
     Dict comparable (Field comparable)
 
 
@@ -83,8 +83,8 @@ bool =
     FieldValue V.defaultBool
 
 
-{-| Is a shortcut to create a `Field` with a `Group` of fields. The function
-takes a `List` of `Tuple` and creates the `Group` for you :
+{-| Is a shortcut to create a `Field` with a group of `Field`s. The function
+takes a `List` of `Tuple` and creates the `Fields` for you :
 
     tupleExample : ( comparable, Field comparable )
     tupleExample =
@@ -98,10 +98,10 @@ group g =
     FieldGroup (fields g)
 
 
-{-| Is a shortcut to create a `Group` of `Field`s. The function takes a
+{-| Is a shortcut to create `Fields`. The function takes a
 `List` of `Tuple`
 
-    someFormFields : Group comparable
+    someFormFields : Fields comparable
     someFormFields =
         fields
             [ ( comparable1, string )
@@ -116,7 +116,7 @@ group g =
             ]
 
 -}
-fields : List ( comparable, Field comparable ) -> Group comparable
+fields : List ( comparable, Field comparable ) -> Fields comparable
 fields =
     D.fromList
 
@@ -155,7 +155,7 @@ mapValue f field =
             field
 
 
-mapGroup : (Group comparable -> Group comparable) -> Field comparable -> Field comparable
+mapGroup : (Fields comparable -> Fields comparable) -> Field comparable -> Field comparable
 mapGroup f field =
     case field of
         FieldGroup g ->
@@ -174,16 +174,16 @@ updateValue value field =
     Maybe.map (mapValue (V.safeUpdate value)) field
 
 
-updateGroup : Group comparable -> Maybe (Field comparable) -> Maybe (Field comparable)
+updateGroup : Fields comparable -> Maybe (Field comparable) -> Maybe (Field comparable)
 updateGroup group field =
     Maybe.map (mapGroup (always group)) field
 
 
 
--- Group traversal -> get
+-- Fields traversal -> get
 
 
-getField : comparable -> Group comparable -> Maybe (Field comparable)
+getField : comparable -> Fields comparable -> Maybe (Field comparable)
 getField comparable group =
     let
         walk k v acc =
@@ -210,7 +210,7 @@ getField comparable group =
 {-| Retrieves the `Value` associated with a key. If the key is not found or
 the `Field` is not a `FieldValue` returns `Nothing`
 
-    someFormFields : Group comparable
+    someFormFields : Fields comparable
     someFormFields =
         fields
             [ ( comparable1, string )
@@ -224,7 +224,7 @@ the `Field` is not a `FieldValue` returns `Nothing`
     getValue notfound someFormFields    -- Nothing
 
 -}
-getValue : comparable -> Group comparable -> Maybe Value
+getValue : comparable -> Fields comparable -> Maybe Value
 getValue comparable group =
     case getField comparable group of
         Just field ->
@@ -239,10 +239,10 @@ getValue comparable group =
             Nothing
 
 
-{-| Retrieves the `Group` associated with a key. If the key is not found or
+{-| Retrieves the group of `Field`s associated with a key. If the key is not found or
 the `Field` is not a `FieldGroup` returns `Nothing`
 
-    someFormFields : Group comparable
+    someFormFields : Fields comparable
     someFormFields =
         fields
             [ ( comparable1, string )
@@ -256,7 +256,7 @@ the `Field` is not a `FieldGroup` returns `Nothing`
     getGroup notfound someFormFields    -- Nothing
 
 -}
-getGroup : comparable -> Group comparable -> Maybe (Group comparable)
+getGroup : comparable -> Fields comparable -> Maybe (Fields comparable)
 getGroup comparable group =
     case getField comparable group of
         Just field ->
@@ -272,14 +272,14 @@ getGroup comparable group =
 
 
 
--- Group traversal -> set
+-- Fields traversal -> set
 
 
 {-| Updates the `Value` associated with a key. It will only update the `Value`
 if the key is found, the `Field` is a `FieldValue` and the `Value`s have the
 same type
 
-    someFormFields : Group comparable
+    someFormFields : Fields comparable
     someFormFields =
         fields
             [ ( comparable1, string )
@@ -292,7 +292,7 @@ same type
     setValue notfound (...) someFormFields           -- doesn't update
 
 -}
-setValue : comparable -> Value -> Group comparable -> Group comparable
+setValue : comparable -> Value -> Fields comparable -> Fields comparable
 setValue comparable value group =
     let
         walk k v acc =

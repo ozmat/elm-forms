@@ -79,7 +79,7 @@ type UserType
     | Admin
 
 
-myFormFields : FF.Group String
+myFormFields : FF.Fields String
 myFormFields =
     FF.fields
         [ ( "first_name", FF.string )

@@ -23,7 +23,7 @@ all =
             \_ ->
                 group fixture1
                     |> Expect.equal (FieldGroup (D.fromList fixture1))
-        , test "Field.fields creates a Group from a tuple-list" <|
+        , test "Field.fields creates a Fields from a tuple-list" <|
             \_ ->
                 fields fixture1
                     |> Expect.equal (D.fromList fixture1)
@@ -36,15 +36,15 @@ all =
                 boolWithValue b
                     |> Expect.equal (FieldValue (V.bool b))
         , describe "Field.getValue"
-            [ fuzz F.string "retrieves a value from a Group (depth 1)" <|
+            [ fuzz F.string "retrieves a value from a Fields (depth 1)" <|
                 \s ->
                     getValue "key1" (fixture2 s)
                         |> Expect.equal (Just (V.string s))
-            , fuzz F.string "retrieves a value from a Group (depth 2)" <|
+            , fuzz F.string "retrieves a value from a Fields (depth 2)" <|
                 \s ->
                     getValue "key2" (fixture2 s)
                         |> Expect.equal (Just (V.string s))
-            , fuzz F.string "retrieves a value from a Group (depth 3)" <|
+            , fuzz F.string "retrieves a value from a Fields (depth 3)" <|
                 \s ->
                     getValue "key3" (fixture2 s)
                         |> Expect.equal (Just (V.string s))
@@ -54,7 +54,7 @@ all =
                         |> Expect.equal Nothing
             ]
         , describe "Field.getGroup"
-            [ fuzz F.string "retrieves a Group from a Group" <|
+            [ fuzz F.string "retrieves a Fields from a Fields" <|
                 \s ->
                     getGroup "group1" (fixture2 s)
                         |> Expect.equal (Just (fixture3 s))
@@ -64,15 +64,15 @@ all =
                         |> Expect.equal Nothing
             ]
         , describe "Field.setValue"
-            [ fuzz F.string "set a value in a Group (depth 1)" <|
+            [ fuzz F.string "set a value in a Fields (depth 1)" <|
                 \s ->
                     getValue "key1" (setValue "key1" (V.string s) (fixture2 ""))
                         |> Expect.equal (Just (V.string s))
-            , fuzz F.string "set a value in a Group (depth 2)" <|
+            , fuzz F.string "set a value in a Fields (depth 2)" <|
                 \s ->
                     getValue "key2" (setValue "key2" (V.string s) (fixture2 ""))
                         |> Expect.equal (Just (V.string s))
-            , fuzz F.string "set a value in a Group (depth 3)" <|
+            , fuzz F.string "set a value in a Fields (depth 3)" <|
                 \s ->
                     getValue "key3" (setValue "key3" (V.string s) (fixture2 ""))
                         |> Expect.equal (Just (V.string s))
@@ -99,7 +99,7 @@ fixture1 =
     ]
 
 
-fixture2 : String -> Group String
+fixture2 : String -> Fields String
 fixture2 s =
     fields
         [ ( "key1", stringWithValue s )
@@ -107,7 +107,7 @@ fixture2 s =
         ]
 
 
-fixture3 : String -> Group String
+fixture3 : String -> Fields String
 fixture3 s =
     fields
         [ ( "key2", stringWithValue s )

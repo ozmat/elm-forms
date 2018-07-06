@@ -235,13 +235,13 @@ all =
 -- Fixutres
 
 
-fields1 : String -> F.Group String
+fields1 : String -> F.Fields String
 fields1 s =
     F.fields
         [ ( "key1", F.stringWithValue s ) ]
 
 
-fields2 : String -> String -> F.Group String
+fields2 : String -> String -> F.Fields String
 fields2 s1 s2 =
     F.fields
         [ ( "key2", F.stringWithValue s1 )
@@ -249,7 +249,7 @@ fields2 s1 s2 =
         ]
 
 
-fields3 : String -> F.Group String
+fields3 : String -> F.Fields String
 fields3 s =
     F.fields
         [ ( "group1"

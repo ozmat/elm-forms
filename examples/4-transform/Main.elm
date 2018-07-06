@@ -55,7 +55,7 @@ type alias OtherModel =
     }
 
 
-myFormFields : FF.Group String
+myFormFields : FF.Fields String
 myFormFields =
     FF.fields
         [ ( "red", FF.string )

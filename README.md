@@ -93,7 +93,7 @@ type alias OtherModel =
     , referenceNumber : Int
     }
 
-myFormFields : FF.Group String
+myFormFields : FF.Fields String
 myFormFields =
     FF.fields
         [ ( "first_name", FF.string )

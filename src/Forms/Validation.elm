@@ -98,7 +98,7 @@ won't accumulate the errors. Don't mix those functions with the previous ones
 
 import Regex
 import Validation as VA exposing (Validation(..))
-import Forms.Field as F exposing (Group)
+import Forms.Field as F exposing (Fields)
 import Forms.Value as V exposing (Value)
 
 
@@ -398,13 +398,13 @@ mapFormError comparable fv =
 
 
 {-| `Validate` represents a function that validates a `Form`.
-It takes a `Group` of `Field`s and returns a `FormValidation`
+It takes a group of `Field`s and returns a `FormValidation`
 -}
 type alias Validate comparable err a =
-    Group comparable -> FormValidation comparable err a
+    Fields comparable -> FormValidation comparable err a
 
 
-fieldValid : Group comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err a
+fieldValid : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err a
 fieldValid fields comparable valid =
     let
         missing mvalue =
@@ -430,7 +430,7 @@ validate the `Field`
         ...
 
 -}
-required : Group comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+required : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 required fields comparable valid fvf =
     VA.andMapAcc (fieldValid fields comparable valid) fvf
 
@@ -442,7 +442,7 @@ required fields comparable valid fvf =
         ...
 
 -}
-required1 : Group comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+required1 : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 required1 fields comparable valid fvf =
     VA.andMap (fieldValid fields comparable valid) fvf
 
@@ -511,7 +511,7 @@ on `String` `Value`
         ...
 
 -}
-optional : Group comparable -> comparable -> (String -> FieldValidation err a) -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+optional : Fields comparable -> comparable -> (String -> FieldValidation err a) -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 optional fields comparable valid default fvf =
     required fields comparable (optional_ valid default) fvf
 
@@ -523,7 +523,7 @@ optional fields comparable valid default fvf =
         ...
 
 -}
-optional1 : Group comparable -> comparable -> (String -> FieldValidation err a) -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+optional1 : Fields comparable -> comparable -> (String -> FieldValidation err a) -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 optional1 fields comparable valid default fvf =
     required1 fields comparable (optional_ valid default) fvf
 
@@ -536,7 +536,7 @@ but the default value is `Nothing` and the validated value is `Just`
         ...
 
 -}
-optionalMaybe : Group comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
+optionalMaybe : Fields comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
 optionalMaybe fields comparable valid fvf =
     optional fields comparable (\s -> VA.map Just (valid s)) Nothing fvf
 
@@ -548,7 +548,7 @@ optionalMaybe fields comparable valid fvf =
         ...
 
 -}
-optionalMaybe1 : Group comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
+optionalMaybe1 : Fields comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
 optionalMaybe1 fields comparable valid fvf =
     optional1 fields comparable (\s -> VA.map Just (valid s)) Nothing fvf
 
@@ -559,7 +559,7 @@ optionalMaybe1 fields comparable valid fvf =
 -- TODO make sure we want to fail on both fields
 
 
-fieldsValid : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err a
+fieldsValid : Fields comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err a
 fieldsValid fields comparable1 comparable2 valid =
     let
         fe1 =
@@ -602,7 +602,7 @@ fieldsValid fields comparable1 comparable2 valid =
         ...
 
 -}
-twoFields : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+twoFields : Fields comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 twoFields fields comparable1 comparable2 valid fvf =
     VA.andMapAcc (fieldsValid fields comparable1 comparable2 valid) fvf
 
@@ -614,7 +614,7 @@ twoFields fields comparable1 comparable2 valid fvf =
         ...
 
 -}
-twoFields1 : Group comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+twoFields1 : Fields comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 twoFields1 fields comparable1 comparable2 valid fvf =
     VA.andMap (fieldsValid fields comparable1 comparable2 valid) fvf
 
@@ -623,7 +623,7 @@ twoFields1 fields comparable1 comparable2 valid fvf =
 -- FieldGroup
 
 
-groupValid : Group comparable -> comparable -> (Group comparable -> FormValidation comparable err a) -> FormValidation comparable err a
+groupValid : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err a
 groupValid fields comparable valid =
     let
         missing mgroup =
@@ -637,7 +637,7 @@ groupValid fields comparable valid =
         missing (F.getGroup comparable fields)
 
 
-{-| Validates a `Group` of `Field`s. This can be useful in many different cases
+{-| Validates a group of `Field`s. This can be useful in many different cases
 but mainly when you need to nest a validation process
 
      ...
@@ -645,18 +645,18 @@ but mainly when you need to nest a validation process
         ...
 
 -}
-fieldGroup : Group comparable -> comparable -> (Group comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+fieldGroup : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 fieldGroup fields comparable valid fvf =
     VA.andMapAcc (groupValid fields comparable valid) fvf
 
 
-{-| Validates a `Group` of `Field`s (binding)
+{-| Validates a group of `Field`s (binding)
 
      ...
         |> fieldGroup fields comparable doYourValidation
         ...
 
 -}
-fieldGroup1 : Group comparable -> comparable -> (Group comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+fieldGroup1 : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 fieldGroup1 fields comparable valid fvf =
     VA.andMap (groupValid fields comparable valid) fvf
