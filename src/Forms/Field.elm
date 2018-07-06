@@ -206,8 +206,8 @@ updateValue value field =
 
 
 updateGroup : Fields comparable -> Maybe (Field comparable) -> Maybe (Field comparable)
-updateGroup group field =
-    Maybe.map (mapGroup (always group)) field
+updateGroup gr field =
+    Maybe.map (mapGroup (always gr)) field
 
 
 
@@ -215,7 +215,7 @@ updateGroup group field =
 
 
 getField : comparable -> Fields comparable -> Maybe (Field comparable)
-getField comparable group =
+getField comparable gr =
     let
         walk k v acc =
             case acc of
@@ -230,12 +230,12 @@ getField comparable group =
                         _ ->
                             Nothing
     in
-        case D.get comparable group of
+        case D.get comparable gr of
             Just field ->
                 Just field
 
             Nothing ->
-                D.foldl walk Nothing group
+                D.foldl walk Nothing gr
 
 
 {-| Retrieves the `Value` associated with a key. If the key is not found or
@@ -256,8 +256,8 @@ the `Field` is not a `FieldValue` returns `Nothing`
 
 -}
 getValue : comparable -> Fields comparable -> Maybe Value
-getValue comparable group =
-    case getField comparable group of
+getValue comparable gr =
+    case getField comparable gr of
         Just field ->
             case field of
                 FieldValue value ->
@@ -288,8 +288,8 @@ the `Field` is not a `FieldGroup` returns `Nothing`
 
 -}
 getGroup : comparable -> Fields comparable -> Maybe (Fields comparable)
-getGroup comparable group =
-    case getField comparable group of
+getGroup comparable gr =
+    case getField comparable gr of
         Just field ->
             case field of
                 FieldGroup g ->
@@ -324,7 +324,7 @@ same type
 
 -}
 setValue : comparable -> Value -> Fields comparable -> Fields comparable
-setValue comparable value group =
+setValue comparable value gr =
     let
         walk k v acc =
             if k == comparable then
@@ -337,4 +337,4 @@ setValue comparable value group =
                     _ ->
                         acc
     in
-        D.foldl walk group group
+        D.foldl walk gr gr
