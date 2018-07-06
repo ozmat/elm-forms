@@ -100,12 +100,12 @@ checkbox =
     FieldValue V.defaultBool
 
 
-{-| Is a shortcut to create a `Field` with a group of `Field`s. The function
-takes a `List` of `Tuple` and creates the `Fields` for you :
+{-| Is a shortcut to create a `Field` that holds a group of `Field`s.
+The function takes a `List` of `Tuple` and creates the `Fields` for you :
 
     tupleExample : ( comparable, Field comparable )
     tupleExample =
-        (comparable, string)
+        (comparable, input)
 
     group [tupleExample, ...] -- FieldGroup (Dict.fromList [ ... ])
 
@@ -121,13 +121,13 @@ group g =
     someFormFields : Fields comparable
     someFormFields =
         fields
-            [ ( comparable1, string )
-            , ( comparable2, bool )
+            [ ( comparable1, input )
+            , ( comparable2, checkbox )
             , ( comparable3
               , group
-                    [ ( comparable4, string )
-                    , ( comparable5, string )
-                    , ( comparable6, string )
+                    [ ( comparable4, input )
+                    , ( comparable5, input )
+                    , ( comparable6, select )
                     ]
               )
             ]
@@ -144,7 +144,7 @@ fields =
 
 {-| Is a shortcut to create an input `Field` with a default value
 
-    inputWithDefault "initial" -- FieldValue (String "initial")
+    inputWithDefault "default" -- FieldValue (String "default")
 
 -}
 inputWithDefault : String -> Field comparable
@@ -154,7 +154,7 @@ inputWithDefault s =
 
 {-| Is a shortcut to create a select `Field` with a default value
 
-    selectWithDefault "initial" -- FieldValue (String "initial")
+    selectWithDefault "default" -- FieldValue (String "default")
 
 -}
 selectWithDefault : String -> Field comparable

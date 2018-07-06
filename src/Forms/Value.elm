@@ -29,7 +29,7 @@ Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/ex
 -}
 
 
-{-| A `Value` can be a `String` (form input) or a `Bool` (form checkbox)
+{-| A `Value` can be a `String` (input, select) or a `Bool` (checkbox)
 
     String "some input value"
 
