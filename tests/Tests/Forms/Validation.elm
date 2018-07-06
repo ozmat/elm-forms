@@ -28,97 +28,93 @@ all =
             \s ->
                 validation s String.isEmpty "notempty"
                     |> Expect.equal (customFailure s)
-        , describe "Validation.stringValid"
-            [ fuzz string "helps validating a field with a String value" <|
+        , describe "Validation.stringField"
+            [ fuzz string "helps validating a string field (input/select)" <|
                 \s ->
-                    stringValid success (V.string s)
+                    stringField success (V.string s)
                         |> Expect.equal (success s)
             , test "fails otherwise" <|
                 \_ ->
-                    stringValid success (V.bool True)
+                    stringField success (V.bool True)
                         |> Expect.equal (failure WrongType)
             ]
-        , describe "Validation.boolValid"
-            [ fuzz bool "helps validating a field with a Bool value" <|
+        , describe "Validation.boolField"
+            [ fuzz bool "helps validating a bool field (checkbox)" <|
                 \b ->
-                    boolValid success (V.bool b)
+                    boolField success (V.bool b)
                         |> Expect.equal (success b)
             , test "fails otherwise" <|
                 \_ ->
-                    boolValid success (V.string "valid")
+                    boolField success (V.string "valid")
                         |> Expect.equal (failure WrongType)
             ]
         , describe "Validation.int"
             [ test "helps validating a field with a String/Int value" <|
                 \_ ->
-                    stringValid (int success) (V.string "100")
+                    stringField (int NotInt success) (V.string "100")
                         |> Expect.equal (success 100)
             , test "fails otherwise" <|
                 \_ ->
-                    stringValid (int success) (V.string "notint")
-                        |> Expect.equal (failure NotInt)
+                    stringField (int NotInt success) (V.string "notint")
+                        |> Expect.equal (customFailure NotInt)
             ]
         , describe "Validation.float"
             [ test "helps validating a field with a String/Float value" <|
                 \_ ->
-                    stringValid (float success) (V.string "5.54")
+                    stringField (float NotFloat success) (V.string "5.54")
                         |> Expect.equal (success 5.54)
             , test "fails otherwise" <|
                 \_ ->
-                    stringValid (float success) (V.string "notfloat")
-                        |> Expect.equal (failure NotFloat)
+                    stringField (float NotFloat success) (V.string "notfloat")
+                        |> Expect.equal (customFailure NotFloat)
             ]
         , describe "Validation.notEmpty"
             [ test "helps validating a field with a non empty String value" <|
                 \_ ->
-                    stringValid (notEmpty success) (V.string "notempty")
+                    stringField (notEmpty EmptyString success) (V.string "notempty")
                         |> Expect.equal (success "notempty")
             , test "fails otherwise" <|
                 \_ ->
-                    stringValid (notEmpty success) (V.string "")
-                        |> Expect.equal (failure EmptyString)
+                    stringField (notEmpty EmptyString success) (V.string "")
+                        |> Expect.equal (customFailure EmptyString)
             ]
         , describe "Validation.length"
             [ test "helps validating a field with a String value of a specific length" <|
                 \_ ->
-                    stringValid (length 2 5 success) (V.string "abc")
+                    stringField (length 2 5 WrongLength success) (V.string "abc")
                         |> Expect.equal (success "abc")
             , test "fails otherwise" <|
                 \_ ->
-                    stringValid (length 2 5 success) (V.string "ab")
-                        |> Expect.equal (failure WrongLength)
+                    stringField (length 2 5 WrongLength success) (V.string "ab")
+                        |> Expect.equal (customFailure WrongLength)
             ]
         , describe "Validation.email"
             [ test "helps validating a field with a String/email value" <|
                 \_ ->
-                    stringValid (email success) (V.string "abc@abc.com")
+                    stringField (email NotEmail success) (V.string "abc@abc.com")
                         |> Expect.equal (success "abc@abc.com")
             , test "fails otherwise" <|
                 \_ ->
-                    stringValid (email success) (V.string "notemail")
-                        |> Expect.equal (failure NotEmail)
+                    stringField (email NotEmail success) (V.string "notemail")
+                        |> Expect.equal (customFailure NotEmail)
             ]
         , describe "Validation.passwordMatch"
-            [ test "helps validating a two fields with String/Password matching values" <|
+            [ test "helps validating two fields with String/Password matching values" <|
                 \_ ->
-                    passwordMatch success (V.string "notempty") (V.string "notempty")
+                    passwordMatch PasswordNotEqual success (V.string "notempty") (V.string "notempty")
                         |> Expect.equal (success "notempty")
             , test "fails if not String Values" <|
                 \_ ->
-                    passwordMatch success (V.string "") (V.bool True)
+                    passwordMatch PasswordNotEqual success (V.string "") (V.bool True)
                         |> Expect.equal (failure WrongType)
-            , test "first empty string" <|
-                \_ ->
-                    passwordMatch success (V.string "") (V.string "")
-                        |> Expect.equal (failure EmptyString)
             , test "fails if not equal" <|
                 \_ ->
-                    passwordMatch success (V.string "ab") (V.string "abc")
-                        |> Expect.equal (failure PasswordNotEqual)
+                    passwordMatch PasswordNotEqual success (V.string "ab") (V.string "abc")
+                        |> Expect.equal (customFailure PasswordNotEqual)
             ]
         , test "Validation.FieldValidation can return any types" <|
             \_ ->
-                stringValid (\_ -> success [ 1, 2 ]) (V.string "whatever")
+                stringField (\_ -> success [ 1, 2 ]) (V.string "whatever")
                     |> Expect.equal (VA.success [ 1, 2 ])
         , fuzz string "Validation.valid creates a successful FormdValidation" <|
             \s ->
@@ -141,15 +137,15 @@ all =
         , describe "Validation.required"
             [ fuzz string "helps validating a required Field" <|
                 \s ->
-                    required (fields1 s) "key1" (stringValid success) (valid Required)
+                    required (fields1 s) "key1" (stringField success) (valid Required)
                         |> Expect.equal (valid (Required s))
             , test "fails if the field is missing" <|
                 \_ ->
-                    required (fields1 "") "notfound" (stringValid success) (valid Required)
+                    required (fields1 "") "notfound" (stringField success) (valid Required)
                         |> Expect.equal (formE "notfound" MissingField)
             , test "fails if the validation fails" <|
                 \_ ->
-                    required (fields1 "notaa") "key1" (stringValid valFail) (valid Required)
+                    required (fields1 "notaa") "key1" (stringField valFail) (valid Required)
                         |> Expect.equal (formE "key1" (CustomError "error"))
             ]
         , fuzz string "Validation.hardcoded helps harcoding a value during a Validation" <|
@@ -195,29 +191,29 @@ all =
         , describe "Validation.twoFields"
             [ test "helps validating two fields together" <|
                 \_ ->
-                    twoFields (fields2 "notempty" "notempty") "key2" "key3" (passwordMatch success) (valid Required)
+                    twoFields (fields2 "notempty" "notempty") "key2" "key3" (passwordMatch PasswordNotEqual success) (valid Required)
                         |> Expect.equal (valid (Required "notempty"))
             , test "fails if the first field is missing" <|
                 \_ ->
-                    twoFields (fields2 "" "") "notfound1" "key3" (passwordMatch success) (valid Required)
+                    twoFields (fields2 "" "") "notfound1" "key3" (passwordMatch PasswordNotEqual success) (valid Required)
                         |> Expect.equal (formE "notfound1" MissingField)
             , test "fails if the second field is missing" <|
                 \_ ->
-                    twoFields (fields2 "" "") "key2" "notfound2" (passwordMatch success) (valid Required)
+                    twoFields (fields2 "" "") "key2" "notfound2" (passwordMatch PasswordNotEqual success) (valid Required)
                         |> Expect.equal (formE "notfound2" MissingField)
             , test "fails if both fields are missing" <|
                 \_ ->
-                    twoFields (fields2 "" "") "notfound1" "notfound2" (passwordMatch success) (valid Required)
+                    twoFields (fields2 "" "") "notfound1" "notfound2" (passwordMatch PasswordNotEqual success) (valid Required)
                         |> Expect.equal (formEL "notfound1" "notfound2" MissingField)
             , test "fails on both fields if the validation fails" <|
                 \_ ->
-                    twoFields (fields2 "a" "b") "key2" "key3" (passwordMatch success) (valid Required)
-                        |> Expect.equal (formEL "key2" "key3" (PasswordNotEqual))
+                    twoFields (fields2 "a" "b") "key2" "key3" (passwordMatch PasswordNotEqual success) (valid Required)
+                        |> Expect.equal (formEL "key2" "key3" (CustomError PasswordNotEqual))
             ]
         , describe "Validation.fieldGroup"
             [ fuzz string "helps validating a FieldGroup" <|
                 \s ->
-                    fieldGroup (fields3 s) "group1" (\f -> required f "key4" (stringValid success) (valid Required)) (valid FieldGroup)
+                    fieldGroup (fields3 s) "group1" (\f -> required f "key4" (stringField success) (valid Required)) (valid FieldGroup)
                         |> Expect.equal (valid (FieldGroup (Required s)))
             , test "fails if the group is missing" <|
                 \_ ->
@@ -225,7 +221,7 @@ all =
                         |> Expect.equal (formE "notfound" MissingField)
             , test "fails if the group validation fails" <|
                 \_ ->
-                    fieldGroup (fields3 "notaa") "group1" (\f -> required f "key4" (stringValid valFail) (valid Required)) (valid FieldGroup)
+                    fieldGroup (fields3 "notaa") "group1" (\f -> required f "key4" (stringField valFail) (valid Required)) (valid FieldGroup)
                         |> Expect.equal (formE "key4" (CustomError "error"))
             ]
         ]
@@ -233,6 +229,15 @@ all =
 
 
 -- Fixutres
+
+
+type TestError
+    = NotInt
+    | NotFloat
+    | EmptyString
+    | WrongLength
+    | NotEmail
+    | PasswordNotEqual
 
 
 fields1 : String -> F.Fields String

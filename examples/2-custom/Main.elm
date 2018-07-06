@@ -98,20 +98,25 @@ myFormFields =
 
 
 type MyFormError
-    = TooYoung
+    = EmptyString
+    | NotInt
+    | TooYoung
     | TooOld
+    | NotFloat
     | WrongColor
+    | NotEmail
+    | PasswordDontMatch
 
 
 myFormValidate : FV.Validate String MyFormError OtherModel
 myFormValidate fields =
     FV.valid OtherModel
-        |> FV.required fields "first_name" (FV.stringValid <| FV.notEmpty <| FV.success << String.toUpper << String.trim)
-        |> FV.required fields "last_name" (FV.stringValid <| FV.notEmpty <| FV.success << String.toLower << String.trim)
+        |> FV.required fields "first_name" (FV.stringField <| FV.notEmpty EmptyString <| FV.success << String.toUpper << String.trim)
+        |> FV.required fields "last_name" (FV.stringField <| FV.notEmpty EmptyString <| FV.success << String.toLower << String.trim)
         |> FV.required fields
             "age"
-            (FV.stringValid <|
-                FV.int <|
+            (FV.stringField <|
+                FV.int NotInt <|
                     \i ->
                         if i < 18 then
                             FV.customFailure TooYoung
@@ -121,15 +126,15 @@ myFormValidate fields =
                             FV.success i
             )
         |> FV.fieldGroup fields "user_group" myUserValidate
-        |> FV.optional fields "wallet" (FV.float FV.success) 0
+        |> FV.optional fields "wallet" (FV.float NotFloat FV.success) 0
         |> FV.optionalMaybe fields "color" (FV.validation WrongColor isColor)
 
 
 myUserValidate : FV.Validate String MyFormError UserModel
 myUserValidate fields =
     FV.valid UserModel
-        |> FV.required fields "email" (FV.stringValid <| FV.email <| FV.success << String.toLower << String.trim)
-        |> FV.twoFields fields "password" "password_again" (FV.passwordMatch <| FV.success << encryptPassword)
+        |> FV.required fields "email" (FV.stringField <| FV.email NotEmail <| FV.success << String.toLower << String.trim)
+        |> FV.twoFields fields "password" "password_again" (FV.passwordMatch PasswordDontMatch <| FV.success << encryptPassword)
         |> FV.hardcoded User
 
 

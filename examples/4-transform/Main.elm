@@ -40,7 +40,7 @@ init =
 
 
 type alias Model =
-    { myForm : F.Form String () OtherModel
+    { myForm : F.Form String MyFormError OtherModel
     }
 
 
@@ -53,6 +53,10 @@ type alias OtherModel =
     , floatNumber : Float
     , repeated : Dict String Int
     }
+
+
+type MyFormError
+    = NotInt
 
 
 myFormFields : FF.Fields String
@@ -72,13 +76,13 @@ myFormFields =
         ]
 
 
-myFormValidate : FV.Validate String () OtherModel
+myFormValidate : FV.Validate String MyFormError OtherModel
 myFormValidate fields =
     FV.valid OtherModel
         -- Transform String to Bool
-        |> FV.required fields "red" (FV.stringValid <| FV.success << ((==) "red"))
+        |> FV.required fields "red" (FV.stringField <| FV.success << ((==) "red"))
         -- Transform String to Float
-        |> FV.required fields "float" (FV.stringValid <| FV.int <| FV.success << (*) 5.4 << toFloat)
+        |> FV.required fields "float" (FV.stringField <| FV.int NotInt <| FV.success << (*) 5.4 << toFloat)
         -- Transform 5 Strings to  Dict ( String, Int )
         |> FV.fieldGroup fields "repeat_group" repeatValidate
 
@@ -100,14 +104,14 @@ repeatCount s1 s2 s3 s4 s5 =
         List.foldl fold Dict.empty [ s1, s2, s3, s4, s5 ]
 
 
-repeatValidate : FV.Validate String () (Dict String Int)
+repeatValidate : FV.Validate String MyFormError (Dict String Int)
 repeatValidate fields =
     FV.valid repeatCount
-        |> FV.required fields "repeat1" (FV.stringValid <| FV.success << String.toLower)
-        |> FV.required fields "repeat2" (FV.stringValid <| FV.success << String.toLower)
-        |> FV.required fields "repeat3" (FV.stringValid <| FV.success << String.toLower)
-        |> FV.required fields "repeat4" (FV.stringValid <| FV.success << String.toLower)
-        |> FV.required fields "repeat5" (FV.stringValid <| FV.success << String.toLower)
+        |> FV.required fields "repeat1" (FV.stringField <| FV.success << String.toLower)
+        |> FV.required fields "repeat2" (FV.stringField <| FV.success << String.toLower)
+        |> FV.required fields "repeat3" (FV.stringField <| FV.success << String.toLower)
+        |> FV.required fields "repeat4" (FV.stringField <| FV.success << String.toLower)
+        |> FV.required fields "repeat5" (FV.stringField <| FV.success << String.toLower)
 
 
 

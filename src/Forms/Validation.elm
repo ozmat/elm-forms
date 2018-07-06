@@ -7,9 +7,10 @@ module Forms.Validation
         , customFailure
         , success
         , validation
+          -- Type validation
+        , stringField
+        , boolField
           -- Basic validation
-        , stringValid
-        , boolValid
         , int
         , float
         , notEmpty
@@ -52,12 +53,12 @@ the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a be
 @docs failure, customFailure, success, validation
 
 
-### Type validation
+### Type Validation
 
-@docs stringValid, boolValid
+@docs stringField, boolField
 
 
-### Basic Validation
+### Basic Validation Helpers
 
 @docs int, float, notEmpty, length, email, passwordMatch
 
@@ -117,12 +118,6 @@ type FieldError err
     = CustomError err
     | MissingField
     | WrongType
-    | NotInt
-    | NotFloat
-    | EmptyString
-    | WrongLength
-    | NotEmail
-    | PasswordNotEqual
 
 
 {-| A `FieldValidation` represents the [`Validation`](http://package.elm-lang.org/packages/ozmat/elm-validation/latest/Validation#Validation) of a `Field`
@@ -172,22 +167,22 @@ validation err valid a =
 
 
 
--- Type validation
+-- Type Validation
 
 
-{-| Helps validating a `String` `Value`. If the `Value` has a different type,
-fails with a `WrongType` `FieldError`.
+{-| Helps validating a `String` `Field` (input, select). If the inner `Value`
+is not a `String`, fails with a `WrongType` `FieldError`.
 
     type YourError
         = MustBeEmpty
 
     validateEmptyField : Value -> FieldValidation YourError String
     validateEmptyField =
-        stringValid (validation MustBeEmpty String.isEmpty)
+        stringField (validation MustBeEmpty String.isEmpty)
 
 -}
-stringValid : (String -> FieldValidation err a) -> Value -> FieldValidation err a
-stringValid valid value =
+stringField : (String -> FieldValidation err a) -> Value -> FieldValidation err a
+stringField valid value =
     case value of
         V.String s ->
             valid s
@@ -196,19 +191,19 @@ stringValid valid value =
             failure WrongType
 
 
-{-| Helps validating a `Bool` `Value`. If the `Value` has a different type,
-fails with a `WrongType` `FieldError`.
+{-| Helps validating a `Bool` `Field` (checkbox). If the inner `Value` is not a
+`Bool`, fails with a `WrongType` `FieldError`.
 
     type YourError
         = MustBeChecked
 
     validateCheckedField : Value -> FieldValidation YourError Bool
     validateCheckedField =
-        boolValid (validation MustBeChecked ((==) True))
+        checkboxField (validation MustBeChecked ((==) True))
 
 -}
-boolValid : (Bool -> FieldValidation err a) -> Value -> FieldValidation err a
-boolValid valid value =
+boolField : (Bool -> FieldValidation err a) -> Value -> FieldValidation err a
+boolField valid value =
     case value of
         V.Bool b ->
             valid b
@@ -218,79 +213,99 @@ boolValid valid value =
 
 
 
--- Basic validation
+-- Basic Validation Helpers
 
 
 {-| Helps validating a `String` that can be cast into an `Int`. If the `String`
-cannot be cast, fails with a `NotInt` `FieldError`.
+cannot be cast, fails with the given error.
 
-    doYourValidation : Int -> FieldValidation err a
+    type YourError
+        = NotInt
+        | ...
 
-    validateField : Value -> FieldValidation err a
+    postValidation : Int -> FieldValidation YourError a
+    ...
+
+    validateField : String -> FieldValidation YourError a
     validateField =
-        stringValid (int (doYourValidation))
+        int NotInt postValidation
 
 -}
-int : (Int -> FieldValidation err a) -> String -> FieldValidation err a
-int valid s =
+int : err -> (Int -> FieldValidation err a) -> String -> FieldValidation err a
+int err valid s =
     case String.toInt s of
         Ok i ->
             valid i
 
         Err _ ->
-            failure NotInt
+            customFailure err
 
 
 {-| Helps validating a `String` that can be cast into a `Float`. If the `String`
-cannot be cast, fails with a `NotFloat` `FieldError`.
+cannot be cast, fails with the given error.
 
-    doYourValidation : Float -> FieldValidation err a
+    type YourError
+        = NotFloat
+        | ...
 
-    validateField : Value -> FieldValidation err a
+    postValidation : Float -> FieldValidation YourError a
+    ...
+
+    validateField : String -> FieldValidation YourError a
     validateField =
-        stringValid (float (doYourValidation))
+        float NotFloat postValidation
 
 -}
-float : (Float -> FieldValidation err a) -> String -> FieldValidation err a
-float valid s =
+float : err -> (Float -> FieldValidation err a) -> String -> FieldValidation err a
+float err valid s =
     case String.toFloat s of
         Ok f ->
             valid f
 
         Err _ ->
-            failure NotFloat
+            customFailure err
 
 
 {-| Helps validating a `String` that is not empty. If the `String`is empty,
-fails with an `EmptyString` `FieldError`.
+fails with the given error.
 
-    doYourValidation : String -> FieldValidation err a
+    type YourError
+        = StringEmpty
+        | ...
 
-    validateField : Value -> FieldValidation err a
+    postValidation : String -> FieldValidation YourError a
+    ...
+
+    validateField : String -> FieldValidation YourError a
     validateField =
-        stringValid (notEmpty (doYourValidation))
+        notEmpty StringEmpty postValidation
 
 -}
-notEmpty : (String -> FieldValidation err a) -> String -> FieldValidation err a
-notEmpty valid s =
+notEmpty : err -> (String -> FieldValidation err a) -> String -> FieldValidation err a
+notEmpty err valid s =
     if String.isEmpty s then
-        failure EmptyString
+        customFailure err
     else
         valid s
 
 
 {-| Helps validating a `String` that has a specific length (> low && < high).
-If the `String` has a different length, fails with a `WrongLength` `FieldError`.
+If the `String` has a different length, fails with the given error.
 
-    doYourValidation : String -> FieldValidation err a
+    type YourError
+        = WrongLength
+        | ...
 
-    validateField : Value -> FieldValidation err a
+    postValidation : String -> FieldValidation YourError a
+    ...
+
+    validateField : String -> FieldValidation YourError a
     validateField =
-        stringValid (length low high (doYourValidation))
+        length 4 6 WrongLength postValidation
 
 -}
-length : Int -> Int -> (String -> FieldValidation err a) -> String -> FieldValidation err a
-length low high valid s =
+length : Int -> Int -> err -> (String -> FieldValidation err a) -> String -> FieldValidation err a
+length low high err valid s =
     let
         len =
             String.length s
@@ -298,48 +313,56 @@ length low high valid s =
         if len > low && len < high then
             valid s
         else
-            failure WrongLength
+            customFailure err
 
 
 {-| Helps validating a `String` that is an email. If the `String`is not an email,
-fails with a `NotEmail` `FieldError`.
+fails with the given error.
 
-    doYourValidation : String -> FieldValidation err a
+    type YourError
+        = NotValidEmail
+        | ...
 
-    validateField : Value -> FieldValidation err a
+    postValidation : String -> FieldValidation YourError a
+    ...
+
+    validateField : String -> FieldValidation YourError a
     validateField =
-        stringValid (email (doYourValidation))
+        email NotValidEmail postValidation
 
 -}
-email : (String -> FieldValidation err a) -> String -> FieldValidation err a
-email valid s =
+email : err -> (String -> FieldValidation err a) -> String -> FieldValidation err a
+email err valid s =
     -- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/email
     if Regex.contains (Regex.regex "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$") s then
         valid s
     else
-        failure NotEmail
+        customFailure err
 
 
 {-| Helps validating two `String` `Value`s that match. If the `String`s
-don't match, fails with a `PasswordNotEqual` `FieldError`.
+don't match, fails with the given error.
 
-    doYourValidation : String -> FieldValidation err a
+    type YourError
+        = DifferentPassword
+        | ...
 
-    validateField : Value -> Value -> FieldValidation err a
+    postValidation : String -> FieldValidation YourError a
+    ...
+
+    validateField : Value -> Value -> FieldValidation YourError a
     validateField =
-        passwordMatch (doYourValidation)
+        passwordMatch DifferentPassword postValidation
 
 -}
-passwordMatch : (String -> FieldValidation err a) -> Value -> Value -> FieldValidation err a
-passwordMatch valid password passwordAgain =
+passwordMatch : err -> (String -> FieldValidation err a) -> Value -> Value -> FieldValidation err a
+passwordMatch err valid password passwordAgain =
     case ( password, passwordAgain ) of
         ( V.String s1, V.String s2 ) ->
-            if String.isEmpty s1 && String.isEmpty s2 then
-                failure EmptyString
-            else if s1 == s2 then
+            if s1 == s2 then
                 valid s1
             else
-                failure PasswordNotEqual
+                customFailure err
 
         _ ->
             failure WrongType
@@ -447,6 +470,10 @@ required1 fields comparable valid fvf =
     VA.andMap (fieldValid fields comparable valid) fvf
 
 
+
+-- Hardcoded
+
+
 {-| Hardcodes a value. This is useful when you need to harcode
 a specific value during the validation process
 
@@ -478,7 +505,7 @@ hardcoded1 a fvf =
 
 optional_ : (String -> FieldValidation err a) -> a -> Value -> FieldValidation err a
 optional_ valid default =
-    stringValid
+    stringField
         (\s ->
             if String.isEmpty s then
                 success default
@@ -487,9 +514,9 @@ optional_ valid default =
         )
 
 
-{-| Validates an optional `Field`. This will use the validation function if
-the `Field` is not empty or use the default value otherwise. Only works
-on `String` `Value`
+{-| Validates an optional `Field`. Only works on `String` `Field`s.
+This will use the validation function if the `Field` is not empty
+or use the default value otherwise.
 
     ...
         |> optional fields comparable doYourValidation yourDefaultValue
@@ -499,16 +526,13 @@ on `String` `Value`
 
     ...
         |> required
-            fields
-            comparable
-            (stringValid <|
+            ...
                 \str ->
                     if String.isEmpty str then
                         success yourDefaultValue
                     else
                         doYourValidation str
-            )
-        ...
+            ...
 
 -}
 optional : Fields comparable -> comparable -> (String -> FieldValidation err a) -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
@@ -528,8 +552,13 @@ optional1 fields comparable valid default fvf =
     required1 fields comparable (optional_ valid default) fvf
 
 
-{-| Validates an optional `Field` with a Maybe. Same logic than with `optional`
-but the default value is `Nothing` and the validated value is `Just`
+
+-- OptionalMaybe
+
+
+{-| Validates an optional `Field` using `Maybe`. Only works
+on `String` `Field`s. Same logic than `optional` but the
+default value is `Nothing` and the validated one is `Just`
 
     ...
         |> optionalMaybe fields comparable doYourValidation
@@ -541,7 +570,7 @@ optionalMaybe fields comparable valid fvf =
     optional fields comparable (\s -> VA.map Just (valid s)) Nothing fvf
 
 
-{-| Validates an optional `Field` with a Maybe (binding)
+{-| Validates an optional `Field` using Maybe (binding)
 
     ...
         |> optionalMaybe1 fields comparable doYourValidation

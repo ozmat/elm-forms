@@ -39,7 +39,7 @@ init =
 
 
 type alias Model =
-    { myForm : F.Form String () OtherModel
+    { myForm : F.Form String MyFormError OtherModel
     }
 
 
@@ -54,6 +54,11 @@ type alias OtherModel =
     }
 
 
+type MyFormError
+    = EmptyString
+    | NotInt
+
+
 myFormFields : FF.Fields String
 myFormFields =
     FF.fields
@@ -63,12 +68,12 @@ myFormFields =
         ]
 
 
-myFormValidate : FV.Validate String () OtherModel
+myFormValidate : FV.Validate String MyFormError OtherModel
 myFormValidate fields =
     FV.valid OtherModel
-        |> FV.required fields "first_name" (FV.stringValid <| FV.notEmpty <| FV.success)
-        |> FV.required fields "last_name" (FV.stringValid <| FV.notEmpty <| FV.success)
-        |> FV.required fields "reference_number" (FV.stringValid <| FV.int <| FV.success)
+        |> FV.required fields "first_name" (FV.stringField <| FV.notEmpty EmptyString FV.success)
+        |> FV.required fields "last_name" (FV.stringField <| FV.notEmpty EmptyString FV.success)
+        |> FV.required fields "reference_number" (FV.stringField <| FV.int NotInt FV.success)
 
 
 

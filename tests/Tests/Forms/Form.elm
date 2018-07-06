@@ -50,9 +50,9 @@ form1 s =
 
 validate1 : V.Validate String String TV.Required
 validate1 fields =
-    V.required fields "key1" (V.stringValid V.success) (V.valid TV.Required)
+    V.required fields "key1" (V.stringField V.success) (V.valid TV.Required)
 
 
 validate2 : V.Validate String String TV.Required
 validate2 fields =
-    V.required fields "key1" (V.stringValid TV.valFail) (V.valid TV.Required)
+    V.required fields "key1" (V.stringField TV.valFail) (V.valid TV.Required)

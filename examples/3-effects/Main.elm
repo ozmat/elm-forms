@@ -66,8 +66,8 @@ myFormFields =
 myFormValidate : FV.Validate String () OtherModel
 myFormValidate fields =
     FV.valid OtherModel
-        |> FV.required fields "field_watched" (FV.stringValid <| FV.success)
-        |> FV.required fields "field_not_watched" (FV.stringValid <| FV.success)
+        |> FV.required fields "field_watched" (FV.stringField <| FV.success)
+        |> FV.required fields "field_not_watched" (FV.stringField <| FV.success)
 
 
 
