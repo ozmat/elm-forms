@@ -57,9 +57,9 @@ type alias OtherModel =
 myFormFields : FF.Fields String
 myFormFields =
     FF.fields
-        [ ( "first_name", FF.string )
-        , ( "last_name", FF.string )
-        , ( "reference_number", FF.string )
+        [ ( "first_name", FF.input )
+        , ( "last_name", FF.input )
+        , ( "reference_number", FF.input )
         ]
 
 

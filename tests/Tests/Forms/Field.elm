@@ -11,13 +11,17 @@ import Forms.Value as V
 all : Test
 all =
     describe "Forms.Field tests"
-        [ test "Field.string creates a default String FieldValue" <|
+        [ test "Field.input creates a default String FieldValue" <|
             \_ ->
-                string
+                input
                     |> Expect.equal (FieldValue (V.defaultString))
-        , test "Field.bool creates a default Bool FieldValue" <|
+        , test "Field.select creates a default String FieldValue" <|
             \_ ->
-                bool
+                select
+                    |> Expect.equal (FieldValue (V.defaultString))
+        , test "Field.checkbox creates a default Bool FieldValue" <|
+            \_ ->
+                checkbox
                     |> Expect.equal (FieldValue (V.defaultBool))
         , test "Field.group creates a FieldGroup from a tuple-list" <|
             \_ ->
@@ -27,13 +31,17 @@ all =
             \_ ->
                 fields fixture1
                     |> Expect.equal (D.fromList fixture1)
-        , fuzz F.string "Field.stringWithValue creates a String FieldValue" <|
+        , fuzz F.string "Field.inputWithDefault creates a String FieldValue" <|
             \s ->
-                stringWithValue s
+                inputWithDefault s
                     |> Expect.equal (FieldValue (V.string s))
-        , fuzz F.bool "Field.boolWithValue creates a Bool FieldValue" <|
+        , fuzz F.string "Field.selectWithDefault creates a String FieldValue" <|
+            \s ->
+                selectWithDefault s
+                    |> Expect.equal (FieldValue (V.string s))
+        , fuzz F.bool "Field.checkboxWithDefault creates a Bool FieldValue" <|
             \b ->
-                boolWithValue b
+                checkboxWithDefault b
                     |> Expect.equal (FieldValue (V.bool b))
         , describe "Field.getValue"
             [ fuzz F.string "retrieves a value from a Fields (depth 1)" <|
@@ -94,15 +102,15 @@ all =
 
 fixture1 : List ( String, Field String )
 fixture1 =
-    [ ( "key1", string )
-    , ( "key2", bool )
+    [ ( "key1", input )
+    , ( "key2", checkbox )
     ]
 
 
 fixture2 : String -> Fields String
 fixture2 s =
     fields
-        [ ( "key1", stringWithValue s )
+        [ ( "key1", inputWithDefault s )
         , ( "group1", FieldGroup (fixture3 s) )
         ]
 
@@ -110,9 +118,9 @@ fixture2 s =
 fixture3 : String -> Fields String
 fixture3 s =
     fields
-        [ ( "key2", stringWithValue s )
+        [ ( "key2", inputWithDefault s )
         , ( "group2"
           , group
-                [ ( "key3", stringWithValue s ) ]
+                [ ( "key3", inputWithDefault s ) ]
           )
         ]

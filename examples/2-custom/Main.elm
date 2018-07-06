@@ -82,18 +82,18 @@ type UserType
 myFormFields : FF.Fields String
 myFormFields =
     FF.fields
-        [ ( "first_name", FF.string )
-        , ( "last_name", FF.string )
-        , ( "age", FF.string )
+        [ ( "first_name", FF.input )
+        , ( "last_name", FF.input )
+        , ( "age", FF.input )
         , ( "user_group"
           , FF.group
-                [ ( "email", FF.string )
-                , ( "password", FF.string )
-                , ( "password_again", FF.string )
+                [ ( "email", FF.input )
+                , ( "password", FF.input )
+                , ( "password_again", FF.input )
                 ]
           )
-        , ( "wallet", FF.string )
-        , ( "color", FF.string )
+        , ( "wallet", FF.input )
+        , ( "color", FF.input )
         ]
 
 

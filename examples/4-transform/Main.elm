@@ -58,15 +58,15 @@ type alias OtherModel =
 myFormFields : FF.Fields String
 myFormFields =
     FF.fields
-        [ ( "red", FF.string )
-        , ( "float", FF.string )
+        [ ( "red", FF.input )
+        , ( "float", FF.input )
         , ( "repeat_group"
           , FF.group
-                [ ( "repeat1", FF.string )
-                , ( "repeat2", FF.string )
-                , ( "repeat3", FF.string )
-                , ( "repeat4", FF.string )
-                , ( "repeat5", FF.string )
+                [ ( "repeat1", FF.input )
+                , ( "repeat2", FF.input )
+                , ( "repeat3", FF.input )
+                , ( "repeat4", FF.input )
+                , ( "repeat5", FF.input )
                 ]
           )
         ]

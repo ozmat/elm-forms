@@ -238,14 +238,14 @@ all =
 fields1 : String -> F.Fields String
 fields1 s =
     F.fields
-        [ ( "key1", F.stringWithValue s ) ]
+        [ ( "key1", F.inputWithDefault s ) ]
 
 
 fields2 : String -> String -> F.Fields String
 fields2 s1 s2 =
     F.fields
-        [ ( "key2", F.stringWithValue s1 )
-        , ( "key3", F.stringWithValue s2 )
+        [ ( "key2", F.inputWithDefault s1 )
+        , ( "key3", F.inputWithDefault s2 )
         ]
 
 
@@ -254,7 +254,7 @@ fields3 s =
     F.fields
         [ ( "group1"
           , F.group
-                [ ( "key4", F.stringWithValue s ) ]
+                [ ( "key4", F.inputWithDefault s ) ]
           )
         ]
 

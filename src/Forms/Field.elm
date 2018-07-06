@@ -4,12 +4,14 @@ module Forms.Field
           Field(..)
         , Fields
           -- Helpers
-        , string
-        , bool
+        , input
+        , select
+        , checkbox
         , group
         , fields
-        , stringWithValue
-        , boolWithValue
+        , inputWithDefault
+        , selectWithDefault
+        , checkboxWithDefault
           -- Getters and Setter
         , getValue
         , getGroup
@@ -27,7 +29,12 @@ Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/ex
 
 # Common Helpers
 
-@docs string, bool, group, fields, stringWithValue, boolWithValue
+@docs input, select, checkbox, group, fields
+
+
+# Default value
+
+@docs inputWithDefault, selectWithDefault, checkboxWithDefault
 
 
 # Search
@@ -63,23 +70,33 @@ type alias Fields comparable =
 -- Common Helpers
 
 
-{-| Is a shortcut to create a `Field` with the [default `String` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
+{-| Is a shortcut to create an input `Field` with the [default `String` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
 
-    string -- FieldValue (Forms.Value.defaultString)
+    input -- FieldValue (Forms.Value.defaultString)
 
 -}
-string : Field comparable
-string =
+input : Field comparable
+input =
     FieldValue V.defaultString
 
 
-{-| Is a shortcut to create a `Field` with the [default `Bool` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultBool)
+{-| Is a shortcut to create a select `Field` with the [default `String` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
 
-    bool -- FieldValue (Forms.Value.defaultBool)
+    select -- FieldValue (Forms.Value.defaultString)
 
 -}
-bool : Field comparable
-bool =
+select : Field comparable
+select =
+    input
+
+
+{-| Is a shortcut to create a checkbox `Field` with the [default `Bool` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultBool)
+
+    checkbox -- FieldValue (Forms.Value.defaultBool)
+
+-}
+checkbox : Field comparable
+checkbox =
     FieldValue V.defaultBool
 
 
@@ -121,23 +138,37 @@ fields =
     D.fromList
 
 
-{-| Is a shortcut to create a `Field` with an initial `String` `Value`
 
-    stringWithValue "initial" -- FieldValue (String "initial")
+-- Default value
+
+
+{-| Is a shortcut to create an input `Field` with a default value
+
+    inputWithDefault "initial" -- FieldValue (String "initial")
 
 -}
-stringWithValue : String -> Field comparable
-stringWithValue s =
+inputWithDefault : String -> Field comparable
+inputWithDefault s =
     FieldValue (V.string s)
 
 
-{-| Is a shortcut to create a `Field` with an initial `Bool` `Value`
+{-| Is a shortcut to create a select `Field` with a default value
 
-    boolWithValue True -- FieldValue (Bool True)
+    selectWithDefault "initial" -- FieldValue (String "initial")
 
 -}
-boolWithValue : Bool -> Field comparable
-boolWithValue b =
+selectWithDefault : String -> Field comparable
+selectWithDefault =
+    inputWithDefault
+
+
+{-| Is a shortcut to create a checkbox `Field` with a default value
+
+    checkboxWithDefault True -- FieldValue (Bool True)
+
+-}
+checkboxWithDefault : Bool -> Field comparable
+checkboxWithDefault b =
     FieldValue (V.bool b)
 
 

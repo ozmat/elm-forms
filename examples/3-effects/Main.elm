@@ -58,8 +58,8 @@ type alias OtherModel =
 myFormFields : FF.Fields String
 myFormFields =
     FF.fields
-        [ ( "field_watched", FF.string )
-        , ( "field_not_watched", FF.string )
+        [ ( "field_watched", FF.input )
+        , ( "field_not_watched", FF.input )
         ]
 
 
