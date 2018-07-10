@@ -24,7 +24,7 @@ all =
             , test "returns a list of FieldError otherwise" <|
                 \_ ->
                     validate (form1 "notaa" validate2)
-                        |> Expect.equal (Err [ ( "key1", V.CustomError "error" ) ])
+                        |> Expect.equal (Err [ ( "key1", V.CustomErr "error" ) ])
             ]
         , describe "Form.validateD"
             [ fuzz string "helps validating a form" <|
@@ -34,7 +34,7 @@ all =
             , test "returns a dict of FieldError otherwise" <|
                 \_ ->
                     validateD (form1 "notaa" validate2)
-                        |> Expect.equal (Err (D.fromList [ ( "key1", V.CustomError "error" ) ]))
+                        |> Expect.equal (Err (D.fromList [ ( "key1", V.CustomErr "error" ) ]))
             ]
         ]
 

@@ -1,10 +1,11 @@
 module Forms.Validation
     exposing
         ( -- Field validation
-          FieldError(..)
+          ConfigError(..)
+        , FieldError(..)
         , FieldValidation
+        , configFailure
         , failure
-        , customFailure
         , success
         , validation
           -- Type validation
@@ -45,12 +46,12 @@ the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a be
 
 # Field Validation
 
-@docs FieldError, FieldValidation
+@docs ConfigError, FieldError, FieldValidation
 
 
 ### Common Helpers
 
-@docs failure, customFailure, success, validation
+@docs configFailure, failure, success, validation
 
 
 ### Type Validation
@@ -106,18 +107,26 @@ import Forms.Value as V exposing (Value)
 -- Field validation
 
 
-{-| A `FieldError` represents an error that happened during a `FieldValidation`.
-Here are the main ones :
+{-| A `ConfigError` represents a configuration error on a `Field` :
 
-    MissingField          -- When the `Field` cannot be found
-    WrongType             -- When the `Value` has a different type
-    CustomError yourError -- Your type of error
+    MissingField -- When the specified `Field` cannot be found
+    WrongType    -- When the specified `Field` has a different type of `Value`
+
+-}
+type ConfigError
+    = MissingField
+    | WrongType
+
+
+{-| A `FieldError` represents an error that happened during a `FieldValidation` :
+
+    CustomErr yourError   -- Your type of error
+    ConfigErr configError -- Error in the form config
 
 -}
 type FieldError err
-    = CustomError err
-    | MissingField
-    | WrongType
+    = CustomErr err
+    | ConfigErr ConfigError
 
 
 {-| A `FieldValidation` represents the [`Validation`](http://package.elm-lang.org/packages/ozmat/elm-validation/latest/Validation#Validation) of a `Field`
@@ -130,18 +139,18 @@ type alias FieldValidation err a =
 -- Common Helpers
 
 
+{-| Returns a failed `FieldValidation` using a `ConfigError`
+-}
+configFailure : ConfigError -> FieldValidation err a
+configFailure err =
+    VA.failure (ConfigErr err)
+
+
 {-| Returns a failed `FieldValidation`
 -}
-failure : FieldError err -> FieldValidation err a
-failure =
-    VA.failure
-
-
-{-| Returns a failed `FieldValidation` using a `CustomError`
--}
-customFailure : err -> FieldValidation err a
-customFailure err =
-    failure (CustomError err)
+failure : err -> FieldValidation err a
+failure err =
+    VA.failure (CustomErr err)
 
 
 {-| Returns a successful `FieldValidation`
@@ -163,7 +172,7 @@ success =
 -}
 validation : err -> (a -> Bool) -> a -> FieldValidation err a
 validation err valid a =
-    VA.validation (CustomError err) valid a
+    VA.validation (CustomErr err) valid a
 
 
 
@@ -188,7 +197,7 @@ stringField valid value =
             valid s
 
         _ ->
-            failure WrongType
+            configFailure WrongType
 
 
 {-| Helps validating a `Bool` `Field` (checkbox). If the inner `Value` is not a
@@ -209,7 +218,7 @@ boolField valid value =
             valid b
 
         _ ->
-            failure WrongType
+            configFailure WrongType
 
 
 
@@ -238,7 +247,7 @@ int err valid s =
             valid i
 
         Err _ ->
-            customFailure err
+            failure err
 
 
 {-| Helps validating a `String` that can be cast into a `Float`. If the `String`
@@ -263,7 +272,7 @@ float err valid s =
             valid f
 
         Err _ ->
-            customFailure err
+            failure err
 
 
 {-| Helps validating a `String` that is not empty. If the `String`is empty,
@@ -284,7 +293,7 @@ fails with the given error.
 notEmpty : err -> (String -> FieldValidation err a) -> String -> FieldValidation err a
 notEmpty err valid s =
     if String.isEmpty s then
-        customFailure err
+        failure err
     else
         valid s
 
@@ -313,7 +322,7 @@ length low high err valid s =
         if len > low && len < high then
             valid s
         else
-            customFailure err
+            failure err
 
 
 {-| Helps validating a `String` that is an email. If the `String`is not an email,
@@ -337,7 +346,7 @@ email err valid s =
     if Regex.contains (Regex.regex "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$") s then
         valid s
     else
-        customFailure err
+        failure err
 
 
 {-| Helps validating two `String` `Value`s that match. If the `String`s
@@ -362,10 +371,10 @@ passwordMatch err valid password passwordAgain =
             if s1 == s2 then
                 valid s1
             else
-                customFailure err
+                failure err
 
         _ ->
-            failure WrongType
+            configFailure WrongType
 
 
 
@@ -433,7 +442,7 @@ fieldValid fields comparable valid =
         missing mvalue =
             case mvalue of
                 Nothing ->
-                    failure MissingField
+                    configFailure MissingField
 
                 Just value ->
                     valid value
@@ -610,13 +619,13 @@ fieldsValid fields comparable1 comparable2 valid =
     in
         case ( F.getValue comparable1 fields, F.getValue comparable2 fields ) of
             ( Nothing, Just _ ) ->
-                VA.failure (fe1 MissingField)
+                VA.failure (fe1 (ConfigErr MissingField))
 
             ( Just _, Nothing ) ->
-                VA.failure (fe2 MissingField)
+                VA.failure (fe2 (ConfigErr MissingField))
 
             ( Nothing, Nothing ) ->
-                Failure (both MissingField)
+                Failure (both (ConfigErr MissingField))
 
             ( Just value1, Just value2 ) ->
                 VA.mapValidationError replace (valid value1 value2)
@@ -658,7 +667,7 @@ groupValid fields comparable valid =
         missing mgroup =
             case mgroup of
                 Nothing ->
-                    mapFormError comparable (failure MissingField)
+                    mapFormError comparable (configFailure MissingField)
 
                 Just value ->
                     valid value

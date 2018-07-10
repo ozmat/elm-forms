@@ -119,9 +119,9 @@ myFormValidate fields =
                 FV.int NotInt <|
                     \i ->
                         if i < 18 then
-                            FV.customFailure TooYoung
+                            FV.failure TooYoung
                         else if i > 35 then
-                            FV.customFailure TooOld
+                            FV.failure TooOld
                         else
                             FV.success i
             )
