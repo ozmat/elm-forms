@@ -20,20 +20,24 @@ all =
             [ fuzz string "helps validating a form" <|
                 \s ->
                     validate (form1 s validate1)
-                        |> Expect.equal (Ok (TV.Required s))
-            , test "returns a list of FieldError otherwise" <|
+                        |> Expect.equal (V.Valid (TV.Required s))
+            , test "it may be invalid" <|
                 \_ ->
                     validate (form1 "notaa" validate2)
-                        |> Expect.equal (Err [ ( "key1", V.CustomErr "error" ) ])
+                        |> Expect.equal (V.Invalid (D.fromList [ ( "key1", "error" ) ]))
+            , test "or have errors" <|
+                \_ ->
+                    validate (form1 "notaa" validate3)
+                        |> Expect.equal (V.Error (D.fromList [ ( "notfound", V.MissingField ) ]))
             ]
-        , describe "Form.validateD"
+        , describe "Form.validateWithFieldErrors"
             [ fuzz string "helps validating a form" <|
                 \s ->
-                    validateD (form1 s validate1)
+                    validateWithFieldErrors (form1 s validate1)
                         |> Expect.equal (Ok (TV.Required s))
             , test "returns a dict of FieldError otherwise" <|
                 \_ ->
-                    validateD (form1 "notaa" validate2)
+                    validateWithFieldErrors (form1 "notaa" validate2)
                         |> Expect.equal (Err (D.fromList [ ( "key1", V.CustomErr "error" ) ]))
             ]
         ]
@@ -56,3 +60,8 @@ validate1 fields =
 validate2 : V.Validate String String TV.Required
 validate2 fields =
     V.required fields "key1" (V.stringField TV.valFail) (V.valid TV.Required)
+
+
+validate3 : V.Validate String String TV.Required
+validate3 fields =
+    V.required fields "notfound" (V.stringField TV.valFail) (V.valid TV.Required)

@@ -3,6 +3,7 @@ module Tests.Forms.Validation exposing (..)
 import Expect
 import Test exposing (..)
 import Fuzz exposing (bool, string)
+import Dict exposing (Dict)
 import Validation as VA
 import Forms.Validation exposing (..)
 import Forms.Value as V
@@ -139,6 +140,53 @@ all =
                 \s ->
                     toResult (VA.failure (FormError s wrongType))
                         |> Expect.equal (Err [ ( s, wrongType ) ])
+            ]
+        , describe "Validation.filterErrors"
+            [ fuzz string "returns CustomErrors if there are no ConfigErrors" <|
+                \s ->
+                    filterErrors
+                        [ FormError "a" (CustomErr s)
+                        , FormError "b" (CustomErr s)
+                        ]
+                        |> Expect.equal (Ok [ ( "b", s ), ( "a", s ) ])
+            , test "returns ConfigErrors otherwise (2)" <|
+                \_ ->
+                    filterErrors
+                        [ FormError "a" wrongType
+                        , FormError "b" missingField
+                        , FormError "c" (CustomErr "whatever")
+                        ]
+                        |> Expect.equal (Err [ ( "b", MissingField ), ( "a", WrongType ) ])
+            , test "returns ConfigErrors otherwise (1)" <|
+                \_ ->
+                    filterErrors
+                        [ FormError "a" wrongType
+                        , FormError "b" (CustomErr "whatever1")
+                        , FormError "c" (CustomErr "whatever2")
+                        ]
+                        |> Expect.equal (Err [ ( "a", WrongType ) ])
+            ]
+        , describe "Validation.toFormResult"
+            [ fuzz string "converts a FormValidation into a FormResult" <|
+                \s ->
+                    toFormResult (validate1 (fieldsValidate1 s))
+                        |> Expect.equal (Valid (SomeResult s s s))
+            , test "it may have ConfigErrors (1)" <|
+                \_ ->
+                    toFormResult (validate2 (fieldsValidate1 ""))
+                        |> Expect.equal (Error (Dict.fromList [ ( "notfound", MissingField ) ]))
+            , test "it may have ConfigErrors (2)" <|
+                \_ ->
+                    toFormResult (validate2 fieldsValidate2)
+                        |> Expect.equal (Error (Dict.fromList [ ( "b", WrongType ), ( "notfound", MissingField ) ]))
+            , fuzz string "it may have CustomErrors (1)" <|
+                \s ->
+                    toFormResult (validate3 s (fieldsValidate1 ""))
+                        |> Expect.equal (Invalid (Dict.fromList [ ( "a", s ) ]))
+            , fuzz string "it may have CustomErrors (2)" <|
+                \s ->
+                    toFormResult (validate4 s (fieldsValidate1 ""))
+                        |> Expect.equal (Invalid (Dict.fromList [ ( "b", s ), ( "a", s ) ]))
             ]
         , describe "Validation.required"
             [ fuzz string "helps validating a required Field" <|
@@ -295,23 +343,75 @@ type alias FieldGroup =
     }
 
 
+type alias SomeResult =
+    { a : String
+    , b : String
+    , c : String
+    }
+
+
+fieldsValidate1 : String -> F.Fields String
+fieldsValidate1 s =
+    F.fields
+        [ ( "a", F.inputWithDefault s )
+        , ( "b", F.inputWithDefault s )
+        , ( "c", F.inputWithDefault s )
+        ]
+
+
+fieldsValidate2 : F.Fields String
+fieldsValidate2 =
+    F.fields
+        [ ( "a", F.input )
+        , ( "b", F.checkbox )
+        , ( "c", F.input )
+        ]
+
+
+validate1 : Validate String String SomeResult
+validate1 fields =
+    valid SomeResult
+        |> required fields "a" (stringField <| success)
+        |> required fields "b" (stringField <| success)
+        |> required fields "c" (stringField <| success)
+
+
+validate2 : Validate String String SomeResult
+validate2 fields =
+    valid SomeResult
+        |> required fields "notfound" (stringField <| success)
+        |> required fields "b" (stringField <| success)
+        |> required fields "c" (stringField <| success)
+
+
+validate3 : String -> Validate String String SomeResult
+validate3 s fields =
+    valid SomeResult
+        |> required fields "a" (stringField <| (\_ -> failure s))
+        |> required fields "b" (stringField <| success)
+        |> required fields "c" (stringField <| success)
+
+
+validate4 : String -> Validate String String SomeResult
+validate4 s fields =
+    valid SomeResult
+        |> required fields "a" (stringField <| (\_ -> failure s))
+        |> required fields "b" (stringField <| (\_ -> failure s))
+        |> required fields "c" (stringField <| success)
+
+
 
 -- Helpers
 
 
-formE_ : comparable -> FieldError err -> FormError comparable err
-formE_ comparable fe =
-    FormError comparable fe
-
-
 formE : comparable -> FieldError err -> FormValidation comparable err a
 formE comparable fe =
-    VA.failure (formE_ comparable fe)
+    VA.failure (FormError comparable fe)
 
 
 formEL : comparable -> comparable -> FieldError err -> FormValidation comparable err a
 formEL comparable1 comparable2 fe =
-    VA.Failure (VA.ErrorList [ formE_ comparable1 fe, formE_ comparable2 fe ])
+    VA.Failure (VA.ErrorList [ FormError comparable1 fe, FormError comparable2 fe ])
 
 
 valFail : String -> FieldValidation String String

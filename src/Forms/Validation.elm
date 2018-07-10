@@ -24,6 +24,10 @@ module Forms.Validation
         , valid
         , toTuple
         , toResult
+          -- Form result
+        , FormResult(..)
+        , filterErrors
+        , toFormResult
           -- Validate
         , Validate
         , required
@@ -74,6 +78,16 @@ the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a be
 @docs valid, toTuple, toResult
 
 
+# Form Result
+
+@docs FormResult
+
+
+### Common Helpers
+
+@docs filterErrors, toFormResult
+
+
 # Validate
 
 @docs Validate
@@ -98,6 +112,7 @@ won't accumulate the errors. Don't mix those functions with the previous ones
 
 -}
 
+import Dict exposing (Dict)
 import Regex
 import Validation as VA exposing (Validation(..))
 import Forms.Field as F exposing (Fields)
@@ -109,8 +124,8 @@ import Forms.Value as V exposing (Value)
 
 {-| A `ConfigError` represents a configuration error on a `Field` :
 
-    MissingField -- When the specified `Field` cannot be found
-    WrongType    -- When the specified `Field` has a different type of `Value`
+    MissingField -- When the `Field` cannot be found
+    WrongType    -- When the `Field` has a different type of `Value`
 
 -}
 type ConfigError
@@ -121,7 +136,7 @@ type ConfigError
 {-| A `FieldError` represents an error that happened during a `FieldValidation` :
 
     CustomErr yourError   -- Your type of error
-    ConfigErr configError -- Error in the form config
+    ConfigErr configError -- Configuration error on the `Field`
 
 -}
 type FieldError err
@@ -423,6 +438,68 @@ toResult validation =
 mapFormError : comparable -> FieldValidation err a -> FormValidation comparable err a
 mapFormError comparable fv =
     VA.mapError (FormError comparable) fv
+
+
+
+-- Form Result
+
+
+{-| A `FormResult` represents the result of a `FormValidation`. There are
+3 different states :
+
+    Valid   -- Reprensents a successful validation and holds the form output
+    Invalid -- Reprensents a failed validation and holds the custom errors
+    Error   -- Represents a misconfigured form and holds the config errors
+
+-}
+type FormResult comparable err a
+    = Valid a
+    | Invalid (Dict comparable err)
+    | Error (Dict comparable ConfigError)
+
+
+{-| Converts `FormError`s into `Tuple`s and returns the `CustomErrors` if
+there are no `ConfigError`s. Returns the `ConfigError`s otherwise.
+-}
+filterErrors : List (FormError comparable err) -> Result (List ( comparable, ConfigError )) (List ( comparable, err ))
+filterErrors errors =
+    let
+        walk ( comparable, fe ) acc =
+            case acc of
+                Ok l ->
+                    case fe of
+                        ConfigErr err ->
+                            Err [ ( comparable, err ) ]
+
+                        CustomErr err ->
+                            Ok (( comparable, err ) :: l)
+
+                Err l ->
+                    case fe of
+                        ConfigErr err ->
+                            Err (( comparable, err ) :: l)
+
+                        _ ->
+                            acc
+    in
+        List.foldl walk (Ok []) (List.map toTuple errors)
+
+
+{-| Converts a `FormValidation` into a `FormResult`
+-}
+toFormResult : FormValidation comparable err a -> FormResult comparable err a
+toFormResult validation =
+    case VA.toResult validation of
+        Ok a ->
+            Valid a
+
+        Err fe ->
+            case filterErrors fe of
+                Ok ce ->
+                    Invalid (Dict.fromList ce)
+
+                Err ce ->
+                    Error (Dict.fromList ce)
 
 
 
