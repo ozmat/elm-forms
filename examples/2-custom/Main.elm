@@ -126,7 +126,7 @@ myFormValidate fields =
                             FV.success i
             )
         |> FV.fieldGroup fields "user_group" myUserValidate
-        |> FV.optional fields "wallet" (FV.float NotFloat FV.success) 0
+        |> FV.optional fields "wallet" 0 (FV.float NotFloat FV.success)
         |> FV.optionalMaybe fields "color" (FV.validation WrongColor isColor)
 
 

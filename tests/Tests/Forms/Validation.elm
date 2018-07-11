@@ -219,19 +219,19 @@ all =
         , describe "Validation.optional"
             [ test "helps validating an optional Field with a default value" <|
                 \_ ->
-                    optional (fields1 "notempty") "key1" success "" (valid Required)
+                    optional (fields1 "notempty") "key1" "" success (valid Required)
                         |> Expect.equal (valid (Required "notempty"))
             , fuzz string "fallback on default value if empty" <|
                 \s ->
-                    optional (fields1 "") "key1" success s (valid Required)
+                    optional (fields1 "") "key1" s success (valid Required)
                         |> Expect.equal (valid (Required s))
             , test "fails if the field is missing" <|
                 \_ ->
-                    optional (fields1 "") "notfound" success "" (valid Required)
+                    optional (fields1 "") "notfound" "" success (valid Required)
                         |> Expect.equal (formE "notfound" missingField)
             , test "fails if the validation fails" <|
                 \_ ->
-                    optional (fields1 "notaa") "key1" valFail "" (valid Required)
+                    optional (fields1 "notaa") "key1" "" valFail (valid Required)
                         |> Expect.equal (formE "key1" (CustomErr "error"))
             ]
         , describe "Validation.optionalMaybe"

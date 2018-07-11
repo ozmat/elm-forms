@@ -613,8 +613,8 @@ hardcoded1 a fvf =
 -- Optional
 
 
-optional_ : (String -> FieldValidation err a) -> a -> Value -> FieldValidation err a
-optional_ fvalid default =
+optional_ : a -> (String -> FieldValidation err a) -> Value -> FieldValidation err a
+optional_ default fvalid =
     stringField
         (\s ->
             if String.isEmpty s then
@@ -645,9 +645,9 @@ or use the default value otherwise.
             ...
 
 -}
-optional : Fields comparable -> comparable -> (String -> FieldValidation err a) -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-optional fields comparable fvalid default fvf =
-    required fields comparable (optional_ fvalid default) fvf
+optional : Fields comparable -> comparable -> a -> (String -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+optional fields comparable default fvalid fvf =
+    required fields comparable (optional_ default fvalid) fvf
 
 
 {-| Validates an optional `Field` (binding)
@@ -657,9 +657,9 @@ optional fields comparable fvalid default fvf =
         ...
 
 -}
-optional1 : Fields comparable -> comparable -> (String -> FieldValidation err a) -> a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-optional1 fields comparable fvalid default fvf =
-    required1 fields comparable (optional_ fvalid default) fvf
+optional1 : Fields comparable -> comparable -> a -> (String -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+optional1 fields comparable default fvalid fvf =
+    required1 fields comparable (optional_ default fvalid) fvf
 
 
 
@@ -677,7 +677,7 @@ default value is `Nothing` and the validated one is `Just`
 -}
 optionalMaybe : Fields comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
 optionalMaybe fields comparable fvalid fvf =
-    optional fields comparable (\s -> VA.map Just (fvalid s)) Nothing fvf
+    optional fields comparable Nothing (\s -> VA.map Just (fvalid s)) fvf
 
 
 {-| Validates an optional `Field` using Maybe (binding)
@@ -689,7 +689,7 @@ optionalMaybe fields comparable fvalid fvf =
 -}
 optionalMaybe1 : Fields comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
 optionalMaybe1 fields comparable fvalid fvf =
-    optional1 fields comparable (\s -> VA.map Just (fvalid s)) Nothing fvf
+    optional1 fields comparable Nothing (\s -> VA.map Just (fvalid s)) fvf
 
 
 
