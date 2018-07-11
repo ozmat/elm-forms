@@ -5,6 +5,8 @@ module Forms.Value
         , bool
         , defaultString
         , defaultBool
+        , isString
+        , isBool
         , safeUpdate
         )
 
@@ -20,6 +22,11 @@ Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/ex
 # Common Helpers
 
 @docs string, bool, defaultString, defaultBool
+
+
+# Test
+
+@docs isString, isBool
 
 
 # Update
@@ -83,6 +90,34 @@ defaultString =
 defaultBool : Value
 defaultBool =
     Bool False
+
+
+
+-- Test
+
+
+{-| Tests if the `Value` is a `String` and returns it
+-}
+isString : Value -> Maybe String
+isString v =
+    case v of
+        String s ->
+            Just s
+
+        _ ->
+            Nothing
+
+
+{-| Tests if the `Value` is a `Bool` and returns it
+-}
+isBool : Value -> Maybe Bool
+isBool v =
+    case v of
+        Bool b ->
+            Just b
+
+        _ ->
+            Nothing
 
 
 

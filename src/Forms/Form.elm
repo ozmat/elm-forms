@@ -4,6 +4,10 @@ module Forms.Form
         , form
         , validate
         , validateWithFieldErrors
+        , getStringField
+        , getBoolField
+        , setStringField
+        , setBoolField
         )
 
 {-| `Form` is the top level type of the library. It is built with [`Fields`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Fields)
@@ -20,10 +24,16 @@ Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/ex
 
 @docs form, validate, validateWithFieldErrors
 
+
+# Field getters and setters
+
+@docs getStringField, getBoolField, setStringField, setBoolField
+
 -}
 
 import Dict as D exposing (Dict)
 import Forms.Field as F exposing (Fields)
+import Forms.Value exposing (string, bool, isString, isBool)
 import Forms.Validation as V exposing (FormResult, Validate, FieldError)
 
 
@@ -58,3 +68,37 @@ validate (Form fields validate) =
 validateWithFieldErrors : Form comparable err a -> Result (Dict comparable (FieldError err)) a
 validateWithFieldErrors (Form fields validate) =
     Result.mapError D.fromList (V.toResult (validate fields))
+
+
+
+-- Field getters and setters
+
+
+{-| Gets the value of a `String` `Field`
+-}
+getStringField : comparable -> Form comparable err a -> Maybe String
+getStringField key (Form fields _) =
+    F.getValue key fields
+        |> Maybe.andThen isString
+
+
+{-| Gets the value of a `Bool` `Field`
+-}
+getBoolField : comparable -> Form comparable err a -> Maybe Bool
+getBoolField key (Form fields _) =
+    F.getValue key fields
+        |> Maybe.andThen isBool
+
+
+{-| Sets the value of a `String` `Field`
+-}
+setStringField : comparable -> String -> Form comparable err a -> Form comparable err a
+setStringField key val (Form fields validate) =
+    Form (F.setValue key (string val) fields) validate
+
+
+{-| Sets the value of a `String` `Field`
+-}
+setBoolField : comparable -> Bool -> Form comparable err a -> Form comparable err a
+setBoolField key val (Form fields validate) =
+    Form (F.setValue key (bool val) fields) validate

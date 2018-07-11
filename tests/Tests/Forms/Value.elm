@@ -25,6 +25,26 @@ all =
             \b ->
                 defaultBool
                     |> Expect.equal (Bool False)
+        , describe "Value.isString"
+            [ fuzz F.string "tests if the Value is a String and returns it" <|
+                \s ->
+                    isString (String s)
+                        |> Expect.equal (Just s)
+            , test "returns Nothing otherwise" <|
+                \_ ->
+                    isString (Bool True)
+                        |> Expect.equal Nothing
+            ]
+        , describe "Value.isBool"
+            [ fuzz F.bool "tests if the Value is a Bool and returns it" <|
+                \b ->
+                    isBool (Bool b)
+                        |> Expect.equal (Just b)
+            , test "returns Nothing otherwise" <|
+                \_ ->
+                    isBool (String "")
+                        |> Expect.equal Nothing
+            ]
         , describe "Value.safeUpdate"
             [ test "updates value of same type" <|
                 \_ ->
