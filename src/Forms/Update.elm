@@ -3,16 +3,16 @@ module Forms.Update
         ( Msg(..)
         , updateForm
           -- Side effects
-        , effects
-        , effectsS
-        , effectsB
+        , formCommands
+        , stringFieldCommands
+        , boolFieldCommands
         )
 
 {-| This module provides helpers for your update function. Please refer to the
 [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a better understanding
 
 
-# Message
+# Messages
 
 @docs Msg
 
@@ -24,7 +24,7 @@ module Forms.Update
 
 # Side effects
 
-@docs effects, effectsS, effectsB
+@docs formCommands, stringFieldCommands, boolFieldCommands
 
 -}
 
@@ -36,8 +36,9 @@ import Forms.Value as V exposing (string, bool)
 -- Messages
 
 
-{-| Predifined messages to help updating a `Field`. `UpdateStringField` is for
-`String` `Value` `Field` and `UpdateBoolField` is for `Bool` `Value` `Field`
+{-| Predifined messages to help updating a `Field`. `UpdateStringField` is
+for `String` `Field`s (input, select) and `UpdateBoolField` is
+for `Bool` `Field`s (checkbox)
 -}
 type Msg comparable
     = UpdateStringField comparable String
@@ -63,7 +64,9 @@ type Msg comparable
     yourView : Model -> Html YourMsg
     yourView model =
         ...
+            -- select/input field
             onEvent (Form << Form.Update.UpdateStringField fieldKey)
+            -- checkbox field
             onEvent (Form << Form.Update.UpdateBoolField fieldKey)
         ...
 
@@ -82,31 +85,48 @@ updateForm msg (Form fields validate) =
 -- Side effects
 
 
-{-| Helps defining some extra effects on a `Field` event. You can use this
-function to add your effects when a specific event is triggered on a `Field`.
+{-| Helps defining side-effects on a `Field` event. You can use this
+function to run commands when a specific event is triggered on a `Field`.
 
-    effects model formMsg stringEffects boolEffects -- Cmd YourMsg
+    addCommand              -- (model, Cmd YourMsg)
+        model
+        formMsg
+        stringFieldCommands
+        boolFieldCommands
 
 -}
-effects : a -> Msg comparable -> (a -> comparable -> String -> Cmd msg) -> (a -> comparable -> Bool -> Cmd msg) -> Cmd msg
-effects model msg stringEffects boolEffects =
+formCommands :
+    model
+    -> Msg comparable
+    -> (model -> comparable -> String -> ( model, Cmd msg ))
+    -> (model -> comparable -> Bool -> ( model, Cmd msg ))
+    -> ( model, Cmd msg )
+formCommands model msg seffects beffects =
     case msg of
         UpdateStringField comparable s ->
-            stringEffects model comparable s
+            seffects model comparable s
 
         UpdateBoolField comparable b ->
-            boolEffects model comparable b
+            beffects model comparable b
 
 
-{-| This version only defines effects for the `UpdateStringField` message
+{-| This version only defines side-effects for the `UpdateStringField` message
 -}
-effectsS : a -> Msg comparable -> (a -> comparable -> String -> Cmd msg) -> Cmd msg
-effectsS model msg stringEffects =
-    effects model msg stringEffects (\_ _ _ -> Cmd.none)
+stringFieldCommands :
+    model
+    -> Msg comparable
+    -> (model -> comparable -> String -> ( model, Cmd msg ))
+    -> ( model, Cmd msg )
+stringFieldCommands model msg seffects =
+    formCommands model msg seffects (\_ _ _ -> ( model, Cmd.none ))
 
 
-{-| This version only defines effects for the `UpdateBoolField` message
+{-| This version only defines side-effects for the `UpdateBoolField` message
 -}
-effectsB : a -> Msg comparable -> (a -> comparable -> Bool -> Cmd msg) -> Cmd msg
-effectsB model msg boolEffects =
-    effects model msg (\_ _ _ -> Cmd.none) boolEffects
+boolFieldCommands :
+    model
+    -> Msg comparable
+    -> (model -> comparable -> Bool -> ( model, Cmd msg ))
+    -> ( model, Cmd msg )
+boolFieldCommands model msg beffects =
+    formCommands model msg (\_ _ _ -> ( model, Cmd.none )) beffects

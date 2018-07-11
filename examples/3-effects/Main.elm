@@ -94,22 +94,24 @@ update msg model =
                 console =
                     log "" (F.validate newModel.myForm)
             in
-                ( newModel
-                , FU.effectsS model formMsg myFormEffects
-                )
+                FU.stringFieldCommands model formMsg myFormCommands
 
         EffectSuccess newEffectValue ->
             { model | effectValue = newEffectValue } ! []
 
 
-myFormEffects : Model -> String -> String -> Cmd Msg
-myFormEffects model key value =
+myFormCommands : Model -> String -> String -> ( Model, Cmd Msg )
+myFormCommands model key value =
     case key of
         "field_watched" ->
-            Random.generate EffectSuccess (Random.int 1 15)
+            ( model
+            , Random.generate EffectSuccess (Random.int 1 15)
+            )
 
         _ ->
-            Cmd.none
+            ( model
+            , Cmd.none
+            )
 
 
 
