@@ -55,6 +55,16 @@ all =
                     boolField success (V.string "valid")
                         |> Expect.equal (configFailure WrongType)
             ]
+        , describe "Validation.isChecked"
+            [ test "helps validating a field with a Bool/True value" <|
+                \_ ->
+                    boolField (isChecked NotChecked success) (V.bool True)
+                        |> Expect.equal (success True)
+            , test "fails otherwise" <|
+                \_ ->
+                    boolField (isChecked NotChecked success) (V.bool False)
+                        |> Expect.equal (failure NotChecked)
+            ]
         , describe "Validation.int"
             [ test "helps validating a field with a String/Int value" <|
                 \_ ->
@@ -296,7 +306,8 @@ wrongType =
 
 
 type TestError
-    = NotInt
+    = NotChecked
+    | NotInt
     | NotFloat
     | EmptyString
     | WrongLength

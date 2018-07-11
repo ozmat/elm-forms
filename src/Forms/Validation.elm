@@ -12,6 +12,7 @@ module Forms.Validation
         , stringField
         , boolField
           -- Basic validation
+        , isChecked
         , int
         , float
         , notEmpty
@@ -65,7 +66,7 @@ the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a be
 
 ### Basic Validation Helpers
 
-@docs int, float, notEmpty, length, email, passwordMatch
+@docs isChecked, int, float, notEmpty, length, email, passwordMatch
 
 
 # Form Validation
@@ -238,6 +239,29 @@ boolField fvalid value =
 
 
 -- Basic Validation Helpers
+
+
+{-| Helps validating a `Bool` that is True (checkbox checked). If the `Bool`
+is False, fails with the given error.
+
+    type YourError
+        = NotChecked
+        | ...
+
+    postValidation : Bool -> FieldValidation YourError a
+    ...
+
+    validateField : Bool -> FieldValidation YourError a
+    validateField =
+        isChecked NotChecked postValidation
+
+-}
+isChecked : err -> (Bool -> FieldValidation err a) -> Bool -> FieldValidation err a
+isChecked err fvalid b =
+    if b then
+        fvalid b
+    else
+        failure err
 
 
 {-| Helps validating a `String` that can be cast into an `Int`. If the `String`
