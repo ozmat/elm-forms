@@ -115,7 +115,7 @@ won't accumulate the errors. Don't mix those functions with the previous ones
 
 import Dict exposing (Dict)
 import Regex
-import Validation as VA exposing (Validation(..))
+import Validation as VA exposing (Validation)
 import Forms.Field as F exposing (Fields)
 import Forms.Value as V exposing (Value)
 
@@ -404,13 +404,18 @@ don't match, fails with the given error.
 
 -}
 passwordMatch : err -> (String -> FieldValidation err a) -> Value -> Value -> FieldValidation err a
-passwordMatch err fvalid password passwordAgain =
-    case ( password, passwordAgain ) of
+passwordMatch err fvalid password passwordRepeat =
+    case ( password, passwordRepeat ) of
         ( V.String s1, V.String s2 ) ->
-            if s1 == s2 then
-                fvalid s1
-            else
-                failure err
+            case fvalid s1 of
+                VA.Success s ->
+                    if s1 == s2 then
+                        success s
+                    else
+                        failure err
+
+                fail ->
+                    fail
 
         _ ->
             configFailure WrongType
@@ -701,6 +706,9 @@ optionalMaybe1 fields comparable fvalid fvf =
 fieldsValid : Fields comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err a
 fieldsValid fields comparable1 comparable2 fvalid =
     let
+        missing =
+            ConfigErr MissingField
+
         fe1 =
             FormError comparable1
 
@@ -708,25 +716,25 @@ fieldsValid fields comparable1 comparable2 fvalid =
             FormError comparable2
 
         both err =
-            VA.ErrorList [ fe1 err, fe2 err ]
+            [ fe1 err, fe2 err ]
 
         replace ve =
             case ve of
                 VA.Error e ->
-                    both e
+                    VA.ErrorList (both e)
 
                 VA.ErrorList l ->
                     VA.ErrorList (List.map fe1 l ++ List.map fe2 l)
     in
         case ( F.getValue comparable1 fields, F.getValue comparable2 fields ) of
             ( Nothing, Just _ ) ->
-                VA.failure (fe1 (ConfigErr MissingField))
+                VA.failure (fe1 missing)
 
             ( Just _, Nothing ) ->
-                VA.failure (fe2 (ConfigErr MissingField))
+                VA.failure (fe2 missing)
 
             ( Nothing, Nothing ) ->
-                Failure (both (ConfigErr MissingField))
+                VA.failureWithList (both missing)
 
             ( Just value1, Just value2 ) ->
                 VA.mapValidationError replace (fvalid value1 value2)
