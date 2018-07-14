@@ -84,7 +84,7 @@ myFormValidate fields =
         -- Transform String to Float
         |> FV.required fields "float" (FV.stringField <| FV.int NotInt <| FV.success << (*) 5.4 << toFloat)
         -- Transform 5 Strings to  Dict ( String, Int )
-        |> FV.fieldGroup fields "repeat_group" repeatValidate
+        |> FV.fieldgroup fields "repeat_group" repeatValidate
 
 
 repeatCount : String -> String -> String -> String -> String -> Dict String Int

@@ -37,14 +37,14 @@ module Forms.Validation
         , hardcoded1
         , optional
         , optional1
-        , optionalMaybe
-        , optionalMaybe1
+        , optionalWithMaybe
+        , optionalWithMaybe1
         , discardable
         , discardable1
         , twoFields
         , twoFields1
-        , fieldGroup
-        , fieldGroup1
+        , fieldgroup
+        , fieldgroup1
         )
 
 {-| This module provides the validation logic for the library. Please refer to
@@ -102,7 +102,7 @@ Those functions help building a `Validate` function and aim to ease the
 `FormValidation`. They will accumulate the different `FormError`s during the
 validation process.
 
-@docs required, hardcoded, optional, optionalMaybe, discardable, twoFields, fieldGroup
+@docs required, hardcoded, optional, optionalWithMaybe, discardable, twoFields, fieldgroup
 
 
 ### Validate Helpers (bind)
@@ -111,7 +111,7 @@ Those functions are the "binding" equivalent of the previous ones. This means
 that the `FormValidation` will fail at the first `FormError` encountered and
 won't accumulate the errors. Don't mix those functions with the previous ones
 
-@docs required1, hardcoded1, optional1, optionalMaybe1, discardable1, twoFields1, fieldGroup1
+@docs required1, hardcoded1, optional1, optionalWithMaybe1, discardable1, twoFields1, fieldgroup1
 
 -}
 
@@ -670,32 +670,32 @@ optional1 fields comparable default fvalid fvf =
 
 
 
--- OptionalMaybe
+-- OptionalWithMaybe
 
 
-{-| Validates an optional `Field` using `Maybe`. Only works
+{-| Validates an optional `Field` with `Maybe`. Only works
 on `String` `Field`s. Same logic than `optional` but the
 default value is `Nothing` and the validated one is `Just`
 
     ...
-        |> optionalMaybe fields comparable doYourValidation
+        |> optionalWithMaybe fields comparable doYourValidation
         ...
 
 -}
-optionalMaybe : Fields comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
-optionalMaybe fields comparable fvalid fvf =
+optionalWithMaybe : Fields comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
+optionalWithMaybe fields comparable fvalid fvf =
     optional fields comparable Nothing (\s -> VA.map Just (fvalid s)) fvf
 
 
 {-| Validates an optional `Field` using Maybe (binding)
 
     ...
-        |> optionalMaybe1 fields comparable doYourValidation
+        |> optionalWithMaybe1 fields comparable doYourValidation
         ...
 
 -}
-optionalMaybe1 : Fields comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
-optionalMaybe1 fields comparable fvalid fvf =
+optionalWithMaybe1 : Fields comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
+optionalWithMaybe1 fields comparable fvalid fvf =
     optional1 fields comparable Nothing (\s -> VA.map Just (fvalid s)) fvf
 
 
@@ -814,22 +814,22 @@ groupValid fields comparable fvalid =
 but mainly when you need to nest a validation process
 
      ...
-        |> fieldGroup fields comparable doYourValidation
+        |> fieldgroup fields comparable doYourValidation
         ...
 
 -}
-fieldGroup : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-fieldGroup fields comparable fvalid fvf =
+fieldgroup : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+fieldgroup fields comparable fvalid fvf =
     VA.andMapAcc (groupValid fields comparable fvalid) fvf
 
 
 {-| Validates a group of `Field`s (binding)
 
      ...
-        |> fieldGroup fields comparable doYourValidation
+        |> fieldgroup1 fields comparable doYourValidation
         ...
 
 -}
-fieldGroup1 : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
-fieldGroup1 fields comparable fvalid fvf =
+fieldgroup1 : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
+fieldgroup1 fields comparable fvalid fvf =
     VA.andMap (groupValid fields comparable fvalid) fvf

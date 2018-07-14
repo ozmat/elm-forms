@@ -234,22 +234,22 @@ all =
                     optional (fields1 "notaa") "key1" "" valFail (valid Required)
                         |> Expect.equal (formE "key1" (CustomErr "error"))
             ]
-        , describe "Validation.optionalMaybe"
+        , describe "Validation.optionalWithMaybe"
             [ test "helps validating an optional Field with a Maybe" <|
                 \_ ->
-                    optionalMaybe (fields1 "notempty") "key1" success (valid OptionalMaybe)
+                    optionalWithMaybe (fields1 "notempty") "key1" success (valid OptionalMaybe)
                         |> Expect.equal (valid (OptionalMaybe (Just "notempty")))
             , fuzz string "fallback with Maybe if empty" <|
                 \s ->
-                    optionalMaybe (fields1 "") "key1" success (valid OptionalMaybe)
+                    optionalWithMaybe (fields1 "") "key1" success (valid OptionalMaybe)
                         |> Expect.equal (valid (OptionalMaybe Nothing))
             , test "fails if the field is missing" <|
                 \_ ->
-                    optionalMaybe (fields1 "") "notfound" success (valid OptionalMaybe)
+                    optionalWithMaybe (fields1 "") "notfound" success (valid OptionalMaybe)
                         |> Expect.equal (formE "notfound" missingField)
             , test "fails if the validation fails" <|
                 \_ ->
-                    optionalMaybe (fields1 "notaa") "key1" valFail (valid OptionalMaybe)
+                    optionalWithMaybe (fields1 "notaa") "key1" valFail (valid OptionalMaybe)
                         |> Expect.equal (formE "key1" (CustomErr "error"))
             ]
         , describe "Validation.discardable"
@@ -288,18 +288,18 @@ all =
                     twoFields (fields2 "a" "b") "key2" "key3" (passwordMatch PasswordNotEqual success) (valid Required)
                         |> Expect.equal (formEL "key2" "key3" (CustomErr PasswordNotEqual))
             ]
-        , describe "Validation.fieldGroup"
+        , describe "Validation.fieldgroup"
             [ fuzz string "helps validating a FieldGroup" <|
                 \s ->
-                    fieldGroup (fields3 s) "group1" (\f -> required f "key4" (stringField success) (valid Required)) (valid FieldGroup)
+                    fieldgroup (fields3 s) "group1" (\f -> required f "key4" (stringField success) (valid Required)) (valid FieldGroup)
                         |> Expect.equal (valid (FieldGroup (Required s)))
             , test "fails if the group is missing" <|
                 \_ ->
-                    fieldGroup (fields3 "") "notfound" (\_ -> valid (Required "")) (valid FieldGroup)
+                    fieldgroup (fields3 "") "notfound" (\_ -> valid (Required "")) (valid FieldGroup)
                         |> Expect.equal (formE "notfound" missingField)
             , test "fails if the group validation fails" <|
                 \_ ->
-                    fieldGroup (fields3 "notaa") "group1" (\f -> required f "key4" (stringField valFail) (valid Required)) (valid FieldGroup)
+                    fieldgroup (fields3 "notaa") "group1" (\f -> required f "key4" (stringField valFail) (valid Required)) (valid FieldGroup)
                         |> Expect.equal (formE "key4" (CustomErr "error"))
             ]
         ]

@@ -125,9 +125,9 @@ myFormValidate fields =
                         else
                             FV.success i
             )
-        |> FV.fieldGroup fields "user_group" myUserValidate
+        |> FV.fieldgroup fields "user_group" myUserValidate
         |> FV.optional fields "wallet" 0 (FV.float NotFloat FV.success)
-        |> FV.optionalMaybe fields "color" (FV.validation WrongColor isColor)
+        |> FV.optionalWithMaybe fields "color" (FV.validation WrongColor isColor)
 
 
 myUserValidate : FV.Validate String MyFormError UserModel
