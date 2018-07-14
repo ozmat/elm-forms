@@ -39,6 +39,8 @@ module Forms.Validation
         , optional1
         , optionalMaybe
         , optionalMaybe1
+        , discardable
+        , discardable1
         , twoFields
         , twoFields1
         , fieldGroup
@@ -100,7 +102,7 @@ Those functions help building a `Validate` function and aim to ease the
 `FormValidation`. They will accumulate the different `FormError`s during the
 validation process.
 
-@docs required, hardcoded, optional, optionalMaybe, twoFields, fieldGroup
+@docs required, hardcoded, optional, optionalMaybe, discardable, twoFields, fieldGroup
 
 
 ### Validate Helpers (bind)
@@ -109,7 +111,7 @@ Those functions are the "binding" equivalent of the previous ones. This means
 that the `FormValidation` will fail at the first `FormError` encountered and
 won't accumulate the errors. Don't mix those functions with the previous ones
 
-@docs required1, hardcoded1, optional1, optionalMaybe1, twoFields1, fieldGroup1
+@docs required1, hardcoded1, optional1, optionalMaybe1, discardable1, twoFields1, fieldGroup1
 
 -}
 
@@ -695,6 +697,30 @@ optionalMaybe fields comparable fvalid fvf =
 optionalMaybe1 : Fields comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
 optionalMaybe1 fields comparable fvalid fvf =
     optional1 fields comparable Nothing (\s -> VA.map Just (fvalid s)) fvf
+
+
+
+-- Discardable
+
+
+{-| Validates a discardable `Field`. This is useful when you need to validate
+a `Field` but don't need the result.
+
+    ...
+        |> discardable fields comparable doYourValidation
+        ...
+
+-}
+discardable : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err b -> FormValidation comparable err b
+discardable fields comparable fvalid fvf =
+    VA.andSkipAcc (fieldValid fields comparable fvalid) fvf
+
+
+{-| Validates a discardable `Field` (binding)
+-}
+discardable1 : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err b -> FormValidation comparable err b
+discardable1 fields comparable fvalid fvf =
+    VA.andSkip (fieldValid fields comparable fvalid) fvf
 
 
 

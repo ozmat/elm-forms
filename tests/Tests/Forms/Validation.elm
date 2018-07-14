@@ -252,6 +252,20 @@ all =
                     optionalMaybe (fields1 "notaa") "key1" valFail (valid OptionalMaybe)
                         |> Expect.equal (formE "key1" (CustomErr "error"))
             ]
+        , describe "Validation.discardable"
+            [ test "helps validating a discardable Field" <|
+                \_ ->
+                    discardable (fields1 "") "key1" success (valid OptionalMaybe)
+                        |> Expect.equal (valid OptionalMaybe)
+            , test "fails if the field is missing" <|
+                \_ ->
+                    discardable (fields1 "") "notfound" success (valid OptionalMaybe)
+                        |> Expect.equal (formE "notfound" missingField)
+            , test "fails if the validation fails" <|
+                \_ ->
+                    discardable (fields1 "notaa") "key1" (stringField valFail) (valid OptionalMaybe)
+                        |> Expect.equal (formE "key1" (CustomErr "error"))
+            ]
         , describe "Validation.twoFields"
             [ test "helps validating two fields together" <|
                 \_ ->
