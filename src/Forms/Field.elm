@@ -1,20 +1,17 @@
 module Forms.Field
     exposing
-        ( -- Field
-          Field(..)
+        ( Field(..)
         , Fields
-          -- Helpers
-        , input
-        , select
         , checkbox
-        , group
-        , fields
-        , inputWithDefault
-        , selectWithDefault
         , checkboxWithDefault
-          -- Getters and Setter
-        , getValue
+        , fields
         , getGroup
+        , getValue
+        , group
+        , input
+        , inputWithDefault
+        , select
+        , selectWithDefault
         , setValue
         )
 
@@ -230,12 +227,12 @@ getField comparable gr =
                         _ ->
                             Nothing
     in
-        case D.get comparable gr of
-            Just field ->
-                Just field
+    case D.get comparable gr of
+        Just field ->
+            Just field
 
-            Nothing ->
-                D.foldl walk Nothing gr
+        Nothing ->
+            D.foldl walk Nothing gr
 
 
 {-| Retrieves the `Value` associated with a key. If the key is not found or
@@ -337,4 +334,4 @@ setValue comparable value gr =
                     _ ->
                         acc
     in
-        D.foldl walk gr gr
+    D.foldl walk gr gr

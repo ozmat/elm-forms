@@ -1,9 +1,9 @@
 module Tests.Forms.Value exposing (..)
 
 import Expect
-import Test exposing (..)
-import Fuzz as F
 import Forms.Value exposing (..)
+import Fuzz as F
+import Test exposing (..)
 
 
 all : Test
@@ -52,8 +52,8 @@ all =
                         updated =
                             String "updated"
                     in
-                        safeUpdate updated defaultString
-                            |> Expect.equal updated
+                    safeUpdate updated defaultString
+                        |> Expect.equal updated
             , test "has no effect on value of different type" <|
                 \_ ->
                     safeUpdate defaultString defaultBool

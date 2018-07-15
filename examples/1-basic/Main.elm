@@ -1,17 +1,13 @@
 module Main exposing (..)
 
-import Html exposing (Html, program, text, div, input)
-import Html.Attributes exposing (placeholder, style)
-import Html.Events exposing (onInput)
 import Debug exposing (log)
-
-
--- Forms import
-
 import Forms.Field as FF
-import Forms.Validation as FV
 import Forms.Form as F
 import Forms.Update as FU
+import Forms.Validation as FV
+import Html exposing (Html, div, input, program, text)
+import Html.Attributes exposing (placeholder, style)
+import Html.Events exposing (onInput)
 
 
 {- MAIN -}
@@ -22,7 +18,7 @@ main =
     program
         { init = init
         , update = update
-        , subscriptions = (\_ -> Sub.none)
+        , subscriptions = \_ -> Sub.none
         , view = view
         }
 
@@ -99,7 +95,7 @@ update msg model =
                 console =
                     log "" (F.validate newModel.myForm)
             in
-                newModel ! []
+            newModel ! []
 
 
 
@@ -127,9 +123,9 @@ inputText placeHolder fieldName =
                 , ( "text-align", "center" )
                 ]
     in
-        input
-            [ inputStyle
-            , placeholder placeHolder
-            , onInput (Form << FU.UpdateStringField fieldName)
-            ]
-            []
+    input
+        [ inputStyle
+        , placeholder placeHolder
+        , onInput (Form << FU.UpdateStringField fieldName)
+        ]
+        []

@@ -1,13 +1,13 @@
 module Forms.Value
     exposing
         ( Value(..)
-        , string
         , bool
-        , defaultString
         , defaultBool
-        , isString
+        , defaultString
         , isBool
+        , isString
         , safeUpdate
+        , string
         )
 
 {-| A `Value` represents the value inside a [`Field`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Field).

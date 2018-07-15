@@ -1,50 +1,44 @@
 module Forms.Validation
     exposing
-        ( -- Field validation
-          ConfigError(..)
+        ( ConfigError(..)
         , FieldError(..)
         , FieldValidation
-        , configFailure
-        , failure
-        , success
-        , validation
-          -- Type validation
-        , stringField
-        , boolField
-          -- Basic validation
-        , isChecked
-        , int
-        , float
-        , notEmpty
-        , length
-        , email
-        , passwordMatch
-          -- Form validation
         , FormError(..)
-        , FormValidation
-        , valid
-        , toTuple
-        , toResult
-          -- Form result
         , FormResult(..)
-        , filterErrors
-        , toFormResult
-          -- Validate
+        , FormValidation
         , Validate
-        , required
-        , required1
+        , boolField
+        , configFailure
+        , discardable
+        , discardable1
+        , email
+        , failure
+        , fieldgroup
+        , fieldgroup1
+        , filterErrors
+        , float
         , hardcoded
         , hardcoded1
+        , int
+        , isChecked
+        , length
+        , notEmpty
         , optional
         , optional1
         , optionalWithMaybe
         , optionalWithMaybe1
-        , discardable
-        , discardable1
+        , passwordMatch
+        , required
+        , required1
+        , stringField
+        , success
+        , toFormResult
+        , toResult
+        , toTuple
         , twoFields
         , twoFields1
-        , fieldgroup
-        , fieldgroup1
+        , valid
+        , validation
         )
 
 {-| This module provides the validation logic for the library. Please refer to
@@ -116,10 +110,10 @@ won't accumulate the errors. Don't mix those functions with the previous ones
 -}
 
 import Dict exposing (Dict)
-import Regex
-import Validation as VA exposing (Validation)
 import Forms.Field as F exposing (Fields)
 import Forms.Value as V exposing (Value)
+import Regex
+import Validation as VA exposing (Validation)
 
 
 -- Field validation
@@ -360,10 +354,10 @@ length low high err fvalid s =
         len =
             String.length s
     in
-        if len > low && len < high then
-            fvalid s
-        else
-            failure err
+    if len > low && len < high then
+        fvalid s
+    else
+        failure err
 
 
 {-| Helps validating a `String` that is an email. If the `String`is not an email,
@@ -513,7 +507,7 @@ filterErrors errors =
                         _ ->
                             acc
     in
-        List.foldl walk (Ok []) (List.map toTuple errors)
+    List.foldl walk (Ok []) (List.map toTuple errors)
 
 
 {-| Converts a `FormValidation` into a `FormResult`
@@ -555,7 +549,7 @@ fieldValid fields comparable fvalid =
                 Just value ->
                     fvalid value
     in
-        mapFormError comparable (missing (F.getValue comparable fields))
+    mapFormError comparable (missing (F.getValue comparable fields))
 
 
 
@@ -752,18 +746,18 @@ fieldsValid fields comparable1 comparable2 fvalid =
                 VA.ErrorList l ->
                     VA.ErrorList (List.map fe1 l ++ List.map fe2 l)
     in
-        case ( F.getValue comparable1 fields, F.getValue comparable2 fields ) of
-            ( Nothing, Just _ ) ->
-                VA.failure (fe1 missing)
+    case ( F.getValue comparable1 fields, F.getValue comparable2 fields ) of
+        ( Nothing, Just _ ) ->
+            VA.failure (fe1 missing)
 
-            ( Just _, Nothing ) ->
-                VA.failure (fe2 missing)
+        ( Just _, Nothing ) ->
+            VA.failure (fe2 missing)
 
-            ( Nothing, Nothing ) ->
-                VA.failureWithList (both missing)
+        ( Nothing, Nothing ) ->
+            VA.failureWithList (both missing)
 
-            ( Just value1, Just value2 ) ->
-                VA.mapValidationError replace (fvalid value1 value2)
+        ( Just value1, Just value2 ) ->
+            VA.mapValidationError replace (fvalid value1 value2)
 
 
 {-| Validates two `Field`s together. The validation function takes two `Field`
@@ -807,7 +801,7 @@ groupValid fields comparable fvalid =
                 Just value ->
                     fvalid value
     in
-        missing (F.getGroup comparable fields)
+    missing (F.getGroup comparable fields)
 
 
 {-| Validates a group of `Field`s. This can be useful in many different cases

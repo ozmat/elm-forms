@@ -1,18 +1,14 @@
 module Main exposing (..)
 
-import Random
-import Html exposing (Html, program, text, div, input)
-import Html.Attributes exposing (placeholder, style, disabled)
-import Html.Events exposing (onInput)
 import Debug exposing (log)
-
-
--- Forms import
-
 import Forms.Field as FF
-import Forms.Validation as FV
 import Forms.Form as F
 import Forms.Update as FU
+import Forms.Validation as FV
+import Html exposing (Html, div, input, program, text)
+import Html.Attributes exposing (disabled, placeholder, style)
+import Html.Events exposing (onInput)
+import Random
 
 
 {- MAIN -}
@@ -23,7 +19,7 @@ main =
     program
         { init = init
         , update = update
-        , subscriptions = (\_ -> Sub.none)
+        , subscriptions = \_ -> Sub.none
         , view = view
         }
 
@@ -94,7 +90,7 @@ update msg model =
                 console =
                     log "" (F.validate newModel.myForm)
             in
-                FU.stringFieldCommands model formMsg myFormCommands
+            FU.stringFieldCommands model formMsg myFormCommands
 
         EffectSuccess newEffectValue ->
             { model | effectValue = newEffectValue } ! []
@@ -151,6 +147,6 @@ inputText disable placeHolder fieldName =
                 , onInput (Form << FU.UpdateStringField fieldName)
                 ]
     in
-        input
-            inputAttrs
-            []
+    input
+        inputAttrs
+        []

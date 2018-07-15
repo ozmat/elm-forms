@@ -2,12 +2,12 @@ module Forms.Form
     exposing
         ( Form(..)
         , form
+        , getBoolField
+        , getStringField
+        , setBoolField
+        , setStringField
         , validate
         , validateWithFieldErrors
-        , getStringField
-        , getBoolField
-        , setStringField
-        , setBoolField
         )
 
 {-| `Form` is the top level type of the library. It is built with [`Fields`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Fields)
@@ -33,8 +33,8 @@ Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/ex
 
 import Dict as D exposing (Dict)
 import Forms.Field as F exposing (Fields)
-import Forms.Value exposing (string, bool, isString, isBool)
-import Forms.Validation as V exposing (FormResult, Validate, FieldError)
+import Forms.Validation as V exposing (FieldError, FormResult, Validate)
+import Forms.Value exposing (bool, isBool, isString, string)
 
 
 {-| A `Form` is a group of `Field`s and a `Validate` function

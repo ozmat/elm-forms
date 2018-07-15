@@ -2,11 +2,11 @@ module Tests.Forms.Form exposing (..)
 
 import Dict as D
 import Expect
-import Test exposing (..)
-import Fuzz exposing (string, bool)
-import Forms.Form exposing (..)
 import Forms.Field as F
+import Forms.Form exposing (..)
 import Forms.Validation as V
+import Fuzz exposing (bool, string)
+import Test exposing (..)
 
 
 all : Test

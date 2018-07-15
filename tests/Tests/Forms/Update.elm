@@ -1,14 +1,14 @@
 module Tests.Forms.Update exposing (..)
 
 import Expect
-import Test exposing (..)
-import Fuzz as F
-import Random
-import Forms.Form as FO
 import Forms.Field as FF
+import Forms.Form as FO
 import Forms.Update exposing (..)
 import Forms.Validation as FV
 import Forms.Value as V
+import Fuzz as F
+import Random
+import Test exposing (..)
 
 
 all : Test
@@ -105,7 +105,7 @@ testUpdateForm msg key form =
         (FO.Form newFields _) =
             updateForm msg form
     in
-        FF.getValue key newFields
+    FF.getValue key newFields
 
 
 
@@ -169,13 +169,13 @@ myUpdate i msg model =
                 _ ->
                     ( mo, Cmd.none )
     in
-        case msg of
-            Form formMsg ->
-                let
-                    newModel =
-                        { model | aform = updateForm formMsg model.aform }
-                in
-                    cmd newModel formMsg
+    case msg of
+        Form formMsg ->
+            let
+                newModel =
+                    { model | aform = updateForm formMsg model.aform }
+            in
+            cmd newModel formMsg
 
-            TestEffects i ->
-                model ! []
+        TestEffects i ->
+            model ! []

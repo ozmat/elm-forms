@@ -1,13 +1,13 @@
 module Tests.Forms.Validation exposing (..)
 
-import Expect
-import Test exposing (..)
-import Fuzz exposing (bool, string)
 import Dict exposing (Dict)
-import Validation as VA
+import Expect
+import Forms.Field as F
 import Forms.Validation exposing (..)
 import Forms.Value as V
-import Forms.Field as F
+import Fuzz exposing (bool, string)
+import Test exposing (..)
+import Validation as VA
 
 
 all : Test
@@ -516,7 +516,7 @@ validate2 fields =
 validate3 : String -> Validate String String SomeResult
 validate3 s fields =
     valid SomeResult
-        |> required fields "a" (stringField <| (\_ -> failure s))
+        |> required fields "a" (stringField <| \_ -> failure s)
         |> required fields "b" (stringField <| success)
         |> required fields "c" (stringField <| success)
 
@@ -524,8 +524,8 @@ validate3 s fields =
 validate4 : String -> Validate String String SomeResult
 validate4 s fields =
     valid SomeResult
-        |> required fields "a" (stringField <| (\_ -> failure s))
-        |> required fields "b" (stringField <| (\_ -> failure s))
+        |> required fields "a" (stringField <| \_ -> failure s)
+        |> required fields "b" (stringField <| \_ -> failure s)
         |> required fields "c" (stringField <| success)
 
 

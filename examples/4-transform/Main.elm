@@ -1,18 +1,14 @@
 module Main exposing (..)
 
-import Dict exposing (Dict)
-import Html exposing (Html, program, text, div, input)
-import Html.Attributes exposing (placeholder, style)
-import Html.Events exposing (onInput)
 import Debug exposing (log)
-
-
--- Forms import
-
+import Dict exposing (Dict)
 import Forms.Field as FF
-import Forms.Validation as FV
 import Forms.Form as F
 import Forms.Update as FU
+import Forms.Validation as FV
+import Html exposing (Html, div, input, program, text)
+import Html.Attributes exposing (placeholder, style)
+import Html.Events exposing (onInput)
 
 
 {- MAIN -}
@@ -23,7 +19,7 @@ main =
     program
         { init = init
         , update = update
-        , subscriptions = (\_ -> Sub.none)
+        , subscriptions = \_ -> Sub.none
         , view = view
         }
 
@@ -80,7 +76,7 @@ myFormValidate : FV.Validate String MyFormError OtherModel
 myFormValidate fields =
     FV.valid OtherModel
         -- Transform String to Bool
-        |> FV.required fields "red" (FV.stringField <| FV.success << ((==) "red"))
+        |> FV.required fields "red" (FV.stringField <| FV.success << (==) "red")
         -- Transform String to Float
         |> FV.required fields "float" (FV.stringField <| FV.int NotInt <| FV.success << (*) 5.4 << toFloat)
         -- Transform 5 Strings to  Dict ( String, Int )
@@ -101,7 +97,7 @@ repeatCount s1 s2 s3 s4 s5 =
         fold n acc =
             Dict.update n update acc
     in
-        List.foldl fold Dict.empty [ s1, s2, s3, s4, s5 ]
+    List.foldl fold Dict.empty [ s1, s2, s3, s4, s5 ]
 
 
 repeatValidate : FV.Validate String MyFormError (Dict String Int)
@@ -137,7 +133,7 @@ update msg model =
                 console =
                     log "" (F.validate newModel.myForm)
             in
-                newModel ! []
+            newModel ! []
 
 
 
@@ -169,9 +165,9 @@ inputText placeHolder fieldName =
                 , ( "text-align", "center" )
                 ]
     in
-        input
-            [ inputStyle
-            , placeholder placeHolder
-            , onInput (Form << FU.UpdateStringField fieldName)
-            ]
-            []
+    input
+        [ inputStyle
+        , placeholder placeHolder
+        , onInput (Form << FU.UpdateStringField fieldName)
+        ]
+        []

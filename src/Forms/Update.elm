@@ -1,11 +1,10 @@
 module Forms.Update
     exposing
         ( Msg(..)
-        , updateForm
-          -- Side effects
+        , boolFieldCommands
         , formCommands
         , stringFieldCommands
-        , boolFieldCommands
+        , updateForm
         )
 
 {-| This module provides helpers for your update function. Please refer to the
@@ -28,9 +27,9 @@ module Forms.Update
 
 -}
 
-import Forms.Form as F exposing (Form(..))
 import Forms.Field as FI exposing (setValue)
-import Forms.Value as V exposing (string, bool)
+import Forms.Form as F exposing (Form(..))
+import Forms.Value as V exposing (bool, string)
 
 
 -- Messages

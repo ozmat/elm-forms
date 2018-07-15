@@ -2,10 +2,10 @@ module Tests.Forms.Field exposing (..)
 
 import Dict as D
 import Expect
-import Test exposing (..)
-import Fuzz as F
 import Forms.Field exposing (..)
 import Forms.Value as V
+import Fuzz as F
+import Test exposing (..)
 
 
 all : Test
@@ -14,15 +14,15 @@ all =
         [ test "Field.input creates a default String FieldValue" <|
             \_ ->
                 input
-                    |> Expect.equal (FieldValue (V.defaultString))
+                    |> Expect.equal (FieldValue V.defaultString)
         , test "Field.select creates a default String FieldValue" <|
             \_ ->
                 select
-                    |> Expect.equal (FieldValue (V.defaultString))
+                    |> Expect.equal (FieldValue V.defaultString)
         , test "Field.checkbox creates a default Bool FieldValue" <|
             \_ ->
                 checkbox
-                    |> Expect.equal (FieldValue (V.defaultBool))
+                    |> Expect.equal (FieldValue V.defaultBool)
         , test "Field.group creates a FieldGroup from a tuple-list" <|
             \_ ->
                 group fixture1
@@ -90,7 +90,7 @@ all =
                         |> Expect.equal (fixture2 "")
             , test "has no effect if the Value has a different type" <|
                 \_ ->
-                    setValue "key1" (V.defaultBool) (fixture2 "")
+                    setValue "key1" V.defaultBool (fixture2 "")
                         |> Expect.equal (fixture2 "")
             ]
         ]
