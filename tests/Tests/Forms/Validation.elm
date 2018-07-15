@@ -255,15 +255,15 @@ all =
         , describe "Validation.discardable"
             [ test "helps validating a discardable Field" <|
                 \_ ->
-                    discardable (fields1 "") "key1" success (valid OptionalMaybe)
-                        |> Expect.equal (valid OptionalMaybe)
+                    discardable (fields1 "") "key1" success (valid Required)
+                        |> Expect.equal (valid Required)
             , test "fails if the field is missing" <|
                 \_ ->
-                    discardable (fields1 "") "notfound" success (valid OptionalMaybe)
+                    discardable (fields1 "") "notfound" success (valid Required)
                         |> Expect.equal (formE "notfound" missingField)
             , test "fails if the validation fails" <|
                 \_ ->
-                    discardable (fields1 "notaa") "key1" (stringField valFail) (valid OptionalMaybe)
+                    discardable (fields1 "notaa") "key1" (stringField valFail) (valid Required)
                         |> Expect.equal (formE "key1" (CustomErr "error"))
             ]
         , describe "Validation.twoFields"
@@ -300,6 +300,110 @@ all =
             , test "fails if the group validation fails" <|
                 \_ ->
                     fieldgroup (fields3 "notaa") "group1" (\f -> required f "key4" (stringField valFail) (valid Required)) (valid FieldGroup)
+                        |> Expect.equal (formE "key4" (CustomErr "error"))
+            ]
+        , describe "Validation.required1"
+            [ fuzz string "helps validating a required Field (bind)" <|
+                \s ->
+                    required1 (fields1 s) "key1" (stringField success) (valid Required)
+                        |> Expect.equal (valid (Required s))
+            , test "fails if the field is missing" <|
+                \_ ->
+                    required1 (fields1 "") "notfound" (stringField success) (valid Required)
+                        |> Expect.equal (formE "notfound" missingField)
+            , test "fails if the validation fails" <|
+                \_ ->
+                    required1 (fields1 "notaa") "key1" (stringField valFail) (valid Required)
+                        |> Expect.equal (formE "key1" (CustomErr "error"))
+            ]
+        , fuzz string "Validation.hardcoded1 helps harcoding a value during a Validation (bind)" <|
+            \s ->
+                hardcoded1 s (valid Required)
+                    |> Expect.equal (valid (Required s))
+        , describe "Validation.optional1"
+            [ test "helps validating an optional Field with a default value (bind)" <|
+                \_ ->
+                    optional1 (fields1 "notempty") "key1" "" success (valid Required)
+                        |> Expect.equal (valid (Required "notempty"))
+            , fuzz string "fallback on default value if empty" <|
+                \s ->
+                    optional1 (fields1 "") "key1" s success (valid Required)
+                        |> Expect.equal (valid (Required s))
+            , test "fails if the field is missing" <|
+                \_ ->
+                    optional1 (fields1 "") "notfound" "" success (valid Required)
+                        |> Expect.equal (formE "notfound" missingField)
+            , test "fails if the validation fails" <|
+                \_ ->
+                    optional1 (fields1 "notaa") "key1" "" valFail (valid Required)
+                        |> Expect.equal (formE "key1" (CustomErr "error"))
+            ]
+        , describe "Validation.optionalWithMaybe1"
+            [ test "helps validating an optional Field with a Maybe (bind)" <|
+                \_ ->
+                    optionalWithMaybe1 (fields1 "notempty") "key1" success (valid OptionalMaybe)
+                        |> Expect.equal (valid (OptionalMaybe (Just "notempty")))
+            , fuzz string "fallback with Maybe if empty" <|
+                \s ->
+                    optionalWithMaybe1 (fields1 "") "key1" success (valid OptionalMaybe)
+                        |> Expect.equal (valid (OptionalMaybe Nothing))
+            , test "fails if the field is missing" <|
+                \_ ->
+                    optionalWithMaybe1 (fields1 "") "notfound" success (valid OptionalMaybe)
+                        |> Expect.equal (formE "notfound" missingField)
+            , test "fails if the validation fails" <|
+                \_ ->
+                    optionalWithMaybe1 (fields1 "notaa") "key1" valFail (valid OptionalMaybe)
+                        |> Expect.equal (formE "key1" (CustomErr "error"))
+            ]
+        , describe "Validation.discardable1"
+            [ test "helps validating a discardable Field (bind)" <|
+                \_ ->
+                    discardable1 (fields1 "") "key1" success (valid Required)
+                        |> Expect.equal (valid Required)
+            , test "fails if the field is missing" <|
+                \_ ->
+                    discardable1 (fields1 "") "notfound" success (valid Required)
+                        |> Expect.equal (formE "notfound" missingField)
+            , test "fails if the validation fails" <|
+                \_ ->
+                    discardable1 (fields1 "notaa") "key1" (stringField valFail) (valid Required)
+                        |> Expect.equal (formE "key1" (CustomErr "error"))
+            ]
+        , describe "Validation.twoFields1"
+            [ test "helps validating two fields together (bind)" <|
+                \_ ->
+                    twoFields1 (fields2 "notempty" "notempty") "key2" "key3" (passwordMatch PasswordNotEqual success) (valid Required)
+                        |> Expect.equal (valid (Required "notempty"))
+            , test "fails if the first field is missing" <|
+                \_ ->
+                    twoFields1 (fields2 "" "") "notfound1" "key3" (passwordMatch PasswordNotEqual success) (valid Required)
+                        |> Expect.equal (formE "notfound1" missingField)
+            , test "fails if the second field is missing" <|
+                \_ ->
+                    twoFields1 (fields2 "" "") "key2" "notfound2" (passwordMatch PasswordNotEqual success) (valid Required)
+                        |> Expect.equal (formE "notfound2" missingField)
+            , test "fails if both fields are missing" <|
+                \_ ->
+                    twoFields1 (fields2 "" "") "notfound1" "notfound2" (passwordMatch PasswordNotEqual success) (valid Required)
+                        |> Expect.equal (formEL "notfound1" "notfound2" missingField)
+            , test "fails on both fields if the validation fails" <|
+                \_ ->
+                    twoFields1 (fields2 "a" "b") "key2" "key3" (passwordMatch PasswordNotEqual success) (valid Required)
+                        |> Expect.equal (formEL "key2" "key3" (CustomErr PasswordNotEqual))
+            ]
+        , describe "Validation.fieldgroup1"
+            [ fuzz string "helps validating a FieldGroup (bind)" <|
+                \s ->
+                    fieldgroup1 (fields3 s) "group1" (\f -> required f "key4" (stringField success) (valid Required)) (valid FieldGroup)
+                        |> Expect.equal (valid (FieldGroup (Required s)))
+            , test "fails if the group is missing" <|
+                \_ ->
+                    fieldgroup1 (fields3 "") "notfound" (\_ -> valid (Required "")) (valid FieldGroup)
+                        |> Expect.equal (formE "notfound" missingField)
+            , test "fails if the group validation fails" <|
+                \_ ->
+                    fieldgroup1 (fields3 "notaa") "group1" (\f -> required f "key4" (stringField valFail) (valid Required)) (valid FieldGroup)
                         |> Expect.equal (formE "key4" (CustomErr "error"))
             ]
         ]

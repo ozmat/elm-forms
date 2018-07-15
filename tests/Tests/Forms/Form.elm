@@ -7,7 +7,6 @@ import Fuzz exposing (string, bool)
 import Forms.Form exposing (..)
 import Forms.Field as F
 import Forms.Validation as V
-import Tests.Forms.Validation as TV
 
 
 all : Test
@@ -16,26 +15,26 @@ all =
         [ test "Form.form creates a Form" <|
             \_ ->
                 form1 "" validate1
-                    |> Expect.equal (Form (TV.fields1 "") validate1)
+                    |> Expect.equal (Form (fields1 "") validate1)
         , describe "Form.validate"
             [ fuzz string "helps validating a form" <|
                 \s ->
                     validate (form1 s validate1)
-                        |> Expect.equal (V.Valid (TV.Required s))
+                        |> Expect.equal (V.Valid (Required s))
             , test "it may be invalid" <|
                 \_ ->
-                    validate (form1 "notaa" (validate2 "key1"))
+                    validate (form1 "" (validate2 "key1"))
                         |> Expect.equal (V.Invalid (D.fromList [ ( "key1", "error" ) ]))
             , test "or have errors" <|
                 \_ ->
-                    validate (form1 "notaa" (validate2 "notfound"))
+                    validate (form1 "" (validate2 "notfound"))
                         |> Expect.equal (V.Error (D.fromList [ ( "notfound", V.MissingField ) ]))
             ]
         , describe "Form.validateWithFieldErrors"
             [ fuzz string "helps validating a form" <|
                 \s ->
                     validateWithFieldErrors (form1 s validate1)
-                        |> Expect.equal (Ok (TV.Required s))
+                        |> Expect.equal (Ok (Required s))
             , test "returns a dict of FieldError otherwise" <|
                 \_ ->
                     validateWithFieldErrors (form1 "notaa" (validate2 "key1"))
@@ -104,19 +103,30 @@ all =
 -- Fixtures
 
 
-form1 : String -> V.Validate String String TV.Required -> Form String String TV.Required
+fields1 : String -> F.Fields String
+fields1 s =
+    F.fields
+        [ ( "key1", F.inputWithDefault s ) ]
+
+
+type alias Required =
+    { a : String
+    }
+
+
+form1 : String -> V.Validate String String Required -> Form String String Required
 form1 s =
-    form (TV.fields1 s)
+    form (fields1 s)
 
 
-validate1 : V.Validate String String TV.Required
+validate1 : V.Validate String String Required
 validate1 fields =
-    V.required fields "key1" (V.stringField V.success) (V.valid TV.Required)
+    V.required fields "key1" (V.stringField V.success) (V.valid Required)
 
 
-validate2 : String -> V.Validate String String TV.Required
+validate2 : String -> V.Validate String String Required
 validate2 key fields =
-    V.required fields key (V.stringField TV.valFail) (V.valid TV.Required)
+    V.required fields key (V.stringField <| \_ -> V.failure "error") (V.valid Required)
 
 
 fields2 : Bool -> F.Fields String
