@@ -4,8 +4,8 @@ module Forms.Value
         , bool
         , defaultBool
         , defaultString
-        , isBool
-        , isString
+        , getBool
+        , getString
         , string
         )
 
@@ -22,14 +22,14 @@ module Forms.Value
 @docs string, bool
 
 
-# Default
+# Default value
 
 @docs defaultString, defaultBool
 
 
-# Test
+# Get value
 
-@docs isString, isBool
+@docs getString, getBool
 
 -}
 
@@ -88,10 +88,10 @@ defaultBool =
 -- Test
 
 
-{-| Tests if the `Value` is a `String` and returns it
+{-| Returns the value of a `String` `Value`
 -}
-isString : Value -> Maybe String
-isString v =
+getString : Value -> Maybe String
+getString v =
     case v of
         String s ->
             Just s
@@ -100,10 +100,10 @@ isString v =
             Nothing
 
 
-{-| Tests if the `Value` is a `Bool` and returns it
+{-| Returns the value of a `Bool` `Value`
 -}
-isBool : Value -> Maybe Bool
-isBool v =
+getBool : Value -> Maybe Bool
+getBool v =
     case v of
         Bool b ->
             Just b

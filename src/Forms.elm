@@ -33,7 +33,7 @@ Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/ex
 import Forms.Field.Internal as IF exposing (Fields)
 import Forms.Validation.Internal as IV exposing (Validate)
 import Forms.Validation.Result exposing (FormResult)
-import Forms.Value exposing (bool, isBool, isString, string)
+import Forms.Value as V
 
 
 {-| A `Form` is a group of `Field`s and a `Validate` function
@@ -71,7 +71,7 @@ validate (Form fields validate) =
 getStringField : comparable -> Form comparable err a -> Maybe String
 getStringField key (Form fields _) =
     IF.getValue key fields
-        |> Maybe.andThen isString
+        |> Maybe.andThen V.getString
 
 
 {-| Gets the value of a `Bool` `Field`
@@ -79,18 +79,18 @@ getStringField key (Form fields _) =
 getBoolField : comparable -> Form comparable err a -> Maybe Bool
 getBoolField key (Form fields _) =
     IF.getValue key fields
-        |> Maybe.andThen isBool
+        |> Maybe.andThen V.getBool
 
 
 {-| Sets the value of a `String` `Field`
 -}
 setStringField : comparable -> String -> Form comparable err a -> Form comparable err a
 setStringField key val (Form fields validate) =
-    Form (IF.setValue key (string val) fields) validate
+    Form (IF.setValue key (V.string val) fields) validate
 
 
 {-| Sets the value of a `String` `Field`
 -}
 setBoolField : comparable -> Bool -> Form comparable err a -> Form comparable err a
 setBoolField key val (Form fields validate) =
-    Form (IF.setValue key (bool val) fields) validate
+    Form (IF.setValue key (V.bool val) fields) validate
