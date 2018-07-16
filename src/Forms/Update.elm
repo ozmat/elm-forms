@@ -27,9 +27,9 @@ module Forms.Update
 
 -}
 
-import Forms.Field as FI exposing (setValue)
-import Forms.Form as F exposing (Form(..))
-import Forms.Value as V exposing (bool, string)
+import Forms as F exposing (Form(..))
+import Forms.Field.Internal as IF
+import Forms.Value as V
 
 
 -- Messages
@@ -74,10 +74,10 @@ updateForm : Msg comparable -> Form comparable err a -> Form comparable err a
 updateForm msg (Form fields validate) =
     case msg of
         UpdateStringField comparable s ->
-            Form (setValue comparable (string s) fields) validate
+            Form (IF.setValue comparable (V.string s) fields) validate
 
         UpdateBoolField comparable b ->
-            Form (setValue comparable (bool b) fields) validate
+            Form (IF.setValue comparable (V.bool b) fields) validate
 
 
 

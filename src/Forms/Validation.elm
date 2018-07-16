@@ -1,10 +1,6 @@
 module Forms.Validation
     exposing
-        ( ConfigError(..)
-        , FieldError(..)
-        , FieldValidation
-        , FormError(..)
-        , FormResult(..)
+        ( FieldValidation
         , FormValidation
         , Validate
         , boolField
@@ -15,7 +11,6 @@ module Forms.Validation
         , failure
         , fieldgroup
         , fieldgroup1
-        , filterErrors
         , float
         , hardcoded
         , hardcoded1
@@ -32,9 +27,6 @@ module Forms.Validation
         , required1
         , stringField
         , success
-        , toFormResult
-        , toResult
-        , toTuple
         , twoFields
         , twoFields1
         , valid
@@ -47,7 +39,7 @@ the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a be
 
 # Field Validation
 
-@docs ConfigError, FieldError, FieldValidation
+@docs FieldValidation
 
 
 ### Common Helpers
@@ -67,22 +59,12 @@ the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a be
 
 # Form Validation
 
-@docs FormError, FormValidation
+@docs FormValidation
 
 
 ### Common Helpers
 
-@docs valid, toTuple, toResult
-
-
-# Form Result
-
-@docs FormResult
-
-
-### Common Helpers
-
-@docs filterErrors, toFormResult
+@docs valid
 
 
 # Validate
@@ -109,9 +91,10 @@ won't accumulate the errors. Don't mix those functions with the previous ones
 
 -}
 
-import Dict exposing (Dict)
-import Forms.Field as F exposing (Fields)
-import Forms.Value as V exposing (Value)
+import Forms.Field.Internal as IF exposing (Fields)
+import Forms.Validation.Internal as Internal exposing (FieldError(..))
+import Forms.Validation.Result exposing (ConfigError(..))
+import Forms.Value.Internal as IV exposing (Value)
 import Regex
 import Validation as VA exposing (Validation)
 
@@ -119,43 +102,17 @@ import Validation as VA exposing (Validation)
 -- Field validation
 
 
-{-| A `ConfigError` represents a configuration error on a `Field` :
-
-    MissingField -- When the `Field` cannot be found
-    WrongType    -- When the `Field` has a different type of `Value`
-
--}
-type ConfigError
-    = MissingField
-    | WrongType
-
-
-{-| A `FieldError` represents an error that happened during a `FieldValidation` :
-
-    CustomErr yourError   -- Your type of error
-    ConfigErr configError -- Configuration error on the `Field`
-
--}
-type FieldError err
-    = CustomErr err
-    | ConfigErr ConfigError
-
-
 {-| A `FieldValidation` represents the [`Validation`](http://package.elm-lang.org/packages/ozmat/elm-validation/latest/Validation#Validation) of a `Field`
 -}
 type alias FieldValidation err a =
-    Validation (FieldError err) a
-
-
-
--- Common Helpers
+    Internal.FieldValidation err a
 
 
 {-| Returns a failed `FieldValidation` using a `ConfigError`
 -}
 configFailure : ConfigError -> FieldValidation err a
-configFailure err =
-    VA.failure (ConfigErr err)
+configFailure =
+    Internal.configFailure
 
 
 {-| Returns a failed `FieldValidation`
@@ -205,7 +162,7 @@ is not a `String`, fails with a `WrongType` `FieldError`.
 stringField : (String -> FieldValidation err a) -> Value -> FieldValidation err a
 stringField fvalid value =
     case value of
-        V.String s ->
+        IV.String s ->
             fvalid s
 
         _ ->
@@ -226,7 +183,7 @@ stringField fvalid value =
 boolField : (Bool -> FieldValidation err a) -> Value -> FieldValidation err a
 boolField fvalid value =
     case value of
-        V.Bool b ->
+        IV.Bool b ->
             fvalid b
 
         _ ->
@@ -402,7 +359,7 @@ don't match, fails with the given error.
 passwordMatch : err -> (String -> FieldValidation err a) -> Value -> Value -> FieldValidation err a
 passwordMatch err fvalid password passwordRepeat =
     case ( password, passwordRepeat ) of
-        ( V.String s1, V.String s2 ) ->
+        ( IV.String s1, IV.String s2 ) ->
             case fvalid s1 of
                 VA.Success s ->
                     if s1 == s2 then
@@ -421,18 +378,10 @@ passwordMatch err fvalid password passwordRepeat =
 -- Form validation
 
 
-{-| A `FormError` represents an error that happened during a `FormValidation`.
-It's basically a wrapper around the `FieldError` with the key associated
-to the `Field`
--}
-type FormError comparable err
-    = FormError comparable (FieldError err)
-
-
 {-| A `FormValidation` represents the [`Validation`](http://package.elm-lang.org/packages/ozmat/elm-validation/latest/Validation#Validation) of a `Form`
 -}
 type alias FormValidation comparable err a =
-    VA.Validation (FormError comparable err) a
+    Internal.FormValidation comparable err a
 
 
 
@@ -446,87 +395,6 @@ valid =
     VA.success
 
 
-{-| Converts a `FormError` into a Tuple
--}
-toTuple : FormError comparable err -> ( comparable, FieldError err )
-toTuple (FormError comparable fe) =
-    ( comparable, fe )
-
-
-{-| Converts a `FormValidation` into a Result
--}
-toResult : FormValidation comparable err a -> Result (List ( comparable, FieldError err )) a
-toResult formv =
-    Result.mapError (List.map toTuple) (VA.toResult formv)
-
-
-mapFormError : comparable -> FieldValidation err a -> FormValidation comparable err a
-mapFormError comparable fv =
-    VA.mapError (FormError comparable) fv
-
-
-
--- Form Result
-
-
-{-| A `FormResult` represents the result of a `FormValidation`. There are
-3 different states :
-
-    Valid   -- Reprensents a successful validation and holds the form output
-    Invalid -- Reprensents a failed validation and holds the custom errors
-    Error   -- Represents a misconfigured form and holds the config errors
-
--}
-type FormResult comparable err a
-    = Valid a
-    | Invalid (Dict comparable err)
-    | Error (Dict comparable ConfigError)
-
-
-{-| Converts `FormError`s into `Tuple`s and returns the `CustomErrors` if
-there are no `ConfigError`s. Returns the `ConfigError`s otherwise.
--}
-filterErrors : List (FormError comparable err) -> Result (List ( comparable, ConfigError )) (List ( comparable, err ))
-filterErrors errors =
-    let
-        walk ( comparable, fe ) acc =
-            case acc of
-                Ok l ->
-                    case fe of
-                        ConfigErr err ->
-                            Err [ ( comparable, err ) ]
-
-                        CustomErr err ->
-                            Ok (( comparable, err ) :: l)
-
-                Err l ->
-                    case fe of
-                        ConfigErr err ->
-                            Err (( comparable, err ) :: l)
-
-                        _ ->
-                            acc
-    in
-    List.foldl walk (Ok []) (List.map toTuple errors)
-
-
-{-| Converts a `FormValidation` into a `FormResult`
--}
-toFormResult : FormValidation comparable err a -> FormResult comparable err a
-toFormResult formv =
-    case VA.toResult formv of
-        Ok a ->
-            Valid a
-
-        Err fe ->
-            case filterErrors fe of
-                Ok ce ->
-                    Invalid (Dict.fromList ce)
-
-                Err ce ->
-                    Error (Dict.fromList ce)
-
-
 
 -- Validate a Form
 
@@ -535,21 +403,7 @@ toFormResult formv =
 It takes a group of `Field`s and returns a `FormValidation`
 -}
 type alias Validate comparable err a =
-    Fields comparable -> FormValidation comparable err a
-
-
-fieldValid : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err a
-fieldValid fields comparable fvalid =
-    let
-        missing mvalue =
-            case mvalue of
-                Nothing ->
-                    configFailure MissingField
-
-                Just value ->
-                    fvalid value
-    in
-    mapFormError comparable (missing (F.getValue comparable fields))
+    Internal.Validate comparable err a
 
 
 
@@ -566,7 +420,7 @@ validate the `Field`
 -}
 required : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 required fields comparable fvalid fvf =
-    VA.andMapAcc (fieldValid fields comparable fvalid) fvf
+    VA.andMapAcc (Internal.fieldValid fields comparable fvalid) fvf
 
 
 {-| Validates a required `Field` (binding)
@@ -578,7 +432,7 @@ required fields comparable fvalid fvf =
 -}
 required1 : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 required1 fields comparable fvalid fvf =
-    VA.andMap (fieldValid fields comparable fvalid) fvf
+    VA.andMap (Internal.fieldValid fields comparable fvalid) fvf
 
 
 
@@ -707,57 +561,18 @@ a `Field` but don't need the result.
 -}
 discardable : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err b -> FormValidation comparable err b
 discardable fields comparable fvalid fvf =
-    VA.andSkipAcc (fieldValid fields comparable fvalid) fvf
+    VA.andSkipAcc (Internal.fieldValid fields comparable fvalid) fvf
 
 
 {-| Validates a discardable `Field` (binding)
 -}
 discardable1 : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err b -> FormValidation comparable err b
 discardable1 fields comparable fvalid fvf =
-    VA.andSkip (fieldValid fields comparable fvalid) fvf
+    VA.andSkip (Internal.fieldValid fields comparable fvalid) fvf
 
 
 
 -- TwoFields
--- TODO implement a generic version (x fields) if this feature is used
--- TODO make sure we want to fail on both fields
-
-
-fieldsValid : Fields comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err a
-fieldsValid fields comparable1 comparable2 fvalid =
-    let
-        missing =
-            ConfigErr MissingField
-
-        fe1 =
-            FormError comparable1
-
-        fe2 =
-            FormError comparable2
-
-        both err =
-            [ fe1 err, fe2 err ]
-
-        replace ve =
-            case ve of
-                VA.Error e ->
-                    VA.ErrorList (both e)
-
-                VA.ErrorList l ->
-                    VA.ErrorList (List.map fe1 l ++ List.map fe2 l)
-    in
-    case ( F.getValue comparable1 fields, F.getValue comparable2 fields ) of
-        ( Nothing, Just _ ) ->
-            VA.failure (fe1 missing)
-
-        ( Just _, Nothing ) ->
-            VA.failure (fe2 missing)
-
-        ( Nothing, Nothing ) ->
-            VA.failureWithList (both missing)
-
-        ( Just value1, Just value2 ) ->
-            VA.mapValidationError replace (fvalid value1 value2)
 
 
 {-| Validates two `Field`s together. The validation function takes two `Field`
@@ -771,7 +586,7 @@ fieldsValid fields comparable1 comparable2 fvalid =
 -}
 twoFields : Fields comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 twoFields fields comparable1 comparable2 fvalid fvf =
-    VA.andMapAcc (fieldsValid fields comparable1 comparable2 fvalid) fvf
+    VA.andMapAcc (Internal.fieldsValid fields comparable1 comparable2 fvalid) fvf
 
 
 {-| Validates two `Field`s together (binding)
@@ -783,25 +598,11 @@ twoFields fields comparable1 comparable2 fvalid fvf =
 -}
 twoFields1 : Fields comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 twoFields1 fields comparable1 comparable2 fvalid fvf =
-    VA.andMap (fieldsValid fields comparable1 comparable2 fvalid) fvf
+    VA.andMap (Internal.fieldsValid fields comparable1 comparable2 fvalid) fvf
 
 
 
 -- FieldGroup
-
-
-groupValid : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err a
-groupValid fields comparable fvalid =
-    let
-        missing mgroup =
-            case mgroup of
-                Nothing ->
-                    mapFormError comparable (configFailure MissingField)
-
-                Just value ->
-                    fvalid value
-    in
-    missing (F.getGroup comparable fields)
 
 
 {-| Validates a group of `Field`s. This can be useful in many different cases
@@ -814,7 +615,7 @@ but mainly when you need to nest a validation process
 -}
 fieldgroup : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 fieldgroup fields comparable fvalid fvf =
-    VA.andMapAcc (groupValid fields comparable fvalid) fvf
+    VA.andMapAcc (Internal.groupValid fields comparable fvalid) fvf
 
 
 {-| Validates a group of `Field`s (binding)
@@ -826,4 +627,4 @@ fieldgroup fields comparable fvalid fvf =
 -}
 fieldgroup1 : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 fieldgroup1 fields comparable fvalid fvf =
-    VA.andMap (groupValid fields comparable fvalid) fvf
+    VA.andMap (Internal.groupValid fields comparable fvalid) fvf

@@ -1,8 +1,9 @@
 module Tests.Forms.Update exposing (..)
 
 import Expect
+import Forms as FO
 import Forms.Field as FF
-import Forms.Form as FO
+import Forms.Field.Internal as IF
 import Forms.Update exposing (..)
 import Forms.Validation as FV
 import Forms.Value as V
@@ -18,11 +19,11 @@ all =
             [ fuzz F.string "updates a string Field when the msg is UpdateStringField" <|
                 \s ->
                     testUpdateForm (UpdateStringField "input" s) "input" form
-                        |> Expect.equal (Just (V.String s))
+                        |> Expect.equal (Just (V.string s))
             , fuzz F.bool "updates a bool Field when the msg is UpdateBoolField" <|
                 \b ->
                     testUpdateForm (UpdateBoolField "checkbox" b) "checkbox" form
-                        |> Expect.equal (Just (V.Bool b))
+                        |> Expect.equal (Just (V.bool b))
             , test "does nothing if the field does not exist" <|
                 \_ ->
                     updateForm (UpdateStringField "notfound" "value") form
@@ -105,7 +106,7 @@ testUpdateForm msg key form =
         (FO.Form newFields _) =
             updateForm msg form
     in
-    FF.getValue key newFields
+    IF.getValue key newFields
 
 
 

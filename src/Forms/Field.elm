@@ -1,22 +1,18 @@
 module Forms.Field
     exposing
-        ( Field(..)
+        ( Field
         , Fields
         , checkbox
         , checkboxWithDefault
         , fields
-        , getGroup
-        , getValue
         , group
         , input
         , inputWithDefault
         , select
         , selectWithDefault
-        , setValue
         )
 
-{-| A `Field` represents a [`Form`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Form#Form) field.
-Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a better understanding
+{-| A `Field` represents a [`Form`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Form#Form) field
 
 
 # Definition
@@ -24,111 +20,91 @@ Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/ex
 @docs Field, Fields
 
 
-# Common Helpers
+# Creation
 
 @docs input, select, checkbox, group, fields
 
+    myFormFields : Fields String
+    myFormFields =
+        fields
+            [ ( "some-input", input )
+            , ( "some-select", select )
+            , ( "some-checkbox", checkbox )
+            , ( "some-group",
+              , group
+                    [ ( "some-other-field", input)
+                    , ...
+                    ]
+              )
+            ]
 
-# Default value
+
+# Changing default value
+
+    myFormFields : Fields String
+    myFormFields =
+        fields
+            [ ( "some-input", inputWithDefault "Initial value" )
+            , ( "some-select", selectWithDefault "Default choice" )
+            , ( "some-checkbox", checkboxWithDefault True )
+            ]
 
 @docs inputWithDefault, selectWithDefault, checkboxWithDefault
-
-
-# Search
-
-@docs getValue, getGroup, setValue
 
 -}
 
 import Dict as D exposing (Dict)
-import Forms.Value as V exposing (Value)
+import Forms.Field.Internal as Internal exposing (Field(..))
+import Forms.Value as V
 
 
-{-| A `Field` can either hold a `Value` (= `FieldValue`) or a
-group of `Field`s (= `FieldGroup`)
-
-    FieldValue (String "some input value")
-
-    FieldGroup (Dict.fromList [ ... ])
-
+{-| A `Field` can either hold a `Value` (`FieldValue`) or
+a group of `Field`s (`FieldGroup`)
 -}
-type Field comparable
-    = FieldValue Value
-    | FieldGroup (Fields comparable)
+type alias Field comparable =
+    Internal.Field comparable
 
 
 {-| `Fields` is a group of `Field`s. The underlying data structure is a [`Dict`](http://package.elm-lang.org/packages/elm-lang/core/latest/Dict#Dict)
 -}
 type alias Fields comparable =
-    Dict comparable (Field comparable)
+    Internal.Fields comparable
 
 
 
--- Common Helpers
+-- Creation
 
 
-{-| Is a shortcut to create an input `Field` with the [default `String` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
-
-    input -- FieldValue (Forms.Value.defaultString)
-
+{-| Creates an input `Field` with the [default `String` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
 -}
 input : Field comparable
 input =
     FieldValue V.defaultString
 
 
-{-| Is a shortcut to create a select `Field` with the [default `String` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
-
-    select -- FieldValue (Forms.Value.defaultString)
-
+{-| Creates a select `Field` with the [default `String` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
 -}
 select : Field comparable
 select =
     input
 
 
-{-| Is a shortcut to create a checkbox `Field` with the [default `Bool` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultBool)
-
-    checkbox -- FieldValue (Forms.Value.defaultBool)
-
+{-| Creates a checkbox `Field` with the [default `Bool` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultBool)
 -}
 checkbox : Field comparable
 checkbox =
     FieldValue V.defaultBool
 
 
-{-| Is a shortcut to create a `Field` that holds a group of `Field`s.
-The function takes a `List` of `Tuple` and creates the `Fields` for you :
-
-    tupleExample : ( comparable, Field comparable )
-    tupleExample =
-        (comparable, input)
-
-    group [tupleExample, ...] -- FieldGroup (Dict.fromList [ ... ])
-
+{-| Creates a `FieldGroup` : a `Field` that holds a group of `Field`s
 -}
 group : List ( comparable, Field comparable ) -> Field comparable
 group g =
     FieldGroup (fields g)
 
 
-{-| Is a shortcut to create `Fields`. The function takes a
-`List` of `Tuple`
-
-    someFormFields : Fields comparable
-    someFormFields =
-        fields
-            [ ( comparable1, input )
-            , ( comparable2, checkbox )
-            , ( comparable3
-              , group
-                    [ ( comparable4, input )
-                    , ( comparable5, input )
-                    , ( comparable6, select )
-                    ]
-              )
-            ]
-
+{-| Creates a group of `Field`s. This is the top-level function when creating
+`Field`s.
 -}
 fields : List ( comparable, Field comparable ) -> Fields comparable
 fields =
@@ -136,202 +112,25 @@ fields =
 
 
 
--- Default value
+-- Changing default value
 
 
-{-| Is a shortcut to create an input `Field` with a default value
-
-    inputWithDefault "default" -- FieldValue (String "default")
-
+{-| Creates an input `Field` with a default value
 -}
 inputWithDefault : String -> Field comparable
 inputWithDefault s =
     FieldValue (V.string s)
 
 
-{-| Is a shortcut to create a select `Field` with a default value
-
-    selectWithDefault "default" -- FieldValue (String "default")
-
+{-| Creates a select `Field` with a default value
 -}
 selectWithDefault : String -> Field comparable
 selectWithDefault =
     inputWithDefault
 
 
-{-| Is a shortcut to create a checkbox `Field` with a default value
-
-    checkboxWithDefault True -- FieldValue (Bool True)
-
+{-| Creates a checkbox `Field` with a default value
 -}
 checkboxWithDefault : Bool -> Field comparable
 checkboxWithDefault b =
     FieldValue (V.bool b)
-
-
-
--- Map
-
-
-mapValue : (Value -> Value) -> Field comparable -> Field comparable
-mapValue f field =
-    case field of
-        FieldValue v ->
-            FieldValue (f v)
-
-        _ ->
-            field
-
-
-mapGroup : (Fields comparable -> Fields comparable) -> Field comparable -> Field comparable
-mapGroup f field =
-    case field of
-        FieldGroup g ->
-            FieldGroup (f g)
-
-        _ ->
-            field
-
-
-
--- Update
-
-
-updateValue : Value -> Maybe (Field comparable) -> Maybe (Field comparable)
-updateValue value field =
-    Maybe.map (mapValue (V.safeUpdate value)) field
-
-
-updateGroup : Fields comparable -> Maybe (Field comparable) -> Maybe (Field comparable)
-updateGroup gr field =
-    Maybe.map (mapGroup (always gr)) field
-
-
-
--- Fields traversal -> get
-
-
-getField : comparable -> Fields comparable -> Maybe (Field comparable)
-getField comparable gr =
-    let
-        walk k v acc =
-            case acc of
-                Just _ ->
-                    acc
-
-                Nothing ->
-                    case v of
-                        FieldGroup g ->
-                            getField comparable g
-
-                        _ ->
-                            Nothing
-    in
-    case D.get comparable gr of
-        Just field ->
-            Just field
-
-        Nothing ->
-            D.foldl walk Nothing gr
-
-
-{-| Retrieves the `Value` associated with a key. If the key is not found or
-the `Field` is not a `FieldValue` returns `Nothing`
-
-    someFormFields : Fields comparable
-    someFormFields =
-        fields
-            [ ( comparable1, string )
-            , ( comparable2, bool )
-            , ( comparable3, group [] )
-            ]
-
-    getValue comparable1 someFormFields -- Just (String ...)
-    getValue comparable2 someFormFields -- Just (Bool ...)
-    getValue comparable3 someFormFields -- Nothing
-    getValue notfound someFormFields    -- Nothing
-
--}
-getValue : comparable -> Fields comparable -> Maybe Value
-getValue comparable gr =
-    case getField comparable gr of
-        Just field ->
-            case field of
-                FieldValue value ->
-                    Just value
-
-                _ ->
-                    Nothing
-
-        Nothing ->
-            Nothing
-
-
-{-| Retrieves the group of `Field`s associated with a key. If the key is not found or
-the `Field` is not a `FieldGroup` returns `Nothing`
-
-    someFormFields : Fields comparable
-    someFormFields =
-        fields
-            [ ( comparable1, string )
-            , ( comparable2, bool )
-            , ( comparable3, group [] )
-            ]
-
-    getGroup comparable1 someFormFields -- Nothing
-    getGroup comparable2 someFormFields -- Nothing
-    getGroup comparable3 someFormFields -- Just (Dict.fromList [ ... ])
-    getGroup notfound someFormFields    -- Nothing
-
--}
-getGroup : comparable -> Fields comparable -> Maybe (Fields comparable)
-getGroup comparable gr =
-    case getField comparable gr of
-        Just field ->
-            case field of
-                FieldGroup g ->
-                    Just g
-
-                _ ->
-                    Nothing
-
-        Nothing ->
-            Nothing
-
-
-
--- Fields traversal -> set
-
-
-{-| Updates the `Value` associated with a key. It will only update the `Value`
-if the key is found, the `Field` is a `FieldValue` and the `Value`s have the
-same type
-
-    someFormFields : Fields comparable
-    someFormFields =
-        fields
-            [ ( comparable1, string )
-            , ( comparable2, group [] )
-            ]
-
-    setValue comparable1 (String ...) someFormFields -- updates
-    setValue comparable1 (Bool ...) someFormFields   -- doesn't update
-    setValue comparable2 (...) someFormFields        -- doesn't update
-    setValue notfound (...) someFormFields           -- doesn't update
-
--}
-setValue : comparable -> Value -> Fields comparable -> Fields comparable
-setValue comparable value gr =
-    let
-        walk k v acc =
-            if k == comparable then
-                D.update k (updateValue value) acc
-            else
-                case v of
-                    FieldGroup g ->
-                        D.update k (updateGroup (setValue comparable value g)) acc
-
-                    _ ->
-                        acc
-    in
-    D.foldl walk gr gr

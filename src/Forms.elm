@@ -1,4 +1,4 @@
-module Forms.Form
+module Forms
     exposing
         ( Form(..)
         , form
@@ -7,7 +7,6 @@ module Forms.Form
         , setBoolField
         , setStringField
         , validate
-        , validateWithFieldErrors
         )
 
 {-| `Form` is the top level type of the library. It is built with [`Fields`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Fields)
@@ -22,7 +21,7 @@ Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/ex
 
 # Common Helpers
 
-@docs form, validate, validateWithFieldErrors
+@docs form, validate
 
 
 # Field getters and setters
@@ -31,9 +30,9 @@ Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/ex
 
 -}
 
-import Dict as D exposing (Dict)
-import Forms.Field as F exposing (Fields)
-import Forms.Validation as V exposing (FieldError, FormResult, Validate)
+import Forms.Field.Internal as IF exposing (Fields)
+import Forms.Validation.Internal as IV exposing (Validate)
+import Forms.Validation.Result exposing (FormResult)
 import Forms.Value exposing (bool, isBool, isString, string)
 
 
@@ -60,14 +59,7 @@ and `Fields`. It will run the validation process and converts the
 -}
 validate : Form comparable err a -> FormResult comparable err a
 validate (Form fields validate) =
-    V.toFormResult (validate fields)
-
-
-{-| Old API - Returns the `FieldError`s without using `FormResult`
--}
-validateWithFieldErrors : Form comparable err a -> Result (Dict comparable (FieldError err)) a
-validateWithFieldErrors (Form fields validate) =
-    Result.mapError D.fromList (V.toResult (validate fields))
+    IV.toFormResult (validate fields)
 
 
 
@@ -78,7 +70,7 @@ validateWithFieldErrors (Form fields validate) =
 -}
 getStringField : comparable -> Form comparable err a -> Maybe String
 getStringField key (Form fields _) =
-    F.getValue key fields
+    IF.getValue key fields
         |> Maybe.andThen isString
 
 
@@ -86,7 +78,7 @@ getStringField key (Form fields _) =
 -}
 getBoolField : comparable -> Form comparable err a -> Maybe Bool
 getBoolField key (Form fields _) =
-    F.getValue key fields
+    IF.getValue key fields
         |> Maybe.andThen isBool
 
 
@@ -94,11 +86,11 @@ getBoolField key (Form fields _) =
 -}
 setStringField : comparable -> String -> Form comparable err a -> Form comparable err a
 setStringField key val (Form fields validate) =
-    Form (F.setValue key (string val) fields) validate
+    Form (IF.setValue key (string val) fields) validate
 
 
 {-| Sets the value of a `String` `Field`
 -}
 setBoolField : comparable -> Bool -> Form comparable err a -> Form comparable err a
 setBoolField key val (Form fields validate) =
-    Form (F.setValue key (bool val) fields) validate
+    Form (IF.setValue key (bool val) fields) validate

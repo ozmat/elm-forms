@@ -4,6 +4,8 @@ import Dict exposing (Dict)
 import Expect
 import Forms.Field as F
 import Forms.Validation exposing (..)
+import Forms.Validation.Internal as IV exposing (FieldError(..), FormError(..))
+import Forms.Validation.Result exposing (ConfigError(..), FormResult(..))
 import Forms.Value as V
 import Fuzz exposing (bool, string)
 import Test exposing (..)
@@ -137,65 +139,26 @@ all =
             \s ->
                 valid s
                     |> Expect.equal (VA.success s)
-        , test "Validation.toTuple turns a FormError into a Tuple" <|
-            \_ ->
-                toTuple (FormError "key" wrongType)
-                    |> Expect.equal ( "key", wrongType )
-        , describe "Validation.toResult"
-            [ fuzz string " turns a FormValidation into a Result (Success)" <|
-                \s ->
-                    toResult (valid s)
-                        |> Expect.equal (Ok s)
-            , fuzz string " turns a FormValidation into a Result (Failure)" <|
-                \s ->
-                    toResult (VA.failure (FormError s wrongType))
-                        |> Expect.equal (Err [ ( s, wrongType ) ])
-            ]
-        , describe "Validation.filterErrors"
-            [ fuzz string "returns CustomErrors if there are no ConfigErrors" <|
-                \s ->
-                    filterErrors
-                        [ FormError "a" (CustomErr s)
-                        , FormError "b" (CustomErr s)
-                        ]
-                        |> Expect.equal (Ok [ ( "b", s ), ( "a", s ) ])
-            , test "returns ConfigErrors otherwise (2)" <|
-                \_ ->
-                    filterErrors
-                        [ FormError "a" wrongType
-                        , FormError "b" missingField
-                        , FormError "c" (CustomErr "whatever")
-                        ]
-                        |> Expect.equal (Err [ ( "b", MissingField ), ( "a", WrongType ) ])
-            , test "returns ConfigErrors otherwise (1)" <|
-                \_ ->
-                    filterErrors
-                        [ FormError "a" wrongType
-                        , FormError "b" (CustomErr "whatever1")
-                        , FormError "c" (CustomErr "whatever2")
-                        ]
-                        |> Expect.equal (Err [ ( "a", WrongType ) ])
-            ]
         , describe "Validation.toFormResult"
             [ fuzz string "converts a FormValidation into a FormResult" <|
                 \s ->
-                    toFormResult (validate1 (fieldsValidate1 s))
+                    IV.toFormResult (validate1 (fieldsValidate1 s))
                         |> Expect.equal (Valid (SomeResult s s s))
             , test "it may have ConfigErrors (1)" <|
                 \_ ->
-                    toFormResult (validate2 (fieldsValidate1 ""))
+                    IV.toFormResult (validate2 (fieldsValidate1 ""))
                         |> Expect.equal (Error (Dict.fromList [ ( "notfound", MissingField ) ]))
             , test "it may have ConfigErrors (2)" <|
                 \_ ->
-                    toFormResult (validate2 fieldsValidate2)
+                    IV.toFormResult (validate2 fieldsValidate2)
                         |> Expect.equal (Error (Dict.fromList [ ( "b", WrongType ), ( "notfound", MissingField ) ]))
             , fuzz string "it may have CustomErrors (1)" <|
                 \s ->
-                    toFormResult (validate3 s (fieldsValidate1 ""))
+                    IV.toFormResult (validate3 s (fieldsValidate1 ""))
                         |> Expect.equal (Invalid (Dict.fromList [ ( "a", s ) ]))
             , fuzz string "it may have CustomErrors (2)" <|
                 \s ->
-                    toFormResult (validate4 s (fieldsValidate1 ""))
+                    IV.toFormResult (validate4 s (fieldsValidate1 ""))
                         |> Expect.equal (Invalid (Dict.fromList [ ( "b", s ), ( "a", s ) ]))
             ]
         , describe "Validation.required"

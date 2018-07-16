@@ -2,7 +2,8 @@ module Tests.Forms.Field exposing (..)
 
 import Dict as D
 import Expect
-import Forms.Field exposing (..)
+import Forms.Field as F exposing (..)
+import Forms.Field.Internal as IF exposing (Field(..))
 import Forms.Value as V
 import Fuzz as F
 import Test exposing (..)
@@ -46,51 +47,51 @@ all =
         , describe "Field.getValue"
             [ fuzz F.string "retrieves a value from a Fields (depth 1)" <|
                 \s ->
-                    getValue "key1" (fixture2 s)
+                    IF.getValue "key1" (fixture2 s)
                         |> Expect.equal (Just (V.string s))
             , fuzz F.string "retrieves a value from a Fields (depth 2)" <|
                 \s ->
-                    getValue "key2" (fixture2 s)
+                    IF.getValue "key2" (fixture2 s)
                         |> Expect.equal (Just (V.string s))
             , fuzz F.string "retrieves a value from a Fields (depth 3)" <|
                 \s ->
-                    getValue "key3" (fixture2 s)
+                    IF.getValue "key3" (fixture2 s)
                         |> Expect.equal (Just (V.string s))
             , test "returns Nothing otherwise" <|
                 \_ ->
-                    getValue "notfound" (fixture2 "")
+                    IF.getValue "notfound" (fixture2 "")
                         |> Expect.equal Nothing
             ]
         , describe "Field.getGroup"
             [ fuzz F.string "retrieves a Fields from a Fields" <|
                 \s ->
-                    getGroup "group1" (fixture2 s)
+                    IF.getGroup "group1" (fixture2 s)
                         |> Expect.equal (Just (fixture3 s))
             , test "returns Nothing otherwise" <|
                 \_ ->
-                    getGroup "notfound" (fixture2 "")
+                    IF.getGroup "notfound" (fixture2 "")
                         |> Expect.equal Nothing
             ]
         , describe "Field.setValue"
             [ fuzz F.string "set a value in a Fields (depth 1)" <|
                 \s ->
-                    getValue "key1" (setValue "key1" (V.string s) (fixture2 ""))
+                    IF.getValue "key1" (IF.setValue "key1" (V.string s) (fixture2 ""))
                         |> Expect.equal (Just (V.string s))
             , fuzz F.string "set a value in a Fields (depth 2)" <|
                 \s ->
-                    getValue "key2" (setValue "key2" (V.string s) (fixture2 ""))
+                    IF.getValue "key2" (IF.setValue "key2" (V.string s) (fixture2 ""))
                         |> Expect.equal (Just (V.string s))
             , fuzz F.string "set a value in a Fields (depth 3)" <|
                 \s ->
-                    getValue "key3" (setValue "key3" (V.string s) (fixture2 ""))
+                    IF.getValue "key3" (IF.setValue "key3" (V.string s) (fixture2 ""))
                         |> Expect.equal (Just (V.string s))
             , fuzz F.string "has no effect if the key does not exist" <|
                 \s ->
-                    setValue "notfound" (V.string s) (fixture2 "")
+                    IF.setValue "notfound" (V.string s) (fixture2 "")
                         |> Expect.equal (fixture2 "")
             , test "has no effect if the Value has a different type" <|
                 \_ ->
-                    setValue "key1" V.defaultBool (fixture2 "")
+                    IF.setValue "key1" V.defaultBool (fixture2 "")
                         |> Expect.equal (fixture2 "")
             ]
         ]
@@ -100,7 +101,7 @@ all =
 -- Fixtures
 
 
-fixture1 : List ( String, Field String )
+fixture1 : List ( String, F.Field String )
 fixture1 =
     [ ( "key1", input )
     , ( "key2", checkbox )
