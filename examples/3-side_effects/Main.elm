@@ -36,8 +36,11 @@ init =
 
 
 type alias Model =
-    { myForm : F.Form String () OtherModel
-    , effectValue : Int
+    { -- We don't really need errors in this example that's why it's `()`
+      myForm : F.Form String () OtherModel
+
+    -- But we need to store a value coming from a side effect
+    , sideEffectValue : Int
     }
 
 
@@ -53,17 +56,19 @@ type alias OtherModel =
 
 myFormFields : FF.Fields String
 myFormFields =
+    -- We have two fields : one that is watched and one that isn't
     FF.fields
-        [ ( "field_watched", FF.input )
-        , ( "field_not_watched", FF.input )
+        [ ( "field-watched", FF.input )
+        , ( "field-not-watched", FF.input )
         ]
 
 
 myFormValidate : FV.Validate String () OtherModel
 myFormValidate fields =
+    -- We don't really need validation in this example. Let's make it simple
     FV.valid OtherModel
-        |> FV.required fields "field_watched" (FV.stringField <| FV.success)
-        |> FV.required fields "field_not_watched" (FV.stringField <| FV.success)
+        |> FV.required fields "field-watched" (FV.stringField <| FV.success)
+        |> FV.required fields "field-not-watched" (FV.stringField <| FV.success)
 
 
 
@@ -71,7 +76,9 @@ myFormValidate fields =
 
 
 type Msg
-    = Form (FU.Msg String)
+    = -- The form messages
+      Form (FU.Msg String)
+      -- And the side-effect message
     | EffectSuccess Int
 
 
@@ -84,23 +91,38 @@ update msg model =
     case msg of
         Form formMsg ->
             let
+                -- As usual we update the form
                 newModel =
                     { model | myForm = FU.updateForm formMsg model.myForm }
 
+                -- and log the result (debug)
                 console =
                     log "" (F.validate newModel.myForm)
             in
+            -- But here we're also defining some commands.
+            -- We explicitly say that we want commands on `stringField`s
+            -- because first we only have `stringField`s in our form,
+            -- second we want to define commands/side-effects on the
+            -- "field-watched" which is a string field.
+            -- Note: You can also define commands on bool fields
+            -- (`boolFieldCommands`) and on all type of fields (`formCommands`)
             FU.stringFieldCommands model formMsg myFormCommands
 
         EffectSuccess newEffectValue ->
-            { model | effectValue = newEffectValue } ! []
+            -- Here we have a value coming back from the side-effect
+            -- so we update the side-effect value
+            { model | sideEffectValue = newEffectValue } ! []
 
 
 myFormCommands : Model -> String -> String -> ( Model, Cmd Msg )
 myFormCommands model key value =
     case key of
-        "field_watched" ->
+        -- As previously mentionned we only care about the "field-watched".
+        -- We want to run a side-effect command each time this field is
+        -- updated.
+        "field-watched" ->
             ( model
+              -- We're using `Random` to simulate the side-effect
             , Random.generate EffectSuccess (Random.int 1 15)
             )
 
@@ -117,9 +139,11 @@ myFormCommands model key value =
 view : Model -> Html Msg
 view model =
     div []
-        [ inputText True (toString model.effectValue) ""
-        , inputText False "Watched" "field_watched"
-        , inputText False "Not Watched" "field_not_watched"
+        [ -- Let's display the side-effect value to make sure it actually
+          -- changes every time we change the "field-watched" value
+          inputText True (toString model.sideEffectValue) ""
+        , inputText False "Watched" "field-watched"
+        , inputText False "Not Watched" "field-not-watched"
         ]
 
 
@@ -139,7 +163,7 @@ inputText disable placeHolder fieldName =
             if disable then
                 [ inputStyle
                 , disabled disable
-                , placeholder ("Current effect value : " ++ placeHolder)
+                , placeholder ("Current side-effect value : " ++ placeHolder)
                 ]
             else
                 [ inputStyle

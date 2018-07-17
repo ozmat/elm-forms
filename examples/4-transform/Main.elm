@@ -45,7 +45,9 @@ type alias Model =
 
 
 type alias OtherModel =
-    { isRed : Bool
+    { -- Notice here that some types of the form result records are different
+      -- than the form field ones
+      isRed : Bool
     , floatNumber : Float
     , repeated : Dict String Int
     }
@@ -57,6 +59,9 @@ type MyFormError
 
 myFormFields : FF.Fields String
 myFormFields =
+    -- We can also see here that we have more form fields than
+    -- form result records. And that's because we're going to tranform those
+    -- field values into the form result record types
     FF.fields
         [ ( "red", FF.input )
         , ( "float", FF.input )
@@ -74,17 +79,49 @@ myFormFields =
 
 myFormValidate : FV.Validate String MyFormError OtherModel
 myFormValidate fields =
+    -- The validate function doesn't stop you from changing the types of the
+    -- field values because its goal is only to validate an `OtherModel` (here)
     FV.valid OtherModel
-        -- Transform String to Bool
+        -- So here we are turning the string into a `Bool` by testing if it's
+        -- equal to "red"
         |> FV.required fields "red" (FV.stringField <| FV.success << (==) "red")
-        -- Transform String to Float
+        -- This one is a bit silly because we're asking for a string
+        -- that can be cast into an `Int` in order to multiply/convert it into
+        -- a `Float`. But the point is to show you that you can play with types
         |> FV.required fields "float" (FV.stringField <| FV.int NotInt <| FV.success << (*) 5.4 << toFloat)
-        -- Transform 5 Strings to  Dict ( String, Int )
+        -- Finally we want to count all occurences of the "repeat" fields and
+        -- the result needs to be a `Dict String Int`. So we are using a
+        -- `fieldgroup` with a specific validate function to achieve this.
         |> FV.fieldgroup fields "repeat_group" repeatValidate
+
+
+repeatValidate : FV.Validate String MyFormError (Dict String Int)
+repeatValidate fields =
+    -- Notice that the `Validate` result type is `Dict String Int`.
+    -- This validate function doesn't validate a model/type alias like
+    -- we previously did. It actually takes a function : `repeatCount`. But the
+    -- model/type alias we were using are also functions (the `OtherModel`
+    -- function is `Bool -> Float -> Dict String Int -> OtherModel`). So as
+    -- long as you respect the order/types in the `Validate` function you can
+    -- basically use any function to create the result
+    let
+        lowerThemAll =
+            -- Here we just make sure that all strings are lowered
+            FV.stringField <| FV.success << String.toLower
+    in
+    -- And `repeatCount` will do the job
+    FV.valid repeatCount
+        |> FV.required fields "repeat1" lowerThemAll
+        |> FV.required fields "repeat2" lowerThemAll
+        |> FV.required fields "repeat3" lowerThemAll
+        |> FV.required fields "repeat4" lowerThemAll
+        |> FV.required fields "repeat5" lowerThemAll
 
 
 repeatCount : String -> String -> String -> String -> String -> Dict String Int
 repeatCount s1 s2 s3 s4 s5 =
+    -- This function takes 5 strings (we have 5 "repeat" fields) and count
+    -- all the occurences
     let
         update m =
             case m of
@@ -98,16 +135,6 @@ repeatCount s1 s2 s3 s4 s5 =
             Dict.update n update acc
     in
     List.foldl fold Dict.empty [ s1, s2, s3, s4, s5 ]
-
-
-repeatValidate : FV.Validate String MyFormError (Dict String Int)
-repeatValidate fields =
-    FV.valid repeatCount
-        |> FV.required fields "repeat1" (FV.stringField <| FV.success << String.toLower)
-        |> FV.required fields "repeat2" (FV.stringField <| FV.success << String.toLower)
-        |> FV.required fields "repeat3" (FV.stringField <| FV.success << String.toLower)
-        |> FV.required fields "repeat4" (FV.stringField <| FV.success << String.toLower)
-        |> FV.required fields "repeat5" (FV.stringField <| FV.success << String.toLower)
 
 
 
