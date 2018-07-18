@@ -45,4 +45,4 @@ script:
   # Tests
   - elm-test
   # Examples
-  - examples/travis-build-examples.sh
+  - examples/travis_build-examples.sh
