@@ -124,7 +124,7 @@ inputText placeHolder fieldName =
     input
       [ inputStyle
       , placeholder placeHolder
-      , onInput (Form << FU.UpdateStringField fieldName)
+      , onInput (FU.stringFieldMsg Form fieldName)
       ]
       []
 

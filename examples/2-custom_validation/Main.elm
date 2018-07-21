@@ -1,8 +1,8 @@
 module Main exposing (..)
 
 import Debug exposing (log)
-import Forms as F
 import Forms.Field as FF
+import Forms.Form as F
 import Forms.Update as FU
 import Forms.Validation as FV
 import Html exposing (Html, div, input, program, text)
@@ -238,6 +238,6 @@ inputText placeHolder fieldName =
     input
         [ inputStyle
         , placeholder placeHolder
-        , onInput (Form << FU.UpdateStringField fieldName)
+        , onInput (FU.stringFieldMsg Form fieldName)
         ]
         []

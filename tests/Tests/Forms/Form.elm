@@ -1,9 +1,10 @@
-module Tests.Forms exposing (..)
+module Tests.Forms.Form exposing (..)
 
 import Dict as D
 import Expect
-import Forms exposing (..)
 import Forms.Field as F
+import Forms.Form exposing (..)
+import Forms.Form.Internal as IFO
 import Forms.Validation as V
 import Forms.Validation.Result as VR
 import Fuzz exposing (bool, string)
@@ -16,7 +17,7 @@ all =
         [ test "Form.form creates a Form" <|
             \_ ->
                 form1 "" validate1
-                    |> Expect.equal (Form (fields1 "") validate1)
+                    |> Expect.equal (IFO.Form (fields1 "") validate1)
         , describe "Form.validate"
             [ fuzz string "helps validating a form" <|
                 \s ->

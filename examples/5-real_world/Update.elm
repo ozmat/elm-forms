@@ -1,7 +1,7 @@
 module Update exposing (..)
 
 import Api
-import Forms as F
+import Forms.Form as F
 import Forms.Update as FU
 import Forms.Validation.Result as FV
 import Model exposing (..)

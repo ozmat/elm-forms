@@ -1,6 +1,6 @@
-module Forms
+module Forms.Form
     exposing
-        ( Form(..)
+        ( Form
         , form
         , getBoolField
         , getStringField
@@ -28,6 +28,7 @@ what those functions are for
 -}
 
 import Forms.Field.Internal as IF exposing (Fields)
+import Forms.Form.Internal as Internal exposing (Form(..))
 import Forms.Validation.Internal as IV exposing (Validate)
 import Forms.Validation.Result exposing (FormResult)
 import Forms.Value as V
@@ -35,8 +36,8 @@ import Forms.Value as V
 
 {-| A `Form` is made up of `Fields` and a `Validate` function
 -}
-type Form comparable err a
-    = Form (Fields comparable) (Validate comparable err a)
+type alias Form comparable err a =
+    Internal.Form comparable err a
 
 
 {-| Creates a `Form`

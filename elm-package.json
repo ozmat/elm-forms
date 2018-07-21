@@ -7,12 +7,12 @@
         "src"
     ],
     "exposed-modules": [
-        "Forms",
         "Forms.Field",
-        "Forms.Value",
+        "Forms.Form",
         "Forms.Update",
         "Forms.Validation",
-        "Forms.Validation.Result"        
+        "Forms.Validation.Result",
+        "Forms.Value"
     ],
     "dependencies": {
         "elm-lang/core": "5.0.0 <= v < 6.0.0",

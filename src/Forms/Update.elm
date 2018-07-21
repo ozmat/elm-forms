@@ -1,9 +1,11 @@
 module Forms.Update
     exposing
-        ( Msg(..)
+        ( Msg
         , boolFieldCommands
+        , boolFieldMsg
         , formCommands
         , stringFieldCommands
+        , stringFieldMsg
         , updateForm
         )
 
@@ -13,7 +15,7 @@ module Forms.Update
 
 # Form Messages
 
-@docs Msg
+@docs Msg, stringFieldMsg, boolFieldMsg
 
 
 # Form Update
@@ -30,8 +32,9 @@ what the side-effects helpers are for.
 
 -}
 
-import Forms as F exposing (Form(..))
 import Forms.Field.Internal as IF
+import Forms.Form.Internal exposing (Form(..))
+import Forms.Update.Internal as Internal exposing (Msg(..))
 import Forms.Value as V
 
 
@@ -40,14 +43,14 @@ import Forms.Value as V
 
 {-| These are the form `Msg`, they help updating a `Field`.
 
-You need to implement them in your `Msg`, `update` function and use them in
-your view events.
+You need to implement them in your `Msg`, `update` function and use the helpers
+in your view events.
 
-`UpdateStringField` is for string `Field` (input, select) and
-`UpdateBoolField` is for bool `Field` (checkbox)
+`stringFieldMsg` is for string `Field` (input, select) and `boolFieldMsg` is
+for bool `Field` (checkbox)
 
     type YourMsg
-        = SomeForm (Form.Update.Msg comparable)
+        = SomeForm (Forms.Update.Msg comparable)
         | ....
 
     yourUpdate : YourMsg -> Model -> Model
@@ -60,23 +63,36 @@ your view events.
     yourView model =
         ...
             -- select/input field
-            onEvent (SomeForm << Form.Update.UpdateStringField fieldKey)
+            onEvent (Forms.Update.stringFieldMsg SomeForm fieldKey)
             -- checkbox field
-            onEvent (SomeForm << Form.Update.UpdateBoolField fieldKey)
+            onEvent (Forms.Update.boolFieldMsg SomeForm fieldKey)
         ...
 
 Note: you will want to name your message according to the form it is handling
 in order to avoid confusion when using multiple forms
 
     type YourMsg
-        = RegisterForm (Form.Update.Msg comparable)
-        | LoginForm (Form.Update.Msg comparable)
+        = RegisterForm (Forms.Update.Msg comparable)
+        | LoginForm (Forms.Update.Msg comparable)
         | ...
 
 -}
-type Msg comparable
-    = UpdateStringField comparable String
-    | UpdateBoolField comparable Bool
+type alias Msg comparable =
+    Internal.Msg comparable
+
+
+{-| Creates a form message that updates a string `Field`
+-}
+stringFieldMsg : (Msg comparable -> msg) -> comparable -> (String -> msg)
+stringFieldMsg msg key =
+    msg << UpdateStringField key
+
+
+{-| Creates a form message that updates a bool `Field`
+-}
+boolFieldMsg : (Msg comparable -> msg) -> comparable -> (Bool -> msg)
+boolFieldMsg msg key =
+    msg << UpdateBoolField key
 
 
 
@@ -91,7 +107,7 @@ form `Msg`, use it to update the `Form`
         case msg of
             SomeForm formMsg ->
                 { model
-                    | yourForm = Form.Update.updateForm formMsg model.yourForm
+                    | yourForm = Forms.Update.updateForm formMsg model.yourForm
                 }
             ...
 
@@ -165,7 +181,7 @@ to run commands when an event is triggered on a specific string `Field`.
                 , Cmd.none
                 )
 
-Note: this function only defines commands for the `UpdateStringField` message
+Note: this function only defines commands for the `stringFieldMsg`
 
 -}
 stringFieldCommands :
@@ -180,7 +196,7 @@ stringFieldCommands model msg seffects =
 {-| Helps defining `Cmd` on bool `Field` events. You can use this function
 to run commands when an event is triggered on a specific bool `Field`.
 
-Note: this function only defines commands for the `UpdateBoolField` message
+Note: this function only defines commands for the `boolFieldMsg`
 
 -}
 boolFieldCommands :

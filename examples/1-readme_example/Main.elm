@@ -1,8 +1,8 @@
 module Main exposing (..)
 
 import Debug exposing (log)
-import Forms as F
 import Forms.Field as FF
+import Forms.Form as F
 import Forms.Update as FU
 import Forms.Validation as FV
 import Html exposing (Html, div, input, program, text)
@@ -161,10 +161,8 @@ inputText placeHolder fieldName =
         [ inputStyle
         , placeholder placeHolder
 
-        -- Here we define the form message event by specifying the type of
-        -- message (`UpdateStringField` for input/select and `UpdateBoolField`
-        -- for checkbox) and the field key.
-        -- Notice that we wrap the form message in your message (`Form` here)
-        , onInput (Form << FU.UpdateStringField fieldName)
+        -- Here we define the form message to send for this event
+        -- (`stringFieldMsg` for input/select and `boolFieldMsg` for checkbox)
+        , onInput (FU.stringFieldMsg Form fieldName)
         ]
         []

@@ -1,8 +1,8 @@
 module Model exposing (..)
 
 import Dict exposing (Dict)
-import Forms as F exposing (Form)
 import Forms.Field as FF exposing (Fields)
+import Forms.Form as F exposing (Form)
 import Forms.Validation as FV exposing (Validate)
 import Forms.Validation.Result exposing (FormResult)
 import Json.Decode exposing (Decoder, int, list, string)

@@ -11,7 +11,7 @@ import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
 import Bootstrap.Text as Text
 import Dict
-import Forms as F
+import Forms.Form as F
 import Forms.Update as FU
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -123,7 +123,7 @@ inputField inputId title isPassword model =
 
         inputOptions =
             [ Input.id inputId
-            , Input.onInput (RegisterForm << FU.UpdateStringField inputId)
+            , Input.onInput (FU.stringFieldMsg RegisterForm inputId)
             ]
 
         inputType =
@@ -161,7 +161,7 @@ selectField selectId title options mhelp =
         [ text title ]
     , Select.select
         [ Select.id selectId
-        , Select.onChange (RegisterForm << FU.UpdateStringField selectId)
+        , Select.onChange (FU.stringFieldMsg RegisterForm selectId)
         ]
         (List.map
             (\( v, t ) -> Select.item [ value v ] [ text t ])
@@ -177,7 +177,7 @@ checkboxField checkboxId title model =
         baseOptions =
             [ Checkbox.id checkboxId
             , Checkbox.checked (isChecked checkboxId model)
-            , Checkbox.onCheck (RegisterForm << FU.UpdateBoolField checkboxId)
+            , Checkbox.onCheck (FU.boolFieldMsg RegisterForm checkboxId)
             ]
 
         options =

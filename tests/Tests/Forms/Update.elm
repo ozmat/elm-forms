@@ -1,10 +1,11 @@
 module Tests.Forms.Update exposing (..)
 
 import Expect
-import Forms as FO
 import Forms.Field as FF
 import Forms.Field.Internal as IF
-import Forms.Update exposing (..)
+import Forms.Form.Internal as IFO
+import Forms.Update as U exposing (..)
+import Forms.Update.Internal exposing (Msg(..))
 import Forms.Validation as FV
 import Forms.Value as V
 import Fuzz as F
@@ -15,7 +16,15 @@ import Test exposing (..)
 all : Test
 all =
     describe "Forms.Update tests"
-        [ describe "Update.updateForm"
+        [ fuzz F.string "creates a wrapped UpdateStringField msg" <|
+            \s ->
+                stringFieldMsg Form "field" s
+                    |> Expect.equal (Form <| UpdateStringField "field" s)
+        , fuzz F.bool "creates a wrapped UpdateBoolField msg" <|
+            \b ->
+                boolFieldMsg Form "field" b
+                    |> Expect.equal (Form <| UpdateBoolField "field" b)
+        , describe "Update.updateForm"
             [ fuzz F.string "updates a string Field when the msg is UpdateStringField" <|
                 \s ->
                     testUpdateForm (UpdateStringField "input" s) "input" form
@@ -95,15 +104,15 @@ validate fields =
     FV.valid "whatever"
 
 
-form : FO.Form String () String
+form : IFO.Form String () String
 form =
-    FO.form fields validate
+    IFO.Form fields validate
 
 
-testUpdateForm : Msg comparable -> comparable -> FO.Form comparable err a -> Maybe V.Value
+testUpdateForm : U.Msg comparable -> comparable -> IFO.Form comparable err a -> Maybe V.Value
 testUpdateForm msg key form =
     let
-        (FO.Form newFields _) =
+        (IFO.Form newFields _) =
             updateForm msg form
     in
     IF.getValue key newFields
@@ -114,7 +123,7 @@ testUpdateForm msg key form =
 
 
 type alias Model =
-    { aform : FO.Form String () String
+    { aform : IFO.Form String () String
     }
 
 
@@ -124,7 +133,7 @@ init =
 
 
 type MyMsg
-    = Form (Msg String)
+    = Form (U.Msg String)
     | TestEffects Int
 
 
