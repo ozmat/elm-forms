@@ -39,53 +39,45 @@ the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a be
 
 # Field Validation
 
-@docs FieldValidation
+@docs FieldValidation, success, failure, configFailure
 
 
-### Common Helpers
+## Field Type
 
-@docs configFailure, failure, success, validation
-
-
-### Type Validation
+First of all you need to specify what type of `Field` you want to validate
 
 @docs stringField, boolField
 
 
-### Basic Validation Helpers
+## Basic Validation
 
-@docs isChecked, int, float, notEmpty, length, email, passwordMatch
+Then you create a validation function for this specific type, or use the
+basic validation helpers defined below.
+
+@docs validation, isChecked, int, float, notEmpty, length, email, passwordMatch
 
 
 # Form Validation
 
-@docs FormValidation
-
-
-### Common Helpers
-
-@docs valid
+@docs FormValidation, valid
 
 
 # Validate
 
-@docs Validate
+@docs Validate, required, hardcoded, optional, optionalWithMaybe, discardable, twoFields, fieldgroup
 
 
-### Validate Helpers (accumulate)
+## Non-accumulative
 
-Those functions help building a `Validate` function and aim to ease the
-`FormValidation`. They will accumulate the different `FormError`s during the
-validation process.
+The default behavior of `Validate` is to validate each `Field` and gather all
+the errors while validating the all `Form` (it is accumulative).
 
-@docs required, hardcoded, optional, optionalWithMaybe, discardable, twoFields, fieldgroup
+But if you need a non-accumulative validation process (this means that the
+validation stops at the first error encountered) there are non-accumulative
+versions of the validate helpers.
 
-
-### Validate Helpers (bind)
-
-Those functions are the "binding" equivalent of the previous ones. This means
-that the `FormValidation` will fail at the first `FormError` encountered and
-won't accumulate the errors. Don't mix those functions with the previous ones
+They have the same name but finish with a 1. Do not mix them with the default
+ones.
 
 @docs required1, hardcoded1, optional1, optionalWithMaybe1, discardable1, twoFields1, fieldgroup1
 
@@ -102,10 +94,32 @@ import Validation as VA exposing (Validation)
 -- Field validation
 
 
-{-| A `FieldValidation` represents the [`Validation`](http://package.elm-lang.org/packages/ozmat/elm-validation/latest/Validation#Validation) of a `Field`
+{-| A `FieldValidation` represents the validation of a `Field`.
+
+It can be a `success` or a `failure` (and sometimes a `configFailure`, please
+refer to the [`ConfigError` definition](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation-Result#ConfigError)
+and the [README troubleshooting section](http://package.elm-lang.org/packages/ozmat/elm-forms/latest)).
+
+You are not going to use the `FieldValidation` itself but you will create a
+`FieldValidation` function that will help you validate `Field`
+
 -}
 type alias FieldValidation err a =
     Internal.FieldValidation err a
+
+
+{-| Returns a successful `FieldValidation` using a result
+-}
+success : a -> FieldValidation err a
+success =
+    VA.success
+
+
+{-| Returns a failed `FieldValidation` using an error
+-}
+failure : err -> FieldValidation err a
+failure err =
+    VA.failure (CustomErr err)
 
 
 {-| Returns a failed `FieldValidation` using a `ConfigError`
@@ -115,48 +129,30 @@ configFailure =
     Internal.configFailure
 
 
-{-| Returns a failed `FieldValidation`
--}
-failure : err -> FieldValidation err a
-failure err =
-    VA.failure (CustomErr err)
+
+-- Field Type
 
 
-{-| Returns a successful `FieldValidation`
--}
-success : a -> FieldValidation err a
-success =
-    VA.success
-
-
-{-| Helps creating a basic `FieldValidation` function
+{-| Helps validating a string `Field` (input, select). By using this function
+you basically say "this field is an input or a select, we are waiting for a
+string here". And then you pass your string `FieldValidation` function that
+will validate the string
 
     type YourError
-        = MustBeEmpty
+        = EmptyString
 
-    emptyValidation : String -> FieldValidation YourError String
-    emptyValidation =
-        validation MustBeEmpty String.isEmpty
+    notEmpty : Value -> FieldValidation YourError String
+    notEmpty =
+        stringField
+            (\aString ->
+                if String.isEmpty aString then
+                    failure EmptyString
+                else
+                    success aString
+            )
 
--}
-validation : err -> (a -> Bool) -> a -> FieldValidation err a
-validation err fvalid a =
-    VA.validation (CustomErr err) fvalid a
-
-
-
--- Type Validation
-
-
-{-| Helps validating a `String` `Field` (input, select). If the inner `Value`
-is not a `String`, fails with a `WrongType` `FieldError`.
-
-    type YourError
-        = MustBeEmpty
-
-    validateEmptyField : Value -> FieldValidation YourError String
-    validateEmptyField =
-        stringField (validation MustBeEmpty String.isEmpty)
+Note: if the field `Value` is not a string, it fails with a `WrongType`
+`ConfigError`
 
 -}
 stringField : (String -> FieldValidation err a) -> Value -> FieldValidation err a
@@ -169,15 +165,26 @@ stringField fvalid value =
             configFailure WrongType
 
 
-{-| Helps validating a `Bool` `Field` (checkbox). If the inner `Value` is not a
-`Bool`, fails with a `WrongType` `FieldError`.
+{-| Helps validating a bool `Field` (checkbox). By using this function you
+basically say "this field is a checkbox, we are waiting for a bool here".
+And then you pass your bool `FieldValidation` function that will validate
+the bool
 
     type YourError
-        = MustBeChecked
+        = NotChecked
 
-    validateCheckedField : Value -> FieldValidation YourError Bool
-    validateCheckedField =
-        checkboxField (validation MustBeChecked ((==) True))
+    isChecked : Value -> FieldValidation YourError Bool
+    isChecked =
+        checkboxField
+            (\aBool ->
+                if aBool then
+                    success aBool
+                else
+                    failure NotChecked
+            )
+
+Note: if the field `Value` is not a bool, it fails with a `WrongType`
+`ConfigError`
 
 -}
 boolField : (Bool -> FieldValidation err a) -> Value -> FieldValidation err a
@@ -191,7 +198,23 @@ boolField fvalid value =
 
 
 
--- Basic Validation Helpers
+-- Basic Validation
+
+
+{-| Helps creating a basic validation function. It is useful when you have
+a basic test and you only need to fail with one error.
+
+    type YourError
+        = MustBeEmpty
+
+    emptyValidation : String -> FieldValidation YourError String
+    emptyValidation =
+        validation MustBeEmpty String.isEmpty
+
+-}
+validation : err -> (a -> Bool) -> a -> FieldValidation err a
+validation err fvalid a =
+    VA.validation (CustomErr err) fvalid a
 
 
 {-| Helps validating a `Bool` that is True (checkbox checked). If the `Bool`
@@ -267,7 +290,7 @@ float err fvalid s =
             failure err
 
 
-{-| Helps validating a `String` that is not empty. If the `String`is empty,
+{-| Helps validating a `String` that is not empty. If the `String` is empty,
 fails with the given error.
 
     type YourError
@@ -317,8 +340,8 @@ length low high err fvalid s =
         failure err
 
 
-{-| Helps validating a `String` that is an email. If the `String`is not an email,
-fails with the given error.
+{-| Helps validating a `String` that is an email. If the `String`is not an
+email, fails with the given error.
 
     type YourError
         = NotValidEmail
@@ -341,7 +364,7 @@ email err fvalid s =
         failure err
 
 
-{-| Helps validating two `String` `Value`s that match. If the `String`s
+{-| Helps validating two string `Value` that match. If the strings
 don't match, fails with the given error.
 
     type YourError
@@ -354,6 +377,9 @@ don't match, fails with the given error.
     validateField : Value -> Value -> FieldValidation YourError a
     validateField =
         passwordMatch DifferentPassword postValidation
+
+Note: if the two `Value` are not strings, it fails with a `WrongType`
+`ConfigError`
 
 -}
 passwordMatch : err -> (String -> FieldValidation err a) -> Value -> Value -> FieldValidation err a
@@ -378,17 +404,17 @@ passwordMatch err fvalid password passwordRepeat =
 -- Form validation
 
 
-{-| A `FormValidation` represents the [`Validation`](http://package.elm-lang.org/packages/ozmat/elm-validation/latest/Validation#Validation) of a `Form`
+{-| A `FormValidation` represents the validation of a `Form`.
+
+It is similar to `FieldValidation`: you are not going use the type itself but
+instead you will create a `Validate` function (see below)
+
 -}
 type alias FormValidation comparable err a =
     Internal.FormValidation comparable err a
 
 
-
--- Common Helpers
-
-
-{-| Returns a successful `FormValidation`
+{-| Returns a successful `FormValidation` using a result
 -}
 valid : a -> FormValidation comparable err a
 valid =
@@ -396,11 +422,24 @@ valid =
 
 
 
--- Validate a Form
+-- Validate
 
 
-{-| `Validate` represents a function that validates a `Form`.
-It takes a group of `Field`s and returns a `FormValidation`
+{-| `Validate` represents the function that validates a `Form`.
+
+It takes `Fields` and creates a `FormValidation`.
+
+It usually starts with the `valid` function, representing the final result,
+and then uses the different `Validate` helpers to validate each form `Field`
+
+    validateForm : Validate String YourError Model
+    validateForm fields =
+        valid Model
+            |> required fields "field-name1" (stringField ...)
+            |> required fields "field-name2" (boolField ...)
+            |> optional fields "field-name3" ...
+            ...
+
 -}
 type alias Validate comparable err a =
     Internal.Validate comparable err a
@@ -410,11 +449,11 @@ type alias Validate comparable err a =
 -- Required
 
 
-{-| Validates a required `Field`. This is the basic use case and will always
-validate the `Field`
+{-| Validates a required `Field`. This is the basic use case : the `Field` is
+required and you want to validate it.
 
     ...
-        |> required fields comparable doYourValidation
+        |> required fields "first-name" (stringField <| someStringValidation)
         ...
 
 -}
@@ -423,12 +462,7 @@ required fields comparable fvalid fvf =
     VA.andMapAcc (Internal.fieldValid fields comparable fvalid) fvf
 
 
-{-| Validates a required `Field` (binding)
-
-    ...
-        |> required1 fields comparable doYourValidation
-        ...
-
+{-| Validates a required `Field` (non-accumulative)
 -}
 required1 : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 required1 fields comparable fvalid fvf =
@@ -439,11 +473,11 @@ required1 fields comparable fvalid fvf =
 -- Hardcoded
 
 
-{-| Hardcodes a value. This is useful when you need to harcode
-a specific value during the validation process
+{-| Hardcodes a value. This is useful when you need to harcode a specific value
+during the validation process
 
     ...
-        |> hardcoded yourHardcodedValue
+        |> hardcoded "someHarcodedValue"
         ...
 
 -}
@@ -452,12 +486,7 @@ hardcoded a fvf =
     VA.andMapAcc (valid a) fvf
 
 
-{-| Hardcodes a value for a `Field` (binding)
-
-    ...
-        |> hardcoded1 yourHardcodedValue
-        ...
-
+{-| Hardcodes a value (non-accumulative)
 -}
 hardcoded1 : a -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 hardcoded1 a fvf =
@@ -479,25 +508,14 @@ optional_ default fvalid =
         )
 
 
-{-| Validates an optional `Field`. Only works on `String` `Field`s.
-This will use the validation function if the `Field` is not empty
-or use the default value otherwise.
+{-| Validates an optional `Field`. This will use the validation function if
+the `Field` is not empty or use the default value otherwise
 
     ...
-        |> optional fields comparable doYourValidation yourDefaultValue
+        |> optional fields "wallet" 0.0 (float ...)
         ...
 
-`optional` is equivalent to a specific `required`:
-
-    ...
-        |> required
-            ...
-                \str ->
-                    if String.isEmpty str then
-                        success yourDefaultValue
-                    else
-                        doYourValidation str
-            ...
+Note: it only works on string `Field` so no need to use `stringField` here
 
 -}
 optional : Fields comparable -> comparable -> a -> (String -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
@@ -505,12 +523,7 @@ optional fields comparable default fvalid fvf =
     required fields comparable (optional_ default fvalid) fvf
 
 
-{-| Validates an optional `Field` (binding)
-
-    ...
-        |> optional1 fields comparable doYourValidation yourDefaultValue
-        ...
-
+{-| Validates an optional `Field` (non-accumulative)
 -}
 optional1 : Fields comparable -> comparable -> a -> (String -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 optional1 fields comparable default fvalid fvf =
@@ -521,13 +534,14 @@ optional1 fields comparable default fvalid fvf =
 -- OptionalWithMaybe
 
 
-{-| Validates an optional `Field` with `Maybe`. Only works
-on `String` `Field`s. Same logic than `optional` but the
-default value is `Nothing` and the validated one is `Just`
+{-| Validates an optional `Field` with `Maybe`. Same logic than `optional` but
+the default value is `Nothing` and the validated one is `Just`
 
     ...
-        |> optionalWithMaybe fields comparable doYourValidation
+        |> optionalWithMaybe fields "age" (int ...)
         ...
+
+Note: it only works on string `Field` so no need to use `stringField` here
 
 -}
 optionalWithMaybe : Fields comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
@@ -535,12 +549,7 @@ optionalWithMaybe fields comparable fvalid fvf =
     optional fields comparable Nothing (\s -> VA.map Just (fvalid s)) fvf
 
 
-{-| Validates an optional `Field` using Maybe (binding)
-
-    ...
-        |> optionalWithMaybe1 fields comparable doYourValidation
-        ...
-
+{-| Validates an optional `Field` with `Maybe` (non-accumulative)
 -}
 optionalWithMaybe1 : Fields comparable -> comparable -> (String -> FieldValidation err a) -> FormValidation comparable err (Maybe a -> b) -> FormValidation comparable err b
 optionalWithMaybe1 fields comparable fvalid fvf =
@@ -552,10 +561,10 @@ optionalWithMaybe1 fields comparable fvalid fvf =
 
 
 {-| Validates a discardable `Field`. This is useful when you need to validate
-a `Field` but don't need the result.
+the `Field` but don't need the result.
 
     ...
-        |> discardable fields comparable doYourValidation
+        |> discardable fields "terms" (boolField <| isChecked ...)
         ...
 
 -}
@@ -564,7 +573,7 @@ discardable fields comparable fvalid fvf =
     VA.andSkipAcc (Internal.fieldValid fields comparable fvalid) fvf
 
 
-{-| Validates a discardable `Field` (binding)
+{-| Validates a discardable `Field` (non-accumulative)
 -}
 discardable1 : Fields comparable -> comparable -> (Value -> FieldValidation err a) -> FormValidation comparable err b -> FormValidation comparable err b
 discardable1 fields comparable fvalid fvf =
@@ -575,13 +584,15 @@ discardable1 fields comparable fvalid fvf =
 -- TwoFields
 
 
-{-| Validates two `Field`s together. The validation function takes two `Field`
-`Value`s and returns one result. It is useful when you need to validate one
-`Field` that depends on another, but you only need to store one result
+{-| Validates two `Field` together. This is useful when you need to validate
+one `Field` that depends on another, but you only need to store one result.
 
     ...
-        |> twoFields fields comparable1 comparable2 doYourValidation
+        |> FV.twoFields fields "password" "password-repeat" (passwordMatch ...)
         ...
+
+Note : the validation function takes two field `Value` so you cannot use the
+`stringField` and `boolField` helpers here, you will have to deal with `Value`
 
 -}
 twoFields : Fields comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
@@ -589,12 +600,7 @@ twoFields fields comparable1 comparable2 fvalid fvf =
     VA.andMapAcc (Internal.fieldsValid fields comparable1 comparable2 fvalid) fvf
 
 
-{-| Validates two `Field`s together (binding)
-
-    ...
-        |> twoFields1 fields comparable1 comparable2 doYourValidation
-        ...
-
+{-| Validates two `Field` together (non-accumulative)
 -}
 twoFields1 : Fields comparable -> comparable -> comparable -> (Value -> Value -> FieldValidation err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 twoFields1 fields comparable1 comparable2 fvalid fvf =
@@ -605,11 +611,11 @@ twoFields1 fields comparable1 comparable2 fvalid fvf =
 -- FieldGroup
 
 
-{-| Validates a group of `Field`s. This can be useful in many different cases
-but mainly when you need to nest a validation process
+{-| Validates a fieldgroup. This is mainly useful when you need to nest another
+validation process
 
      ...
-        |> fieldgroup fields comparable doYourValidation
+        |> fieldgroup fields "job-profile" jobProfileValidate
         ...
 
 -}
@@ -618,12 +624,7 @@ fieldgroup fields comparable fvalid fvf =
     VA.andMapAcc (Internal.groupValid fields comparable fvalid) fvf
 
 
-{-| Validates a group of `Field`s (binding)
-
-     ...
-        |> fieldgroup1 fields comparable doYourValidation
-        ...
-
+{-| Validates a fieldgroup (non-accumulative)
 -}
 fieldgroup1 : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err (a -> b) -> FormValidation comparable err b
 fieldgroup1 fields comparable fvalid fvf =

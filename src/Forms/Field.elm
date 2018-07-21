@@ -12,17 +12,15 @@ module Forms.Field
         , selectWithDefault
         )
 
-{-| A `Field` represents a [`Form`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Form#Form) field
+{-| `Field` represents a [`Form`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms#Form) field
 
 
-# Definition
+# Fields
 
 @docs Field, Fields
 
 
 # Creation
-
-@docs input, select, checkbox, group, fields
 
     myFormFields : Fields String
     myFormFields =
@@ -38,8 +36,10 @@ module Forms.Field
               )
             ]
 
+@docs fields, input, select, checkbox, group
 
-# Changing default value
+
+# Using a default value
 
     myFormFields : Fields String
     myFormFields =
@@ -58,14 +58,22 @@ import Forms.Field.Internal as Internal exposing (Field(..))
 import Forms.Value as V
 
 
-{-| A `Field` can either hold a `Value` (`FieldValue`) or
-a group of `Field`s (`FieldGroup`)
+{-| A `Field` can be :
+
+  - an input field
+  - a select field
+  - a checkbox field
+  - or a fieldgroup
+
+It is looked-up using `comparable` so a `Field String` uses a `String` as
+field key
+
 -}
 type alias Field comparable =
     Internal.Field comparable
 
 
-{-| `Fields` is a group of `Field`s. The underlying data structure is a [`Dict`](http://package.elm-lang.org/packages/elm-lang/core/latest/Dict#Dict)
+{-| `Fields` regroups several `Field` and represents all your form fields.
 -}
 type alias Fields comparable =
     Internal.Fields comparable
@@ -75,36 +83,36 @@ type alias Fields comparable =
 -- Creation
 
 
-{-| Creates an input `Field` with the [default `String` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
+{-| Creates an input `Field` with the [default string `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
 -}
 input : Field comparable
 input =
     FieldValue V.defaultString
 
 
-{-| Creates a select `Field` with the [default `String` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
+{-| Creates a select `Field` with the [default string `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultString)
 -}
 select : Field comparable
 select =
     input
 
 
-{-| Creates a checkbox `Field` with the [default `Bool` `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultBool)
+{-| Creates a checkbox `Field` with the [default bool `Value`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Value#defaultBool)
 -}
 checkbox : Field comparable
 checkbox =
     FieldValue V.defaultBool
 
 
-{-| Creates a `FieldGroup` : a `Field` that holds a group of `Field`s
+{-| Creates a fieldgroup using a `List`
 -}
 group : List ( comparable, Field comparable ) -> Field comparable
 group g =
     FieldGroup (fields g)
 
 
-{-| Creates a group of `Field`s. This is the top-level function when creating
-`Field`s.
+{-| Creates a `Fields` using a `List`. This is the top-level function when
+creating form fields
 -}
 fields : List ( comparable, Field comparable ) -> Fields comparable
 fields =
@@ -112,7 +120,7 @@ fields =
 
 
 
--- Changing default value
+-- Using a default value
 
 
 {-| Creates an input `Field` with a default value

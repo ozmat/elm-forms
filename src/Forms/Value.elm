@@ -9,12 +9,17 @@ module Forms.Value
         , string
         )
 
-{-| A `Value` represents the value inside a [`Field`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Field)
+{-| `Value` represents the inner value of a [`Field`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Field)
 
 
-# Definition
+# Values
 
 @docs Value
+
+
+# Default values
+
+@docs defaultString, defaultBool
 
 
 # Creation
@@ -22,12 +27,7 @@ module Forms.Value
 @docs string, bool
 
 
-# Default value
-
-@docs defaultString, defaultBool
-
-
-# Get value
+# Access Values
 
 @docs getString, getBool
 
@@ -36,17 +36,42 @@ module Forms.Value
 import Forms.Value.Internal as Internal exposing (Value(..))
 
 
-{-| A `Value` can be a `String` (input, select) or a `Bool` (checkbox)
+{-| A `Value` can be a `String` (input/select field) or
+a `Bool` (checkbox field)
 -}
 type alias Value =
     Internal.Value
 
 
 
+-- Default values
+
+
+{-| Is the default string `Value`
+
+    ""
+
+-}
+defaultString : Value
+defaultString =
+    String ""
+
+
+{-| Is the default bool `Value`
+
+    False
+
+-}
+defaultBool : Value
+defaultBool =
+    Bool False
+
+
+
 -- Creation
 
 
-{-| Creates a `String` `Value`
+{-| Creates a string `Value`
 
     string "some input value"
 
@@ -56,7 +81,7 @@ string =
     String
 
 
-{-| Creates a `Bool` `Value`
+{-| Creates a bool `Value`
 
     bool True
 
@@ -67,28 +92,10 @@ bool =
 
 
 
--- Default
+-- Access Values
 
 
-{-| Is the default `String` `Value` (empty string)
--}
-defaultString : Value
-defaultString =
-    String ""
-
-
-{-| Is the default `Bool` `Value` (false)
--}
-defaultBool : Value
-defaultBool =
-    Bool False
-
-
-
--- Test
-
-
-{-| Returns the value of a `String` `Value`
+{-| Returns the value of a string `Value`
 -}
 getString : Value -> Maybe String
 getString v =
@@ -100,7 +107,7 @@ getString v =
             Nothing
 
 
-{-| Returns the value of a `Bool` `Value`
+{-| Returns the value of a bool `Value`
 -}
 getBool : Value -> Maybe Bool
 getBool v =

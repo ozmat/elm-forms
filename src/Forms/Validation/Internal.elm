@@ -22,7 +22,7 @@ import Validation as VA exposing (Validation)
 -- Field validation
 
 
-{-| A `FieldError` represents an error that happened during a `FieldValidation` :
+{-| A `FieldError` represents an error that happened during a `FieldValidation`
 
     CustomErr yourError   -- Your type of error
     ConfigErr configError -- Configuration error on the `Field`
@@ -33,7 +33,7 @@ type FieldError err
     | ConfigErr ConfigError
 
 
-{-| A `FieldValidation` represents the [`Validation`](http://package.elm-lang.org/packages/ozmat/elm-validation/latest/Validation#Validation) of a `Field`
+{-| A `FieldValidation` represents the validation of a `Field`
 -}
 type alias FieldValidation err a =
     Validation (FieldError err) a
@@ -65,7 +65,7 @@ toTuple (FormError comparable fe) =
     ( comparable, fe )
 
 
-{-| A `FormValidation` represents the [`Validation`](http://package.elm-lang.org/packages/ozmat/elm-validation/latest/Validation#Validation) of a `Form`
+{-| A `FormValidation` represents the validation of a `Form`
 -}
 type alias FormValidation comparable err a =
     VA.Validation (FormError comparable err) a
@@ -82,8 +82,8 @@ mapFormError comparable fv =
 -- Form Result
 
 
-{-| Converts `FormError`s into `Tuple`s and returns the `CustomErrors` if
-there are no `ConfigError`s. Returns the `ConfigError`s otherwise.
+{-| Converts `FormError` into `Tuple` and returns the `CustomError` if
+there are no `ConfigError`. Returns the `ConfigError` otherwise.
 -}
 filterErrors : List (FormError comparable err) -> Result (List ( comparable, ConfigError )) (List ( comparable, err ))
 filterErrors errors =
@@ -109,7 +109,7 @@ filterErrors errors =
     List.foldl walk (Ok []) (List.map toTuple errors)
 
 
-{-| Converts a `FormValidation` into a `FormResult`
+{-| Turns a `FormValidation` into a `FormResult`
 -}
 toFormResult : FormValidation comparable err a -> FormResult comparable err a
 toFormResult formv =
@@ -127,11 +127,11 @@ toFormResult formv =
 
 
 
--- Validate a Form
+-- Validate
 
 
 {-| `Validate` represents a function that validates a `Form`.
-It takes a group of `Field`s and returns a `FormValidation`
+It takes `Fields` and returns a `FormValidation`
 -}
 type alias Validate comparable err a =
     Fields comparable -> FormValidation comparable err a
@@ -156,7 +156,7 @@ fieldValid fields comparable fvalid =
 
 
 
--- Two Fields
+-- Two fields
 -- TODO implement a generic version (x fields) if this feature is used
 -- TODO make sure we want to fail on both fields
 
@@ -199,7 +199,7 @@ fieldsValid fields comparable1 comparable2 fvalid =
 
 
 
--- FieldGroup
+-- Fieldgroup
 
 
 groupValid : Fields comparable -> comparable -> (Fields comparable -> FormValidation comparable err a) -> FormValidation comparable err a

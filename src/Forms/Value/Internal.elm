@@ -16,7 +16,7 @@ type Value
 -- Helpers
 
 
-{-| Only updates `Value`s of same type
+{-| Only updates `Value` of same type
 
     safeUpdate (String "new one") (String "old one") -- String "new one"
     safeUpdate (String "new one") (Bool False)       -- Bool False

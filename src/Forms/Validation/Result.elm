@@ -4,7 +4,7 @@ module Forms.Validation.Result
         , FormResult(..)
         )
 
-{-| Blabla
+{-| This module provides the validation result
 
 
 # Form Result
@@ -24,12 +24,12 @@ import Dict exposing (Dict)
 -- Form Result
 
 
-{-| A `FormResult` represents the result of a `FormValidation`. There are
+{-| A `FormResult` represents the result of a form validation. There are
 3 different states :
 
-    Valid   -- Reprensents a successful validation and holds the form output
-    Invalid -- Reprensents a failed validation and holds the custom errors
-    Error   -- Represents a misconfigured form and holds the config errors
+  - `Valid` reprensents a successful validation and holds the form result
+  - `Invalid` reprensents a failed validation and holds the form errors
+  - `Error` represents a misconfigured form and holds the configuration errors
 
 -}
 type FormResult comparable err a
@@ -42,10 +42,14 @@ type FormResult comparable err a
 -- Configuration Error
 
 
-{-| A `ConfigError` represents a configuration error on a `Field` :
+{-| A `ConfigError` represents a configuration error on a `Field`. It usually
+happens when there is an error in the `Fields` or the `Validate` function :
 
-    MissingField -- When the `Field` cannot be found
-    WrongType    -- When the `Field` has a different type of `Value`
+  - `MissingField` when the field cannot be found
+  - `WrongType` when the field has a different type of `Value`
+
+Note: if you have trouble debugging those errors have a look at the
+[README troubleshooting section](http://package.elm-lang.org/packages/ozmat/elm-forms/latest)
 
 -}
 type ConfigError

@@ -10,21 +10,18 @@ module Forms
         )
 
 {-| `Form` is the top level type of the library. It is built with [`Fields`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Fields)
-and a [`Validate`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#Validate) function.
-Please refer to the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a better understanding
+and a [`Validate`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#Validate) function
 
 
-# Definition
+# Forms
 
-@docs Form
-
-
-# Common Helpers
-
-@docs form, validate
+@docs Form, form, validate
 
 
 # Field getters and setters
+
+Sometimes you might need to get or set the current value of a `Field`. That is
+what those functions are for
 
 @docs getStringField, getBoolField, setStringField, setBoolField
 
@@ -36,26 +33,24 @@ import Forms.Validation.Result exposing (FormResult)
 import Forms.Value as V
 
 
-{-| A `Form` is a group of `Field`s and a `Validate` function
+{-| A `Form` is made up of `Fields` and a `Validate` function
 -}
 type Form comparable err a
     = Form (Fields comparable) (Validate comparable err a)
 
 
-
--- Common Helpers
-
-
 {-| Creates a `Form`
+
+    form someFormFields someFormValidate
+
 -}
 form : Fields comparable -> Validate comparable err a -> Form comparable err a
 form =
     Form
 
 
-{-| Validates a `Form` using its `Validate` function
-and `Fields`. It will run the validation process and converts the
-`FormValidation` into a `FormResult`.
+{-| Validates a `Form`. This runs the validation process and returns
+a `FormResult`
 -}
 validate : Form comparable err a -> FormResult comparable err a
 validate (Form fields validate) =
@@ -66,7 +61,7 @@ validate (Form fields validate) =
 -- Field getters and setters
 
 
-{-| Gets the value of a `String` `Field`
+{-| Gets the value of a string `Field` (input/select)
 -}
 getStringField : comparable -> Form comparable err a -> Maybe String
 getStringField key (Form fields _) =
@@ -74,7 +69,7 @@ getStringField key (Form fields _) =
         |> Maybe.andThen V.getString
 
 
-{-| Gets the value of a `Bool` `Field`
+{-| Gets the value of a bool `Field` (checkbox)
 -}
 getBoolField : comparable -> Form comparable err a -> Maybe Bool
 getBoolField key (Form fields _) =
@@ -82,14 +77,14 @@ getBoolField key (Form fields _) =
         |> Maybe.andThen V.getBool
 
 
-{-| Sets the value of a `String` `Field`
+{-| Sets the value of a string `Field`
 -}
 setStringField : comparable -> String -> Form comparable err a -> Form comparable err a
 setStringField key val (Form fields validate) =
     Form (IF.setValue key (V.string val) fields) validate
 
 
-{-| Sets the value of a `String` `Field`
+{-| Sets the value of a bool `Field`
 -}
 setBoolField : comparable -> Bool -> Form comparable err a -> Form comparable err a
 setBoolField key val (Form fields validate) =

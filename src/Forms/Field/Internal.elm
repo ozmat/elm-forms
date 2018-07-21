@@ -121,7 +121,7 @@ getValue comparable gr =
             Nothing
 
 
-{-| Retrieves the group of `Field`s associated with a key. If the key is not found or
+{-| Retrieves the fieldgroup associated with a key. If the key is not found or
 the `Field` is not a `FieldGroup` returns `Nothing`
 
     someFormFields : Fields comparable
@@ -158,7 +158,7 @@ getGroup comparable gr =
 
 
 {-| Updates the `Value` associated with a key. It will only update the `Value`
-if the key is found, the `Field` is a `FieldValue` and the `Value`s have the
+if the key is found, the `Field` is a `FieldValue` and the `Value` have the
 same type
 
     someFormFields : Fields comparable
