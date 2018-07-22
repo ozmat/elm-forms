@@ -1,6 +1,7 @@
 module Update exposing (..)
 
 import Api
+import Bootstrap.Modal as Modal
 import Forms.Form as F
 import Forms.Update as FU
 import Forms.Validation.Result as FV
@@ -24,8 +25,8 @@ update msg model =
 
                 newResult =
                     -- Validate the form and store the new result
-                    -- in order to be able to show the last state
-                    -- of the form in the 'Result' view (debug)
+                    -- in order to show the last state of the form
+                    -- in the 'Result' view (debug)
                     F.validate newForm
 
                 newErrors =
@@ -47,6 +48,50 @@ update msg model =
             -- Define some `stringFieldCommands`: we want more control over
             -- the "typicode-user" select field
             FU.stringFieldCommands newModel formMsg registerFormCommands
+
+        -- Submit button message
+        SubmitResgisterForm ->
+            let
+                -- Validate the form
+                newResult =
+                    F.validate model.registerForm
+
+                -- Pull out the errors so if the user doesn't change any field
+                -- but hit the submit button, we can display them
+                newErrors =
+                    case newResult of
+                        FV.Invalid err ->
+                            Just err
+
+                        _ ->
+                            Nothing
+
+                -- Display the appropriate modal
+                whichModal =
+                    case newResult of
+                        FV.Valid _ ->
+                            ValidModal
+
+                        FV.Invalid _ ->
+                            InvalidModal
+
+                        FV.Error _ ->
+                            ErrorModal
+            in
+            ( { model
+                | registerResult = Just newResult
+                , registerErrors = newErrors
+                , modal = whichModal
+                , modalVisibility = Modal.shown
+              }
+            , Cmd.none
+            )
+
+        -- "Close the modal" message
+        CloseModal ->
+            ( { model | modalVisibility = Modal.hidden }
+            , Cmd.none
+            )
 
         -- "We got some typicode-users" message
         TypicodeUsersComplete newUsers ->

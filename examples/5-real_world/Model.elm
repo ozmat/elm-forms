@@ -1,5 +1,6 @@
 module Model exposing (..)
 
+import Bootstrap.Modal as Modal
 import Dict exposing (Dict)
 import Forms.Field as FF exposing (Fields)
 import Forms.Form as F exposing (Form)
@@ -21,8 +22,12 @@ type alias Model =
     , registerResult : Maybe (FormResult String RegisterError OurUser)
 
     -- The register form errors : this one is for convenience. It's easier to
-    -- display the errors in the view if we already have access to the errors
+    -- display the errors in the view if we already have access to them
     , registerErrors : Maybe (Dict String RegisterError)
+
+    -- Modal visibility and which modal is concerned
+    , modalVisibility : Modal.Visibility
+    , modal : SubmitModal
 
     -- Is the typicode-API broken ?
     , brokenApi : Bool
@@ -40,6 +45,8 @@ initModel =
     { registerForm = F.form registerFields registerValidate
     , registerResult = Nothing
     , registerErrors = Nothing
+    , modalVisibility = Modal.hidden
+    , modal = ValidModal
     , brokenApi = False
     , typicodeUsers = []
     , typicodePosts = []
@@ -247,7 +254,13 @@ typicodePostSelect =
 
 
 
-{- View data -}
+{- View types -}
+
+
+type SubmitModal
+    = ValidModal
+    | InvalidModal
+    | ErrorModal
 
 
 genderSelectOptions : List ( String, String )

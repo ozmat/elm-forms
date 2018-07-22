@@ -1,5 +1,6 @@
 module View exposing (..)
 
+import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
@@ -9,6 +10,7 @@ import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
+import Bootstrap.Modal as Modal
 import Bootstrap.Text as Text
 import Dict
 import Forms.Form as F
@@ -26,8 +28,41 @@ view : Model -> Html Msg
 view model =
     div []
         [ CDN.stylesheet -- not good for real-world usage
+        , modal model
         , mainGrid model
         ]
+
+
+
+-- Modal
+
+
+modal : Model -> Html Msg
+modal model =
+    let
+        modalText =
+            case model.modal of
+                M.ValidModal ->
+                    "Successful registration !"
+
+                M.InvalidModal ->
+                    "Form got errors, please correct them"
+
+                M.ErrorModal ->
+                    "Something wrong happened, please contact support"
+    in
+    Modal.config CloseModal
+        |> Modal.hideOnBackdropClick True
+        |> Modal.h3 [] [ text "Submit RegisterForm" ]
+        |> Modal.body [] [ p [] [ text modalText ] ]
+        |> Modal.footer []
+            [ Button.button
+                [ Button.outlinePrimary
+                , Button.onClick CloseModal
+                ]
+                [ text "Close" ]
+            ]
+        |> Modal.view model.modalVisibility
 
 
 
@@ -101,6 +136,12 @@ formView model =
             ]
         , checkboxField "newsletter" "Newsletter subscription" model
         , checkboxField "terms" "Accept our Terms" model
+        , Button.button
+            [ Button.attrs [ style [ ( "margin-top", "20px" ) ] ]
+            , Button.primary
+            , Button.onClick SubmitResgisterForm
+            ]
+            [ text "Submit" ]
         ]
 
 
