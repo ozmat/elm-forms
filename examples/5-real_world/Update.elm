@@ -182,7 +182,7 @@ registerFormCommands model key value =
                 -- the "typicode-post" value to the first new post
                 , registerForm = F.setStringField "typicode-post" "" model.registerForm
               }
-              -- Fetch the "typicode-posts"
+              -- Fetch the new "typicode-posts"
             , Api.getTypicodePosts value
             )
 

@@ -17,7 +17,7 @@ module Forms.Value
 @docs Value
 
 
-# Default values
+# Default Values
 
 @docs defaultString, defaultBool
 
@@ -44,7 +44,7 @@ type alias Value =
 
 
 
--- Default values
+-- Default Values
 
 
 {-| Is the default string `Value`

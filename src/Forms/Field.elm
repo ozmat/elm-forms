@@ -12,7 +12,7 @@ module Forms.Field
         , selectWithDefault
         )
 
-{-| `Field` represents a [`Form`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms#Form) field
+{-| `Field` represents a [`Form`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Form#Form) field
 
 
 # Fields

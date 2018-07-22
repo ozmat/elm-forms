@@ -143,13 +143,13 @@ myFormValidate fields =
         -- The "wallet" is `optional` : this means that if the field is empty,
         -- we will use the specified default value (here 0).
         -- If it's not empty, we want a string (`optional` only works with
-        -- `stringField`s so we don't need to specify it) that can be cast
+        -- `stringField` so no need to specify it) that can be cast
         -- into a `Float`
         |> FV.optional fields "wallet" 0 (FV.float NotFloat FV.success)
         -- The "color" is also optional but using a `Maybe` : if the field is
         -- empty the value will be `Nothing` and `Just` otherwise.
         -- The "color" needs to be a string (same than with `optional`,
-        -- `optionalWithMaybe` only works with `stringField`s so no need to
+        -- `optionalWithMaybe` only works with `stringField` so no need to
         -- specify it) that `isColor`. Here we're using the `validation` helper
         -- that creates the validation function for us. It is useful when you
         -- only need to fail with one error and you have a boolean test.
@@ -165,8 +165,8 @@ myUserValidate fields =
     -- and reuse this `Validate` function.
     FV.valid UserModel
         -- The "email" field needs to be a string and is validated using
-        -- the `email` helper. Then we post `trim` and `toLower` the string.
-        |> FV.required fields "email" (FV.stringField <| FV.email NotEmail <| FV.success << String.toLower << String.trim)
+        -- the `email` helper. Then we post `toLower` the string.
+        |> FV.required fields "email" (FV.stringField <| FV.email NotEmail <| FV.success << String.toLower)
         -- We're using `twoFields` here to validate the "password". `twoFields`
         -- is useful when you have one field depending on another one but
         -- you only need to store one result. We're also using the

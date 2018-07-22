@@ -7,7 +7,8 @@ import Forms.Field.Internal exposing (Fields)
 import Forms.Validation.Internal exposing (Validate)
 
 
-{-| A `Form` is made up of `Fields` and a `Validate` function
--}
+-- Definition
+
+
 type Form comparable err a
     = Form (Fields comparable) (Validate comparable err a)

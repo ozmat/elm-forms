@@ -37,8 +37,8 @@ init =
 
 type alias Model =
     { -- Store the Form state. By looking at the `Form` type we can already see
-      -- that the field keys are `String`s,
-      -- the form errors are `MyFormError`s
+      -- that the field keys are `String`,
+      -- the form errors are `MyFormError`
       -- and the successful `FormResult` is an `OtherModel`
       myForm : F.Form String MyFormError OtherModel
     }
@@ -115,7 +115,7 @@ update msg model =
         -- Each time we get a form message
         Form formMsg ->
             let
-                -- We update our `Form` with the new field value
+                -- We update our `Form` (with the new field value)
                 newModel =
                     { model | myForm = FU.updateForm formMsg model.myForm }
 
@@ -161,7 +161,7 @@ inputText placeHolder fieldName =
         [ inputStyle
         , placeholder placeHolder
 
-        -- Here we define the form message to send for this event
+        -- Here we define the form message to send when the field changes
         -- (`stringFieldMsg` for input/select and `boolFieldMsg` for checkbox)
         , onInput (FU.stringFieldMsg Form fieldName)
         ]

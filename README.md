@@ -1,6 +1,6 @@
 # elm-forms
 
-A library for building and validating [`Forms`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms#Form) in Elm
+A library for building and validating [`Forms`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Form#Form) in Elm
 
 [![Build Status](https://travis-ci.org/ozmat/elm-forms.svg?branch=master)](https://travis-ci.org/ozmat/elm-forms)
 
@@ -159,19 +159,26 @@ and have access to all the examples.
 
 ## Troubleshooting
 
-- If you have a [`ConfigError`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation-Result#ConfigError) when validating your form, have a look at which field is concerned and
+- If you have a [`ConfigError`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation-Result#ConfigError)
+when validating your form, have a look at which field is concerned and
     - If the error is a `MissingField` one : make sure there is no typo error
-    in the field key either in the [`Fields`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Fields) or in the [`Validate`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#Validate) function
-    - If the error is a `WrongType` one : make sure you're using the 
-    [`stringField`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#stringField) helper for an [`input`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#input)/[`select`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#select) field and the [`boolField`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#boolField)
-    helper for a [`checkbox`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#checkbox) field
+    in the field key either in the [`Fields`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Fields)
+    or in the [`Validate`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#Validate) function
+    - If the error is a `WrongType` one : make sure you're using the
+    [`stringField`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#stringField) helper
+    for an [`input`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#input)/[`select`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#select) field
+    and the [`boolField`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#boolField) helper
+    for a [`checkbox`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#checkbox) field
 - If a field value never changes
-    - First make sure you're implementing the form [`Msg`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Update#Msg) and you're updating 
-    the form with the [`updateForm`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Update#updateForm) function
+    - First make sure you're implementing the form [`Msg`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Update#Msg) 
+    and you're updating the form with the [`updateForm`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Update#updateForm) function
     - Second, in your view, make sure you have an event defined on the field 
-    and it's using a form [`Msg`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Update#Msg)
+    and it's using a form `Msg` : [`stringFieldMsg`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Update#stringFieldMsg) 
+    or [`boolFieldMsg`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Update#boolFieldMsg)
     - Finally make sure there is no typo error in the field key either in the 
-    [`Fields`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Fields) or in the form [`Msg`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Update#Msg) in your view event
-- If a field validation never fails or always succeeds, make sure you're using
-the [`success`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#success) or [`failure`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#failure) function
+    [`Fields`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Fields) 
+    or in your view event
+- If a field validation never/always fails/succeeds, make sure you're using
+the [`success`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#success) 
+or [`failure`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#failure) function
 
