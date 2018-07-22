@@ -1,5 +1,5 @@
 {
-    "version": "1.1.0",
+    "version": "2.0.0",
     "summary": "A library for building and validating Forms in Elm",
     "repository": "https://github.com/ozmat/elm-forms.git",
     "license": "BSD-3-Clause",
