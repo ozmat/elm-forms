@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "Test Suites",
+    "summary": "tests for ozmat/elm-forms",
     "repository": "https://github.com/user/project.git",
     "license": "BSD-3-Clause",
     "source-directories": [
