@@ -3,7 +3,7 @@
     "name": "ozmat/elm-forms",
     "summary": "A library for building and validating Forms in Elm",
     "license": "BSD-3-Clause",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "exposed-modules": [
         "Forms",
         "Forms.Field",
