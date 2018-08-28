@@ -1,25 +1,27 @@
-module Main exposing (..)
+module Main exposing (main)
 
+import Browser exposing (element)
 import Debug exposing (log)
 import Forms.Field as FF
 import Forms.Form as F
 import Forms.Update as FU
 import Forms.Validation as FV
-import Html exposing (Html, div, input, program, text)
+import Html exposing (Html, div, input, text)
 import Html.Attributes exposing (placeholder, style)
 import Html.Events exposing (onInput)
+
 
 
 {- MAIN -}
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
+    element
         { init = init
+        , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
-        , view = view
         }
 
 
@@ -27,8 +29,8 @@ main =
 {- Model -}
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( -- Form creation using the form `Fields` and the `Validate` function
       Model (F.form myFormFields myFormValidate)
     , Cmd.none
@@ -128,7 +130,7 @@ update msg model =
                 console =
                     log "" (F.validate newModel.myForm)
             in
-            newModel ! []
+            ( newModel, Cmd.none )
 
 
 
@@ -147,18 +149,12 @@ view model =
 
 inputText : String -> String -> Html Msg
 inputText placeHolder fieldName =
-    let
-        inputStyle =
-            style
-                [ ( "width", "100%" )
-                , ( "height", "40px" )
-                , ( "padding", "10px 0" )
-                , ( "font-size", "2em" )
-                , ( "text-align", "center" )
-                ]
-    in
     input
-        [ inputStyle
+        [ style "width" "100%"
+        , style "height" "40px"
+        , style "padding" "10px 0"
+        , style "font-size" "2em"
+        , style "text-align" "center"
         , placeholder placeHolder
 
         -- Here we define the form message to send when the field changes

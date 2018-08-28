@@ -1,37 +1,11 @@
-module Forms.Validation
-    exposing
-        ( FieldValidation
-        , FormValidation
-        , Validate
-        , boolField
-        , configFailure
-        , discardable
-        , discardable1
-        , email
-        , failure
-        , fieldgroup
-        , fieldgroup1
-        , float
-        , hardcoded
-        , hardcoded1
-        , int
-        , isChecked
-        , length
-        , notEmpty
-        , optional
-        , optional1
-        , optionalWithMaybe
-        , optionalWithMaybe1
-        , passwordMatch
-        , required
-        , required1
-        , stringField
-        , success
-        , twoFields
-        , twoFields1
-        , valid
-        , validation
-        )
+module Forms.Validation exposing
+    ( FieldValidation, success, failure, configFailure
+    , stringField, boolField
+    , validation, isChecked, int, float, notEmpty, length, email, passwordMatch
+    , FormValidation, valid
+    , Validate, required, hardcoded, optional, optionalWithMaybe, discardable, twoFields, fieldgroup
+    , required1, hardcoded1, optional1, optionalWithMaybe1, discardable1, twoFields1, fieldgroup1
+    )
 
 {-| This module provides the validation logic for the library. Please refer to
 the [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a better understanding
@@ -91,6 +65,7 @@ import Regex
 import Validation as VA exposing (Validation)
 
 
+
 -- Field validation
 
 
@@ -147,6 +122,7 @@ will validate the string
             (\aString ->
                 if String.isEmpty aString then
                     failure EmptyString
+
                 else
                     success aString
             )
@@ -179,6 +155,7 @@ the bool
             (\aBool ->
                 if aBool then
                     success aBool
+
                 else
                     failure NotChecked
             )
@@ -236,6 +213,7 @@ isChecked : err -> (Bool -> FieldValidation err a) -> Bool -> FieldValidation er
 isChecked err fvalid b =
     if b then
         fvalid b
+
     else
         failure err
 
@@ -258,10 +236,10 @@ cannot be cast, fails with the given error.
 int : err -> (Int -> FieldValidation err a) -> String -> FieldValidation err a
 int err fvalid s =
     case String.toInt s of
-        Ok i ->
+        Just i ->
             fvalid i
 
-        Err _ ->
+        Nothing ->
             failure err
 
 
@@ -283,10 +261,10 @@ cannot be cast, fails with the given error.
 float : err -> (Float -> FieldValidation err a) -> String -> FieldValidation err a
 float err fvalid s =
     case String.toFloat s of
-        Ok f ->
+        Just f ->
             fvalid f
 
-        Err _ ->
+        Nothing ->
             failure err
 
 
@@ -309,6 +287,7 @@ notEmpty : err -> (String -> FieldValidation err a) -> String -> FieldValidation
 notEmpty err fvalid s =
     if String.isEmpty s then
         failure err
+
     else
         fvalid s
 
@@ -336,6 +315,7 @@ length low high err fvalid s =
     in
     if len > low && len < high then
         fvalid s
+
     else
         failure err
 
@@ -357,9 +337,15 @@ email, fails with the given error.
 -}
 email : err -> (String -> FieldValidation err a) -> String -> FieldValidation err a
 email err fvalid s =
-    -- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/email
-    if Regex.contains (Regex.regex "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$") s then
+    let
+        -- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/email
+        emailRegex =
+            Maybe.withDefault Regex.never <|
+                Regex.fromString "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+    in
+    if Regex.contains emailRegex s then
         fvalid s
+
     else
         failure err
 
@@ -390,6 +376,7 @@ passwordMatch err fvalid password passwordRepeat =
                 VA.Success s ->
                     if s1 == s2 then
                         success s
+
                     else
                         failure err
 
@@ -503,6 +490,7 @@ optional_ default fvalid =
         (\s ->
             if String.isEmpty s then
                 success default
+
             else
                 fvalid s
         )

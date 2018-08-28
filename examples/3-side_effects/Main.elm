@@ -1,26 +1,28 @@
-module Main exposing (..)
+module Main exposing (main)
 
+import Browser exposing (element)
 import Debug exposing (log)
 import Forms.Field as FF
 import Forms.Form as F
 import Forms.Update as FU
 import Forms.Validation as FV
-import Html exposing (Html, div, input, program, text)
+import Html exposing (Html, div, input, text)
 import Html.Attributes exposing (disabled, placeholder, style)
 import Html.Events exposing (onInput)
 import Random
 
 
+
 {- MAIN -}
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
+    element
         { init = init
+        , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
-        , view = view
         }
 
 
@@ -28,8 +30,8 @@ main =
 {- Model -}
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( Model (F.form myFormFields myFormValidate) -1
     , Cmd.none
     )
@@ -111,7 +113,7 @@ update msg model =
         EffectSuccess newEffectValue ->
             -- Here we have a value coming back from the side-effect
             -- so we update the side-effect value
-            { model | sideEffectValue = newEffectValue } ! []
+            ( { model | sideEffectValue = newEffectValue }, Cmd.none )
 
 
 myFormCommands : Model -> String -> String -> ( Model, Cmd Msg )
@@ -123,7 +125,7 @@ myFormCommands model key value =
         "field-watched" ->
             ( model
               -- We're using `Random` to simulate the side-effect
-            , Random.generate EffectSuccess (Random.int 1 15)
+            , Random.generate EffectSuccess (Random.int 1 100)
             )
 
         _ ->
@@ -141,7 +143,7 @@ view model =
     div []
         [ -- Let's display the side-effect value to make sure it actually
           -- changes every time we change the "field-watched" value
-          inputText True (toString model.sideEffectValue) ""
+          inputText True (String.fromInt model.sideEffectValue) ""
         , inputText False "Watched" "field-watched"
         , inputText False "Not Watched" "field-not-watched"
         ]
@@ -151,25 +153,23 @@ inputText : Bool -> String -> String -> Html Msg
 inputText disable placeHolder fieldName =
     let
         inputStyle =
-            style
-                [ ( "width", "100%" )
-                , ( "height", "40px" )
-                , ( "padding", "10px 0" )
-                , ( "font-size", "2em" )
-                , ( "text-align", "center" )
-                ]
+            [ style "width" "100%"
+            , style "height" "40px"
+            , style "padding" "10px 0"
+            , style "font-size" "2em"
+            , style "text-align" "center"
+            ]
 
         inputAttrs =
             if disable then
-                [ inputStyle
-                , disabled disable
-                , placeholder ("Current side-effect value : " ++ placeHolder)
-                ]
+                disabled disable
+                    :: placeholder ("Current side-effect value : " ++ placeHolder)
+                    :: inputStyle
+
             else
-                [ inputStyle
-                , placeholder placeHolder
-                , onInput (FU.stringFieldMsg Form fieldName)
-                ]
+                placeholder placeHolder
+                    :: onInput (FU.stringFieldMsg Form fieldName)
+                    :: inputStyle
     in
     input
         inputAttrs

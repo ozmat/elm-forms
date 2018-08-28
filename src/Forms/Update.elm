@@ -1,13 +1,8 @@
-module Forms.Update
-    exposing
-        ( Msg
-        , boolFieldCommands
-        , boolFieldMsg
-        , formCommands
-        , stringFieldCommands
-        , stringFieldMsg
-        , updateForm
-        )
+module Forms.Update exposing
+    ( Msg, stringFieldMsg, boolFieldMsg
+    , updateForm
+    , stringFieldCommands, boolFieldCommands, formCommands
+    )
 
 {-| This module provides the `update` helpers. Please refer to the
 [examples](https://github.com/ozmat/elm-forms/tree/master/examples) for a better understanding
@@ -36,6 +31,7 @@ import Forms.Field.Internal as IF
 import Forms.Form.Internal exposing (Form(..))
 import Forms.Update.Internal as Internal exposing (Msg(..))
 import Forms.Value as V
+
 
 
 -- Form Messages

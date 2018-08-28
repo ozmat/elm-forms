@@ -1,4 +1,4 @@
-module Tests.Forms.Validation exposing (..)
+module Tests.Forms.Validation exposing (all)
 
 import Dict exposing (Dict)
 import Expect

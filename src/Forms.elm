@@ -1,34 +1,10 @@
-module Forms
-    exposing
-        ( FieldValidation
-        , Fields
-        , Form
-        , FormResult
-        , Msg
-        , Validate
-        , boolField
-        , boolFieldMsg
-        , checkbox
-        , discardable
-        , failure
-        , fieldgroup
-        , fields
-        , form
-        , group
-        , hardcoded
-        , input
-        , optional
-        , optionalWithMaybe
-        , required
-        , select
-        , stringField
-        , stringFieldMsg
-        , success
-        , twoFields
-        , updateForm
-        , valid
-        , validate
-        )
+module Forms exposing
+    ( Fields, fields, input, select, checkbox, group
+    , Form, form, validate
+    , Msg, stringFieldMsg, boolFieldMsg, updateForm
+    , FieldValidation, success, failure, stringField, boolField, valid, Validate, required, hardcoded, optional, optionalWithMaybe, discardable, twoFields, fieldgroup
+    , FormResult
+    )
 
 {-| This module only re-exports all the common types and functions of the
 library. You can either import them from here or their own modules
@@ -68,6 +44,7 @@ import Forms.Update as FU
 import Forms.Validation as FV
 import Forms.Validation.Result as FVR
 import Forms.Value as FVA
+
 
 
 -- Module Forms.Field

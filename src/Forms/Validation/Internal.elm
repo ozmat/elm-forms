@@ -1,16 +1,15 @@
-module Forms.Validation.Internal
-    exposing
-        ( FieldError(..)
-        , FieldValidation
-        , FormError(..)
-        , FormValidation
-        , Validate
-        , configFailure
-        , fieldValid
-        , fieldsValid
-        , groupValid
-        , toFormResult
-        )
+module Forms.Validation.Internal exposing
+    ( FieldError(..)
+    , FieldValidation
+    , FormError(..)
+    , FormValidation
+    , Validate
+    , configFailure
+    , fieldValid
+    , fieldsValid
+    , groupValid
+    , toFormResult
+    )
 
 import Dict
 import Forms.Field.Internal as IF exposing (Fields)
@@ -19,12 +18,14 @@ import Forms.Value.Internal as IV exposing (Value)
 import Validation as VA exposing (Validation)
 
 
+
 -- Field validation
 
 
 {-| A `FieldError` represents an error that happened during a `FieldValidation`
 
-    CustomErr yourError   -- Your type of error
+    CustomErr yourError -- Your type of error
+
     ConfigErr configError -- Configuration error on the `Field`
 
 -}

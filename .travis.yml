@@ -3,45 +3,14 @@ sudo: false
 language: node_js
 node_js: node
 
-cache:
-  directories:
-    - elm-stuff/build-artifacts
-    - tests/elm-stuff/build-artifacts
-    - examples/elm-stuff/build-artifacts
-    - sysconfcpus
-
-before_install:
-  - | # Build time improvement for Elm on Travis CI
-    if [ ! -d sysconfcpus/bin ];
-    then
-      git clone https://github.com/obmarg/libsysconfcpus.git;
-      cd libsysconfcpus;
-      ./configure --prefix=$TRAVIS_BUILD_DIR/sysconfcpus;
-      make && make install;
-      cd ..;
-    fi
-
 install:
-  - npm install -g elm@0.18.0 elm-test@0.18.12 elm-format@0.7.0-exp
-  - mv $(npm config get prefix)/bin/elm-make $(npm config get prefix)/bin/elm-make-old
-  - printf "#\041/bin/bash\n\necho \"Running elm-make with sysconfcpus -n 2\"\n\n$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-make-old \"\$@\"" > $(npm config get prefix)/bin/elm-make
-  - chmod +x $(npm config get prefix)/bin/elm-make
-  # Lib
-  - travis_retry elm-package install -y
-  # Tests
-  - cd tests
-  - travis_retry elm-package install -y
-  - cd ..
-  # Examples
-  - cd examples
-  - travis_retry elm-package install -y
-  - cd ..
+  - npm install -g elm@0.19.0-bugfix2 elm-test@0.19.0-beta4 elm-format@0.8.0
 
 script:
   # Format
   - elm-format --validate src tests examples
   # Lib
-  - elm-make --yes
+  - elm make
   # Tests
   - elm-test
   # Examples

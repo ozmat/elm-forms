@@ -1,14 +1,14 @@
-module Forms.Field.Internal
-    exposing
-        ( Field(..)
-        , Fields
-        , getGroup
-        , getValue
-        , setValue
-        )
+module Forms.Field.Internal exposing
+    ( Field(..)
+    , Fields
+    , getGroup
+    , getValue
+    , setValue
+    )
 
 import Dict as D exposing (Dict)
 import Forms.Value.Internal as IV exposing (Value)
+
 
 
 -- Definition
@@ -180,6 +180,7 @@ setValue comparable value gr =
         walk k v acc =
             if k == comparable then
                 D.update k (updateValue value) acc
+
             else
                 case v of
                     FieldGroup g ->

@@ -1,8 +1,7 @@
-module Forms.Value.Internal
-    exposing
-        ( Value(..)
-        , safeUpdate
-        )
+module Forms.Value.Internal exposing
+    ( Value(..)
+    , safeUpdate
+    )
 
 -- Definition
 
@@ -19,7 +18,8 @@ type Value
 {-| Only updates `Value` of same type
 
     safeUpdate (String "new one") (String "old one") -- String "new one"
-    safeUpdate (String "new one") (Bool False)       -- Bool False
+
+    safeUpdate (String "new one") (Bool False) -- Bool False
 
 -}
 safeUpdate : Value -> Value -> Value

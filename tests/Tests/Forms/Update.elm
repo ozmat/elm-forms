@@ -1,4 +1,4 @@
-module Tests.Forms.Update exposing (..)
+module Tests.Forms.Update exposing (all)
 
 import Expect
 import Forms.Field as FF
@@ -100,7 +100,7 @@ fields =
 
 
 validate : FV.Validate String () String
-validate fields =
+validate _ =
     FV.valid "whatever"
 
 
@@ -110,10 +110,10 @@ form =
 
 
 testUpdateForm : U.Msg comparable -> comparable -> IFO.Form comparable err a -> Maybe V.Value
-testUpdateForm msg key form =
+testUpdateForm msg key f =
     let
         (IFO.Form newFields _) =
-            updateForm msg form
+            updateForm msg f
     in
     IF.getValue key newFields
 
@@ -187,5 +187,5 @@ myUpdate i msg model =
             in
             cmd newModel formMsg
 
-        TestEffects i ->
-            model ! []
+        TestEffects _ ->
+            ( model, Cmd.none )

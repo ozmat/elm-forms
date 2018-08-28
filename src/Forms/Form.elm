@@ -1,13 +1,7 @@
-module Forms.Form
-    exposing
-        ( Form
-        , form
-        , getBoolField
-        , getStringField
-        , setBoolField
-        , setStringField
-        , validate
-        )
+module Forms.Form exposing
+    ( Form, form, validate
+    , getStringField, getBoolField, setStringField, setBoolField
+    )
 
 {-| `Form` is the top level type of the library. It is built with [`Fields`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Fields)
 and a [`Validate`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Validation#Validate) function
@@ -54,8 +48,8 @@ form =
 a `FormResult`
 -}
 validate : Form comparable err a -> FormResult comparable err a
-validate (Form fields validate) =
-    IV.toFormResult (validate fields)
+validate (Form fields vf) =
+    IV.toFormResult (vf fields)
 
 
 
@@ -81,12 +75,12 @@ getBoolField key (Form fields _) =
 {-| Sets the value of a string `Field`
 -}
 setStringField : comparable -> String -> Form comparable err a -> Form comparable err a
-setStringField key val (Form fields validate) =
-    Form (IF.setValue key (V.string val) fields) validate
+setStringField key val (Form fields vf) =
+    Form (IF.setValue key (V.string val) fields) vf
 
 
 {-| Sets the value of a bool `Field`
 -}
 setBoolField : comparable -> Bool -> Form comparable err a -> Form comparable err a
-setBoolField key val (Form fields validate) =
-    Form (IF.setValue key (V.bool val) fields) validate
+setBoolField key val (Form fields vf) =
+    Form (IF.setValue key (V.bool val) fields) vf

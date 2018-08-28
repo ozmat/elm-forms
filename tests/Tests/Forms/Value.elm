@@ -1,4 +1,4 @@
-module Tests.Forms.Value exposing (..)
+module Tests.Forms.Value exposing (all)
 
 import Expect
 import Forms.Value exposing (..)

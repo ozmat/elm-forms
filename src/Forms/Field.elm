@@ -1,16 +1,8 @@
-module Forms.Field
-    exposing
-        ( Field
-        , Fields
-        , checkbox
-        , checkboxWithDefault
-        , fields
-        , group
-        , input
-        , inputWithDefault
-        , select
-        , selectWithDefault
-        )
+module Forms.Field exposing
+    ( Field, Fields
+    , fields, input, select, checkbox, group
+    , inputWithDefault, selectWithDefault, checkboxWithDefault
+    )
 
 {-| `Field` represents a [`Form`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Form#Form) field
 

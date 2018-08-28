@@ -1,8 +1,7 @@
-module Forms.Validation.Result
-    exposing
-        ( ConfigError(..)
-        , FormResult(..)
-        )
+module Forms.Validation.Result exposing
+    ( FormResult(..)
+    , ConfigError(..)
+    )
 
 {-| This module provides the validation result
 
@@ -19,6 +18,7 @@ module Forms.Validation.Result
 -}
 
 import Dict exposing (Dict)
+
 
 
 -- Form Result

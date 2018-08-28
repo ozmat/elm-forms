@@ -1,13 +1,9 @@
-module Forms.Value
-    exposing
-        ( Value
-        , bool
-        , defaultBool
-        , defaultString
-        , getBool
-        , getString
-        , string
-        )
+module Forms.Value exposing
+    ( Value
+    , defaultString, defaultBool
+    , string, bool
+    , getString, getBool
+    )
 
 {-| `Value` represents the inner value of a [`Field`](http://package.elm-lang.org/packages/ozmat/elm-forms/latest/Forms-Field#Field)
 

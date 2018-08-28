@@ -1,7 +1,4 @@
-module Forms.Update.Internal
-    exposing
-        ( Msg(..)
-        )
+module Forms.Update.Internal exposing (Msg(..))
 
 -- Form Messages
 

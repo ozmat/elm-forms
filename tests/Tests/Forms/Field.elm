@@ -1,4 +1,4 @@
-module Tests.Forms.Field exposing (..)
+module Tests.Forms.Field exposing (all)
 
 import Dict as D
 import Expect

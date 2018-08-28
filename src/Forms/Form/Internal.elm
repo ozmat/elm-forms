@@ -1,10 +1,8 @@
-module Forms.Form.Internal
-    exposing
-        ( Form(..)
-        )
+module Forms.Form.Internal exposing (Form(..))
 
 import Forms.Field.Internal exposing (Fields)
 import Forms.Validation.Internal exposing (Validate)
+
 
 
 -- Definition
