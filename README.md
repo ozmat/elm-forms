@@ -11,8 +11,8 @@ to provide an easy but flexible way of creating forms, validating them,
 handling the different message updates and building a whole business logic 
 on top of them.
 
-Here is a list of different features that we need when dealing with forms imo 
-(and that the library actually implements) :
+Here is a list of different features that we need when dealing with forms IMO, 
+(and that the library actually implements):
 
 - **Custom error**  
    We should be able to fail with custom errors but also implement some logic
@@ -35,7 +35,7 @@ Here is a list of different features that we need when dealing with forms imo
    elm-lang/html ... The library should only provide functions to use in the
    view layer
 
-Plus, the library should also be :
+Plus, the library should also be:
 
 - **Easy to use**  
    And provide helper functions dealing with the complex stuff so we can 
@@ -51,8 +51,7 @@ Plus, the library should also be :
 
 ## A quick overview
 
-Here are some parts of the [first example](https://github.com/ozmat/elm-forms/tree/master/examples/1-readme_example) : a basic form with three fields (two 
-strings and one int) that creates an `OtherModel`
+Here are some parts of the [first example](https://github.com/ozmat/elm-forms/tree/master/examples/1-readme_example) : a basic form with three fields (two strings and one int) that creates an `OtherModel`:
 
 ```elm
 ...
@@ -135,8 +134,7 @@ F.validate model.myForm -- validates the form and returns a `FormResult`
 
 ## A journey with Forms (examples)
 
-For a better understanding on how to use the library, I would recommend you
-to go through all the [examples](https://github.com/ozmat/elm-forms/tree/master/examples), following the order specified. You should
+For a better understanding on how to use the library, I would suggest you go through all the [examples](https://github.com/ozmat/elm-forms/tree/master/examples), following the order specified. You should
 have a look at the source code, as there are some comments there, while running 
 the examples and playing with them.
 
@@ -148,7 +146,7 @@ cd EXAMPLE_DIR
 elm-reactor
 ```
 
-If you have downloaded/cloned the all library you can just :
+If you have downloaded/cloned the whole library you can just:
 
 ```sh
 cd elm-forms/examples
